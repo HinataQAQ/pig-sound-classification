@@ -1,0 +1,38 @@
+experiment_name: pig_bilstm_mfcc_gfcc
+data:
+  audio_root: data/raw
+  train_manifest: data/manifests/train.csv
+  val_manifest: data/manifests/val.csv
+  labels: [feeding, estrus, panting, scream, grunt]
+  segment_seconds: 2.0
+  sample_rate: 16000
+preprocess:
+  do_denoise: true
+  do_vad: false
+features:
+  mfcc:
+    n_mfcc: 26
+    n_mels: 64
+    fmin: 50
+    fmax: 8000
+  gfcc:
+    n_gfcc: 32
+    n_filters: 64
+    fmin: 50
+    fmax: 8000
+  include_delta: true
+  include_delta_delta: false
+train:
+  seed: 3407
+  batch_size: 32
+  num_workers: 2
+  epochs: 20
+  lr: 1.0e-3
+  weight_decay: 1.0e-4
+  grad_clip: 5.0
+  device: auto
+model:
+  type: bilstm
+  hidden_size: 128
+  num_layers: 2
+  dropout: 0.2
