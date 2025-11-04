@@ -20,3 +20,11 @@ checkpoints/
 
 # 其它大文件
 *.zip
+
+data/
+
+checkpoints/
+
+eval_predictions.csv
+
+*.zip

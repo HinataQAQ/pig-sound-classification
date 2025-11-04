@@ -3,8 +3,9 @@ data:
   audio_root: data/raw
   train_manifest: data/manifests/train.csv
   val_manifest: data/manifests/val.csv
-  labels: [feeding, estrus, panting, scream, grunt]
-  segment_seconds: 2.0
+  test_manifest:  data/manifests/test.csv
+  labels: ['cough', 'other']
+  segment_seconds: 1.0
   sample_rate: 16000
 preprocess:
   do_denoise: true
@@ -25,12 +26,12 @@ features:
 train:
   seed: 3407
   batch_size: 32
-  num_workers: 2
-  epochs: 20
+  num_workers: 0
+  epochs: 15
   lr: 1.0e-3
-  weight_decay: 1.0e-4
+  weight_decay: 1.0e-5
   grad_clip: 5.0
-  device: auto
+  device: "auto"
 model:
   type: bilstm
   hidden_size: 128
