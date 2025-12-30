@@ -1,0 +1,39 @@
+experiment_name: cough_silence_easy_crnn_logmel_s0
+
+data:
+  train_manifest: data/manifests_cough_silence_easy/train.csv
+  val_manifest:   data/manifests_cough_silence_easy/val.csv
+  test_manifest:  data/manifests_cough_silence_easy/test.csv
+  labels: ["cough", "other"]
+  segment_seconds: 1.0
+  sample_rate: 32000
+
+logmel:
+  n_mels: 64
+  fmin: 50
+  fmax: 8000
+  hop_ms: 10.0
+  win_ms: 25.0
+  n_fft: 1024
+  use_specaug: true
+
+train:
+  seed: 3407
+  batch_size: 32
+  num_workers: 0
+  epochs: 20
+  lr: 1.0e-3
+  weight_decay: 1.0e-5
+  grad_clip: 5.0
+  device: auto
+
+model:
+  type: crnn
+  cnn_channels: [16, 32, 64]
+  rnn_hidden: 128
+  rnn_layers: 1
+  dropout: 0.2
+
+preprocess:
+  do_denoise: true
+  do_vad: false

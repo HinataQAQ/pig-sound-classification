@@ -1,0 +1,40 @@
+experiment_name: cough_silence_panns_head
+
+data:
+  train_manifest: data/manifests_cough_silence/train.csv
+  val_manifest:   data/manifests_cough_silence/val.csv
+  test_manifest:  data/manifests_cough_silence/test.csv
+  labels: ["cough", "other"]
+  segment_seconds: 1.0
+  sample_rate: 32000
+
+preprocess:
+  do_denoise: true
+  do_vad: false
+features:
+  mfcc:
+    n_mfcc: 26
+    n_mels: 64
+    fmin: 50
+    fmax: 8000
+  gfcc:
+    n_gfcc: 32
+    n_filters: 64
+    fmin: 50
+    fmax: 8000
+  include_delta: true
+  include_delta_delta: false
+train:
+  seed: 3407
+  batch_size: 32
+  num_workers: 0
+  epochs: 5
+  lr: 1.0e-3
+  weight_decay: 1.0e-5
+  grad_clip: 5.0
+  device: "auto"
+model:
+  type: bilstm
+  hidden_size: 128
+  num_layers: 2
+  dropout: 0.0

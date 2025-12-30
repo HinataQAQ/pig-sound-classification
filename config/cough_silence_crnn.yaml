@@ -1,0 +1,47 @@
+experiment_name: cough_silence_crnn_logmel
+
+data:
+  train_manifest: data/manifests_cough_silence/train.csv
+  val_manifest:   data/manifests_cough_silence/val.csv
+  test_manifest:  data/manifests_cough_silence/test.csv
+  labels: ["cough", "other"]
+  segment_seconds: 1.0
+  sample_rate: 32000
+
+logmel:
+  n_mels: 64
+  fmin: 50
+  fmax: 8000
+  hop_ms: 10.0
+  win_ms: 25.0
+  n_fft: 1024
+  use_specaug: True
+
+  # 新增：ref_mode 决定 power_to_db 的参照方式
+  # max  = ref=np.max（每条音频按自身峰值归一，容易抹掉能量差）
+  # fixed= ref=db_ref（固定参考，保留绝对能量差，咳嗽vs静音更好分）
+  ref_mode: fixed
+  db_ref: 1.0
+  top_db: 80.0
+
+
+train:
+  seed: 3407
+  batch_size: 32
+  num_workers: 0
+  epochs: 20
+  lr: 1.0e-3
+  weight_decay: 1.0e-5
+  grad_clip: 5.0
+  device: auto
+
+model:
+  type: crnn
+  cnn_channels: [16, 32, 64]
+  rnn_hidden: 128
+  rnn_layers: 1
+  dropout: 0.2
+
+preprocess:
+  do_denoise: true
+  do_vad: false
