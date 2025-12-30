@@ -1,30 +1,71 @@
-﻿# IDE
-.idea/
-
-# Python常规
+﻿# =========================
+# Python / cache
+# =========================
 __pycache__/
 *.py[cod]
-*.egg-info/
-build/
-dist/
+*.pyd
+*.so
+*.log
+.ipynb_checkpoints/
+.pytest_cache/
+.mypy_cache/
 
-# 虚拟环境
+# =========================
+# Virtual env
+# =========================
 .venv/
-env/
 venv/
+ENV/
+env/
 
-# 数据与模型（按你项目约定）
+# =========================
+# JetBrains / PyCharm
+# 默认不上传 .idea（机器相关）
+# 但如果你想共享“运行配置”，可以只保留 runConfigurations
+# =========================
+.idea/*
+!.idea/runConfigurations/
+!.idea/runConfigurations/**
+
+# （某些新版 JetBrains 用 .run/ 保存运行配置）
+.run/
+
+# =========================
+# OS junk
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Data (VERY IMPORTANT)
+# 你的音频/大数据不要进仓库
+# =========================
 data/raw/
 data/processed/
+data/external/
+data/embeddings*/
+data/**/audio/
+data/**/*.wav
+data/**/*.flac
+data/**/*.mp3
+
+# 但 manifests（小csv）要保留
+!data/manifests*/**/*.csv
+!data/manifests*/**/*.txt
+
+# =========================
+# Training outputs
+# =========================
 checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.npz
 
-# 其它大文件
+# 评估输出（你想上传也行；建议先忽略，避免越来越大）
+eval_*.csv
+
+# 大压缩包
 *.zip
-
-data/
-
-checkpoints/
-
-eval_predictions.csv
-
-*.zip
+*.7z
+*.rar
