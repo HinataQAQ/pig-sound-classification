@@ -1,3 +1,4 @@
+# src/train_crnn.py
 import os
 import argparse
 import random
@@ -13,8 +14,7 @@ from tqdm import tqdm
 from src.dataset_logmel import LogMelDataset
 from src.models.crnn import CRNNClassifier
 
-
-# Windows 下常见 OMP 冲突的临时绕过（你之前遇到过 OMP Error #15）
+# Windows OMP 冲突临时绕过（你遇到过 OMP Error #15）
 os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 
 
@@ -50,6 +50,7 @@ def evaluate(model, dl, device, num_classes: int):
     for x, y in tqdm(dl, desc="[valid]", leave=False):
         x = x.to(device)
         y = y.to(device)
+
         logits = model(x)
         loss = crit(logits, y)
 
@@ -63,9 +64,9 @@ def evaluate(model, dl, device, num_classes: int):
     y_pred = torch.cat(all_pred).numpy()
     y_true = torch.cat(all_true).numpy()
 
-    acc = (y_pred == y_true).mean()
+    acc = float((y_pred == y_true).mean())
 
-    # macro-f1（自己算，避免 torchmetrics 依赖问题）
+    # macro-f1
     f1s = []
     for c in range(num_classes):
         tp = np.sum((y_true == c) & (y_pred == c))
@@ -78,7 +79,7 @@ def evaluate(model, dl, device, num_classes: int):
     macro_f1 = float(np.mean(f1s))
 
     avg_loss = total_loss / max(1, total_n)
-    return float(acc), float(macro_f1), float(avg_loss)
+    return acc, macro_f1, float(avg_loss)
 
 
 def main():
@@ -92,21 +93,29 @@ def main():
     labels = cfg["data"]["labels"]
     num_classes = len(labels)
 
-    # datasets
+    logmel_cfg = cfg.get("logmel", {})
+    preprocess_cfg = cfg.get("preprocess", {})
+
     ds_tr = LogMelDataset(
         manifest_path=cfg["data"]["train_manifest"],
         labels=labels,
         sr=int(cfg["data"]["sample_rate"]),
         segment_seconds=float(cfg["data"]["segment_seconds"]),
         n_mels=int(cfg["logmel"]["n_mels"]),
-        fmin=int(cfg["logmel"]["fmin"]),
-        fmax=int(cfg["logmel"]["fmax"]),
+        fmin=float(cfg["logmel"]["fmin"]),
+        fmax=float(cfg["logmel"]["fmax"]),
         hop_ms=float(cfg["logmel"]["hop_ms"]),
         win_ms=float(cfg["logmel"]["win_ms"]),
         n_fft=int(cfg["logmel"]["n_fft"]),
-        use_specaug=bool(cfg["logmel"]["use_specaug"]),
+        use_specaug=bool(cfg["logmel"].get("use_specaug", False)),
+        specaug=cfg["logmel"].get("specaug", {}),
         seed=int(cfg["train"]["seed"]),
         train=True,
+        do_denoise=bool(cfg.get("preprocess", {}).get("do_denoise", False)),
+        ref_mode=str(cfg["logmel"].get("ref_mode", "fixed")),
+        db_ref=float(cfg["logmel"].get("db_ref", 1.0)),
+        top_db=float(cfg["logmel"].get("top_db", 80.0)),
+        cmvn=str(cfg["logmel"].get("cmvn", "none")),
     )
 
     ds_va = LogMelDataset(
@@ -115,14 +124,19 @@ def main():
         sr=int(cfg["data"]["sample_rate"]),
         segment_seconds=float(cfg["data"]["segment_seconds"]),
         n_mels=int(cfg["logmel"]["n_mels"]),
-        fmin=int(cfg["logmel"]["fmin"]),
-        fmax=int(cfg["logmel"]["fmax"]),
+        fmin=float(cfg["logmel"]["fmin"]),
+        fmax=float(cfg["logmel"]["fmax"]),
         hop_ms=float(cfg["logmel"]["hop_ms"]),
         win_ms=float(cfg["logmel"]["win_ms"]),
         n_fft=int(cfg["logmel"]["n_fft"]),
         use_specaug=False,
         seed=int(cfg["train"]["seed"]),
         train=False,
+        do_denoise=bool(cfg.get("preprocess", {}).get("do_denoise", False)),
+        ref_mode=str(cfg["logmel"].get("ref_mode", "fixed")),
+        db_ref=float(cfg["logmel"].get("db_ref", 1.0)),
+        top_db=float(cfg["logmel"].get("top_db", 80.0)),
+        cmvn=str(cfg["logmel"].get("cmvn", "none")),
     )
 
     dl_tr = DataLoader(
@@ -139,14 +153,14 @@ def main():
         num_workers=int(cfg["train"]["num_workers"]),
     )
 
-    # model
+    model_cfg = cfg.get("model", {})
     model = CRNNClassifier(
-        n_mels=int(cfg["logmel"]["n_mels"]),
+        n_mels=int(logmel_cfg.get("n_mels", 64)),
         num_classes=num_classes,
-        cnn_channels=tuple(cfg["model"]["cnn_channels"]),
-        rnn_hidden=int(cfg["model"]["rnn_hidden"]),
-        rnn_layers=int(cfg["model"]["rnn_layers"]),
-        dropout=float(cfg["model"]["dropout"]),
+        cnn_channels=tuple(model_cfg.get("cnn_channels", (16, 32, 64))),
+        rnn_hidden=int(model_cfg.get("rnn_hidden", 128)),
+        rnn_layers=int(model_cfg.get("rnn_layers", 2)),
+        dropout=float(model_cfg.get("dropout", 0.1)),
     ).to(device)
 
     crit = nn.CrossEntropyLoss()
@@ -176,7 +190,7 @@ def main():
             loss = crit(logits, y)
             loss.backward()
 
-            gc = float(cfg["train"]["grad_clip"])
+            gc = float(cfg["train"].get("grad_clip", 0.0))
             if gc and gc > 0:
                 torch.nn.utils.clip_grad_norm_(model.parameters(), gc)
 
