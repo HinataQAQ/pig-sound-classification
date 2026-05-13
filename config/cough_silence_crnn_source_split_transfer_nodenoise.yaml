@@ -1,0 +1,47 @@
+experiment_name: cough_silence_crnn_source_split_transfer_nodenoise
+
+data:
+  train_manifest: data/manifests_source_split/train.csv
+  val_manifest: data/manifests_source_split/val.csv
+  test_manifest: data/manifests_source_split/test.csv
+  labels: ["cough", "other"]
+  segment_seconds: 1.0
+  sample_rate: 32000
+
+preprocess:
+  do_denoise: true
+
+logmel:
+  n_mels: 64
+  fmin: 50
+  fmax: 8000
+  hop_ms: 10.0
+  win_ms: 25.0
+  n_fft: 1024
+  ref_mode: fixed
+  db_ref: 1.0
+  top_db: 80.0
+  cmvn: none
+
+  use_specaug: false
+  specaug:
+    time_ratio: 0.05
+    freq_ratio: 0.05
+    num_time_masks: 1
+    num_freq_masks: 1
+
+model:
+  cnn_channels: [16, 32, 64]
+  rnn_hidden: 128
+  rnn_layers: 2
+  dropout: 0.0
+
+train:
+  seed: 3407
+  batch_size: 32
+  num_workers: 0
+  epochs: 20
+  lr: 5.0e-4
+  weight_decay: 1.0e-5
+  grad_clip: 5.0
+  device: auto

@@ -1,0 +1,47 @@
+experiment_name: korea_subtype_crnn_logmel_clean
+
+data:
+  train_manifest: data/manifests_korea_subtype_clean/train.csv
+  val_manifest: data/manifests_korea_subtype_clean/val.csv
+  test_manifest: data/manifests_korea_subtype_clean/test.csv
+  labels: ["dry_cough", "abdominal_cough"]
+  segment_seconds: 1.0
+  sample_rate: 32000
+
+preprocess:
+  do_denoise: false
+
+logmel:
+  n_mels: 64
+  fmin: 50
+  fmax: 8000
+  hop_ms: 10.0
+  win_ms: 25.0
+  n_fft: 1024
+  ref_mode: fixed
+  db_ref: 1.0
+  top_db: 80.0
+  cmvn: none
+
+  use_specaug: true
+  specaug:
+    time_ratio: 0.05
+    freq_ratio: 0.05
+    num_time_masks: 1
+    num_freq_masks: 1
+
+model:
+  cnn_channels: [16, 32, 64]
+  rnn_hidden: 128
+  rnn_layers: 2
+  dropout: 0.0
+
+train:
+  seed: 3407
+  batch_size: 32
+  num_workers: 2
+  epochs: 20
+  lr: 1.0e-3
+  weight_decay: 1.0e-5
+  grad_clip: 5.0
+  device: auto

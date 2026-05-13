@@ -1,0 +1,26 @@
+{
+  "test_acc": 1.0,
+  "test_macro_f1": 1.0,
+  "confusion": [
+    [
+      35,
+      0,
+      0
+    ],
+    [
+      0,
+      35,
+      0
+    ],
+    [
+      0,
+      0,
+      35
+    ]
+  ],
+  "labels": [
+    "cough",
+    "grunt_oink",
+    "stress_vocal"
+  ]
+}

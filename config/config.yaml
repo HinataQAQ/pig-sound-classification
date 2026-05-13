@@ -1,15 +1,32 @@
-experiment_name: pig_bilstm_mfcc_gfcc
+experiment_name: pig_bilstm_mfcc_gfcc_vad
+
 data:
   audio_root: data/raw
-  train_manifest: data/manifests/train.csv
-  val_manifest: data/manifests/val.csv
-  test_manifest:  data/manifests/test.csv
-  labels: ['cough', 'other']
+  train_manifest: data/manifests_cough_silence/train.csv
+  val_manifest: data/manifests_cough_silence/val.csv
+  test_manifest: data/manifests_cough_silence/test.csv
+  labels: ["cough", "other"]
   segment_seconds: 1.0
   sample_rate: 16000
+
 preprocess:
   do_denoise: true
-  do_vad: false
+  do_vad: true
+  vad:
+    frame_ms: 25.0
+    hop_ms: 10.0
+    n_fft: 1024
+    n_mels: 64
+    fmin: 50
+    fmax: 8000
+    band_fmin: 600
+    band_fmax: 3000
+    score_threshold: 1.2
+    min_event_ms: 80.0
+    merge_gap_ms: 120.0
+    prepad_ms: 80.0
+    postpad_ms: 150.0
+
 features:
   mfcc:
     n_mfcc: 26
@@ -23,6 +40,8 @@ features:
     fmax: 8000
   include_delta: true
   include_delta_delta: false
+  cmvn: utt
+
 train:
   seed: 3407
   batch_size: 32
@@ -31,9 +50,17 @@ train:
   lr: 1.0e-3
   weight_decay: 1.0e-5
   grad_clip: 5.0
-  device: "auto"
+  device: auto
+
 model:
   type: bilstm
   hidden_size: 128
   num_layers: 2
   dropout: 0.2
+
+infer:
+  window_hop_seconds: 0.25
+  prob_threshold: 0.65
+  merge_gap_seconds: 0.25
+  min_event_seconds: 0.15
+  out_dir: infer_outputs

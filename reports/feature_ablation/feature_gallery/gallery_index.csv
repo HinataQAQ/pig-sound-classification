@@ -1,0 +1,17 @@
+﻿label,feature,source_audio,image
+cough,logmel,data/processed/cough_silence_binary/cough/aswine_ALA_E_2_2020-09-30_02-33-57_095_t0000025000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\00_cough_logmel.png
+cough,pcenmel,data/processed/cough_silence_binary/cough/aswine_ALA_E_2_2020-09-30_02-33-57_095_t0000025000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\00_cough_pcenmel.png
+cough,mfcc,data/processed/cough_silence_binary/cough/aswine_ALA_E_2_2020-09-30_02-33-57_095_t0000025000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\00_cough_mfcc.png
+cough,logstft,data/processed/cough_silence_binary/cough/aswine_ALA_E_2_2020-09-30_02-33-57_095_t0000025000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\00_cough_logstft.png
+cough,logmel,data/processed/cough_silence_binary/cough/aswine_ALA_E_2_2020-09-30_08-04-19_788_t0000005000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\01_cough_logmel.png
+cough,pcenmel,data/processed/cough_silence_binary/cough/aswine_ALA_E_2_2020-09-30_08-04-19_788_t0000005000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\01_cough_pcenmel.png
+cough,mfcc,data/processed/cough_silence_binary/cough/aswine_ALA_E_2_2020-09-30_08-04-19_788_t0000005000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\01_cough_mfcc.png
+cough,logstft,data/processed/cough_silence_binary/cough/aswine_ALA_E_2_2020-09-30_08-04-19_788_t0000005000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\01_cough_logstft.png
+other,logmel,data/processed/cough_silence_binary/other/aswine_ALA_E_2_2020-09-30_05-52-11_272_t0000358000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\02_other_logmel.png
+other,pcenmel,data/processed/cough_silence_binary/other/aswine_ALA_E_2_2020-09-30_05-52-11_272_t0000358000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\02_other_pcenmel.png
+other,mfcc,data/processed/cough_silence_binary/other/aswine_ALA_E_2_2020-09-30_05-52-11_272_t0000358000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\02_other_mfcc.png
+other,logstft,data/processed/cough_silence_binary/other/aswine_ALA_E_2_2020-09-30_05-52-11_272_t0000358000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\02_other_logstft.png
+other,logmel,data/processed/cough_silence_binary/other/aswine_ALA_E_2_2020-09-30_02-51-58_296_t0000309000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\03_other_logmel.png
+other,pcenmel,data/processed/cough_silence_binary/other/aswine_ALA_E_2_2020-09-30_02-51-58_296_t0000309000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\03_other_pcenmel.png
+other,mfcc,data/processed/cough_silence_binary/other/aswine_ALA_E_2_2020-09-30_02-51-58_296_t0000309000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\03_other_mfcc.png
+other,logstft,data/processed/cough_silence_binary/other/aswine_ALA_E_2_2020-09-30_02-51-58_296_t0000309000.wav,C:\py\pigsound\pig-sound-classification\reports\feature_ablation\feature_gallery\03_other_logstft.png

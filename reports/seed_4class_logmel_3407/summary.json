@@ -1,0 +1,41 @@
+{
+  "feature_mode": "logmel",
+  "use_se": true,
+  "seed": 3407,
+  "best_val_macro_f1": 0.949874686716792,
+  "best_epoch": 30,
+  "test_acc": 0.95,
+  "test_macro_f1": 0.95,
+  "confusion": [
+    [
+      20,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      20,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      18,
+      2
+    ],
+    [
+      0,
+      0,
+      2,
+      18
+    ]
+  ],
+  "labels": [
+    "cough",
+    "calm_grunt",
+    "feeding",
+    "stress_vocal"
+  ]
+}

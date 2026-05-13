@@ -1,0 +1,41 @@
+{
+  "feature_mode": "mel_mfcc_dyn_flux",
+  "use_se": true,
+  "seed": 3407,
+  "best_val_macro_f1": 0.924812030075188,
+  "best_epoch": 11,
+  "test_acc": 0.925,
+  "test_macro_f1": 0.924812030075188,
+  "confusion": [
+    [
+      20,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      20,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      18,
+      2
+    ],
+    [
+      0,
+      0,
+      4,
+      16
+    ]
+  ],
+  "labels": [
+    "cough",
+    "calm_grunt",
+    "feeding",
+    "stress_vocal"
+  ]
+}

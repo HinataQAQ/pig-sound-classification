@@ -1,0 +1,41 @@
+{
+  "feature_mode": "mctafd",
+  "use_se": false,
+  "seed": 1234,
+  "best_val_macro_f1": 0.9622878692646134,
+  "best_epoch": 29,
+  "test_acc": 0.9125,
+  "test_macro_f1": 0.9124452782989367,
+  "confusion": [
+    [
+      20,
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      20,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      17,
+      3
+    ],
+    [
+      0,
+      0,
+      4,
+      16
+    ]
+  ],
+  "labels": [
+    "cough",
+    "calm_grunt",
+    "feeding",
+    "stress_vocal"
+  ]
+}

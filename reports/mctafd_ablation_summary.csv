@@ -1,0 +1,13 @@
+﻿experiment,feature_mode,use_se,seed,best_epoch,best_val_macro_f1,test_acc,test_macro_f1
+ablation_3class_logmel,logmel,True,3407,6,1.0,1.0,1.0
+ablation_3class_mctafd,mctafd,True,3407,6,1.0,0.9904761904761905,0.9904742464448527
+ablation_3class_mctafd_no_se,mctafd,False,3407,7,1.0,1.0,1.0
+ablation_3class_mel_mfcc,mel_mfcc,True,3407,5,1.0,0.9904761904761905,0.9904742464448527
+ablation_3class_mel_mfcc_dyn,mel_mfcc_dyn,True,3407,6,1.0,1.0,1.0
+ablation_3class_mel_mfcc_dyn_flux,mel_mfcc_dyn_flux,True,3407,8,1.0,1.0,1.0
+ablation_4class_logmel,logmel,True,3407,28,0.9370988446726572,0.9375,0.9371464487743557
+ablation_4class_mctafd,mctafd,True,3407,22,0.95,0.9375,0.9371464487743557
+ablation_4class_mctafd_no_se,mctafd,False,3407,34,0.9624765478424016,0.95,0.949874686716792
+ablation_4class_mel_mfcc,mel_mfcc,True,3407,11,0.9371464487743557,0.875,0.87468671679198
+ablation_4class_mel_mfcc_dyn,mel_mfcc_dyn,True,3407,3,0.8989860941080454,0.9,0.8976982097186701
+ablation_4class_mel_mfcc_dyn_flux,mel_mfcc_dyn_flux,True,3407,11,0.924812030075188,0.925,0.924812030075188

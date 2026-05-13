@@ -21,6 +21,7 @@ os.environ.setdefault("KMP_DUPLICATE_LIB_OK", "TRUE")
 def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", type=str, default="config/cough_silence_crnn.yaml")
+    ap.add_argument("--init_ckpt", type=str, default=None)
     return ap.parse_args()
 
 
@@ -162,6 +163,20 @@ def main():
         rnn_layers=int(model_cfg.get("rnn_layers", 2)),
         dropout=float(model_cfg.get("dropout", 0.1)),
     ).to(device)
+
+    if args.init_ckpt:
+        ckpt = torch.load(args.init_ckpt, map_location=device)
+        src_state = ckpt["state_dict"]
+        tgt_state = model.state_dict()
+
+        usable = {
+            k: v for k, v in src_state.items()
+            if k in tgt_state and tgt_state[k].shape == v.shape
+        }
+
+        model.load_state_dict(usable, strict=False)
+        print(f"[INIT] loaded pretrained weights from {args.init_ckpt}")
+        print(f"[INIT] usable tensors = {len(usable)}")
 
     crit = nn.CrossEntropyLoss()
     opt = optim.AdamW(

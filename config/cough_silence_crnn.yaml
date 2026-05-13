@@ -1,7 +1,7 @@
 experiment_name: cough_silence_crnn_logmel
 
 data:
-  train_manifest: data/manifests_cough_silence/train.csv
+  train_manifest: data/manifests_round2_review/train_with_round1_other_and_cough_clean.csv
   val_manifest:   data/manifests_cough_silence/val.csv
   test_manifest:  data/manifests_cough_silence/test.csv
   labels: ["cough", "other"]

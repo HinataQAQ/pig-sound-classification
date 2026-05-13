@@ -1,0 +1,2 @@
+﻿filepath,label,error
+C:\py\pigsound\pig-sound-classification\data\external\korea_raw\abdominal_cough\train_abdominal_06977.wav,cough,RuntimeError('zero-length audio')

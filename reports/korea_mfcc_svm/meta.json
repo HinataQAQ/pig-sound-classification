@@ -1,0 +1,7 @@
+{
+  "sr": 32000,
+  "n_mfcc": 20,
+  "n_fft": 1024,
+  "hop_length": 320,
+  "win_length": 800
+}

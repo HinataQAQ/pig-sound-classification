@@ -1,0 +1,9 @@
+﻿filepath,label,error
+C:\py\pigsound\pig-sound-classification\data\external\korea_raw\abdominal_cough\train_abdominal_07230.wav,abdominal_cough,RuntimeError('zero-length audio')
+C:\py\pigsound\pig-sound-classification\data\external\korea_raw\abdominal_cough\train_abdominal_11545.wav,abdominal_cough,RuntimeError('zero-length audio')
+C:\py\pigsound\pig-sound-classification\data\external\korea_raw\abdominal_cough\train_abdominal_11542.wav,abdominal_cough,RuntimeError('zero-length audio')
+C:\py\pigsound\pig-sound-classification\data\external\korea_raw\abdominal_cough\train_abdominal_07225.wav,abdominal_cough,RuntimeError('zero-length audio')
+C:\py\pigsound\pig-sound-classification\data\external\korea_raw\abdominal_cough\train_abdominal_02036.wav,abdominal_cough,RuntimeError('zero-length audio')
+C:\py\pigsound\pig-sound-classification\data\external\korea_raw\abdominal_cough\train_abdominal_16078.wav,abdominal_cough,RuntimeError('zero-length audio')
+C:\py\pigsound\pig-sound-classification\data\external\korea_raw\abdominal_cough\train_abdominal_03017.wav,abdominal_cough,RuntimeError('zero-length audio')
+C:\py\pigsound\pig-sound-classification\data\external\korea_raw\abdominal_cough\train_abdominal_00259.wav,abdominal_cough,RuntimeError('zero-length audio')
