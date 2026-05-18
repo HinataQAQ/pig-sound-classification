@@ -11,6 +11,7 @@ patterns = [
     "ablation_*",
     "seed_*",
     "logmel_param_*",
+    "final_*",
     "large_*",
 ]
 
