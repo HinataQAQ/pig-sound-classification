@@ -229,6 +229,13 @@ class PigVocalFeatureDataset(Dataset):
         sr=32000,
         dur_s=1.0,
         cache=True,
+        n_mels=64,
+        n_mfcc=20,
+        n_fft=1024,
+        hop_length=320,
+        win_length=800,
+        fmin=50,
+        fmax=8000,
     ):
         self.df = pd.read_csv(manifest)
         self.path_col = infer_path_col(self.df)
@@ -242,6 +249,15 @@ class PigVocalFeatureDataset(Dataset):
         self.dur_s = dur_s
         self.cache = cache
         self._cache = {}
+
+        # Feature parameters
+        self.n_mels = n_mels
+        self.n_mfcc = n_mfcc
+        self.n_fft = n_fft
+        self.hop_length = hop_length
+        self.win_length = win_length
+        self.fmin = fmin
+        self.fmax = fmax
 
         self.df[self.label_col] = self.df[self.label_col].astype(str).str.strip().str.lower()
 
@@ -266,7 +282,18 @@ class PigVocalFeatureDataset(Dataset):
         label = str(row[self.label_col]).strip().lower()
 
         y, sr = load_audio_soundfile(path, sr=self.sr, dur_s=self.dur_s)
-        x = make_feature(y, feature_mode=self.feature_mode, sr=sr)
+        x = make_feature(
+            y,
+            feature_mode=self.feature_mode,
+            sr=sr,
+            n_mels=self.n_mels,
+            n_mfcc=self.n_mfcc,
+            n_fft=self.n_fft,
+            hop_length=self.hop_length,
+            win_length=self.win_length,
+            fmin=self.fmin,
+            fmax=self.fmax,
+        )
 
         x = torch.from_numpy(x).float()
         yid = torch.tensor(self.label2id[label], dtype=torch.long)
@@ -408,6 +435,7 @@ def main():
     ap.add_argument("--n_fft", type=int, default=1024)
     ap.add_argument("--hop_length", type=int, default=320)
     ap.add_argument("--win_length", type=int, default=800)
+    ap.add_argument("--n_mfcc", type=int, default=20)
     ap.add_argument("--feature_mode", required=True, choices=[
         "logmel",
         "mel_mfcc",
@@ -457,6 +485,13 @@ def main():
         sr=args.sr,
         dur_s=args.dur_s,
         cache=True,
+        n_mels=args.n_mels,
+        n_mfcc=args.n_mfcc,
+        n_fft=args.n_fft,
+        hop_length=args.hop_length,
+        win_length=args.win_length,
+        fmin=args.fmin,
+        fmax=args.fmax,
     )
 
     ds_val = PigVocalFeatureDataset(
@@ -466,6 +501,13 @@ def main():
         sr=args.sr,
         dur_s=args.dur_s,
         cache=True,
+        n_mels=args.n_mels,
+        n_mfcc=args.n_mfcc,
+        n_fft=args.n_fft,
+        hop_length=args.hop_length,
+        win_length=args.win_length,
+        fmin=args.fmin,
+        fmax=args.fmax,
     )
 
     ds_test = PigVocalFeatureDataset(
@@ -475,6 +517,13 @@ def main():
         sr=args.sr,
         dur_s=args.dur_s,
         cache=True,
+        n_mels=args.n_mels,
+        n_mfcc=args.n_mfcc,
+        n_fft=args.n_fft,
+        hop_length=args.hop_length,
+        win_length=args.win_length,
+        fmin=args.fmin,
+        fmax=args.fmax,
     )
 
     print("[INFO] train =", len(ds_train))
@@ -636,6 +685,17 @@ def main():
         "feature_mode": args.feature_mode,
         "use_se": not args.no_se,
         "seed": args.seed,
+
+        "n_mels": args.n_mels,
+        "n_mfcc": args.n_mfcc,
+        "fmin": args.fmin,
+        "fmax": args.fmax,
+        "n_fft": args.n_fft,
+        "hop_length": args.hop_length,
+        "win_length": args.win_length,
+        "sr": args.sr,
+        "dur_s": args.dur_s,
+
         "best_val_macro_f1": float(best_val),
         "best_epoch": int(best_epoch),
         "test_acc": float(test_acc),
