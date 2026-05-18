@@ -1,4 +1,4 @@
-﻿# Python
+﻿# Python cache
 __pycache__/
 *.pyc
 *.pyo
@@ -11,9 +11,10 @@ venv/
 env/
 *.egg-info/
 
-# Large audio data
+# Audio / raw data
 data/raw/
 data/external/
+data/audio/
 *.wav
 *.mp3
 *.flac
@@ -25,7 +26,12 @@ checkpoints/
 *.pth
 *.ckpt
 
-# Cache / logs
+# Large archives
+*.zip
+*.7z
+*.rar
+
+# Logs and cache
 .cache/
 runs/
 wandb/
