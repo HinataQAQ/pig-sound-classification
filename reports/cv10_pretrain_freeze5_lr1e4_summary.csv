@@ -1,0 +1,2 @@
+﻿model,n,mean_macro_f1,std_macro_f1,min_macro_f1,max_macro_f1,mean_best_val,mean_best_epoch
+logmel_pretrain_freeze5_lr1e4,30,0.9155452512838853,0.027022324202916552,0.8485576923076923,0.9642654566080544,0.9386574605108476,18.566666666666666

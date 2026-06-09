@@ -1,0 +1,2 @@
+﻿stage1_variant,expert_model,n_runs,stage1_mean_macro_f1,stage1_std_macro_f1,stage2_mean_macro_f1,stage2_std_macro_f1,mean_delta,ci95_low,ci95_high,wilcoxon_p,mean_replaced
+baseline,mctafd_no_se_gated,30,0.9177032995794675,0.018437332588740602,0.9156058113830101,0.021652509151615592,-0.002097488196457431,-0.010264664910437248,0.004548085820970617,0.7467728301676954,41.766666666666666
