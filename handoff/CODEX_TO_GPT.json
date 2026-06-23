@@ -1,0 +1,15 @@
+{
+  "status": "completed",
+  "branch": "current-mctafd-ablation",
+  "commit": "",
+  "task": "",
+  "paper_usable": false,
+  "feature_backend": "",
+  "metrics": {},
+  "leakage_audit": {},
+  "changed_files": [],
+  "outputs": [],
+  "failed_checks": [],
+  "questions": [],
+  "recommended_next_step": ""
+}
