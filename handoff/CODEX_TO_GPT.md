@@ -29,7 +29,7 @@ prototype-exact-review
 - main prototype Macro-F1: 0.946360153256705
 - hierarchical prototype Macro-F1: 0.9522727272727273
 - auxiliary prototype Macro-F1: 0.8355042016806723
-- selected ECE / Brier / NLL: 0.03415388188191824 / 0.07725942134857178 / 0.1203778013586998
+- selected ECE / Brier / NLL: 0.034153742094834655 / 0.07724517583847046 / 0.12035306543111801
 
 ## Follow-up Fixes
 - Calibration is split by method. `raw_softmax` is uncalibrated,
@@ -45,6 +45,20 @@ prototype-exact-review
 - Prototype construction fails when any main or auxiliary class has zero count.
 - Checkpoint relocation and unsafe SHA mismatch bypass are separate flags.
 - Atlas heatmaps are labelled as normalized Log-Mel maps.
+- Calibration now verifies supplied validation manifest SHA256 against prototype
+  metadata, so same-path content edits fail.
+- Frozen test prediction now verifies supplied test manifest SHA256 against
+  prototype metadata.
+- `--test_manifest`, `--manifest`, and `--audio` are distinct input roles.
+  Only `input_role=frozen_test` may enter formal evaluation.
+- Build, calibration, prediction, Softmax reproduction, and evaluation outputs
+  now generate qualification fields: `feature_pipeline_equivalent`,
+  `single_fold_debug`, `eligible_for_cv_aggregation`, `paper_main_result`, and
+  `feature_backend`.
+- Prediction parameter restoration now uses explicit `is None` checks so
+  legitimate `0.0` values are preserved.
+- Path identity normalization now folds `.`, `..`, repeated slashes, backslash
+  variants, and Windows case.
 
 ## Data Separation Audit
 - prototype source: fold0 train manifest only
@@ -57,6 +71,13 @@ prototype-exact-review
 - The paper-equivalent path uses the training-exact feature backend.
 - Probability max absolute drift versus reference test_pred.csv is recorded as
   advisory: 0.0009449124336242676.
+- CPU was used for the final one-fold debug rerun because `--device auto`
+  selected a CUDA path that stayed CPU-bound and did not complete in 35 minutes
+  on this workstation. The feature backend remained `training_exact`.
+- Negative tests passed: modified validation manifest content failed
+  calibration by SHA; modified frozen test manifest content failed prediction by
+  SHA; `numpy_logmel` qualification flags are non-paper-equivalent and not
+  eligible for CV aggregation.
 - No checkpoint, audio, NPZ, embedding, or cache files should be included in the
   review commit.
 

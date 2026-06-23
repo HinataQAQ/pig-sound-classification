@@ -1,6 +1,10 @@
-﻿{
+{
   "artifact_type": "hier_exact_softmax_reproduction",
-  "created_at_utc": "2026-06-23T12:09:49.927896+00:00",
+  "created_at_utc": "2026-06-23T13:04:51.884864+00:00",
+  "feature_pipeline_equivalent": true,
+  "single_fold_debug": true,
+  "eligible_for_cv_aggregation": true,
+  "paper_main_result": false,
   "feature_backend": "training_exact",
   "softmax_reproduction_passed": true,
   "reference_macro_f1": 0.946360153256705,
@@ -67,7 +71,7 @@
     "feature_config_hash": "ab208fa867ade80c585059fdaca0523d5fa82c279bbce240b75a07165cb45b94"
   },
   "package_runtime": {
-    "sys_executable": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe",
+    "sys_executable": "<CONDA_ENV>\\python.exe",
     "python": "3.10.20 | packaged by Anaconda, Inc. | (main, Mar 11 2026, 17:42:35) [MSC v.1942 64 bit (AMD64)]",
     "NUMBA_CACHE_DIR": "<PROJECT_ROOT>\\.numba_cache"
   },
@@ -81,5 +85,5 @@
     "diff_csv": "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\softmax_reproduction\\softmax_reproduction_diff.csv",
     "sample_alignment_report_csv": "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\softmax_reproduction\\sample_alignment_report.csv"
   },
-  "elapsed_seconds": 2.498821399989538
+  "elapsed_seconds": 1.5260351000033552
 }

@@ -27,15 +27,19 @@ from prototype_model_adapter import (
     method_metrics_table,
     multiclass_metrics,
     parse_csv_floats,
+    path_record,
     prediction_frame,
+    project_relative_path,
     prototype_scores_from_bundle,
     read_json,
     require_file,
+    result_qualification_fields,
     resolve_recorded_file,
     select_per_class_thresholds,
     select_threshold_for_target_coverage,
     temperature_scale_probabilities,
     validate_fold_seed_sources,
+    verify_manifest_matches_metadata,
     write_json,
 )
 
@@ -133,6 +137,7 @@ def main() -> None:
         sha256_key=None,
         description="train manifest from prototype metadata",
     )
+    verify_manifest_matches_metadata(val_manifest, metadata, "val")
     audit = audit_manifest_disjointness({"train": train_manifest, "val": val_manifest})
     assert_no_leakage(audit)
     write_json(out_dir / "leakage_audit.json", audit)
@@ -149,11 +154,6 @@ def main() -> None:
         raise RuntimeError("Checkpoint SHA256 mismatch between prototype metadata and --ckpt.")
     if expected_sha and ckpt_sha != str(expected_sha) and args.unsafe_allow_checkpoint_sha_mismatch:
         print("[WARN] unsafe checkpoint SHA mismatch bypass enabled; do not use this run for paper results.")
-    if metadata.get("val_manifest") and not same_resolved_path(metadata["val_manifest"], val_manifest):
-        raise RuntimeError(
-            f"Validation manifest mismatch. Prototype metadata expects {metadata['val_manifest']}, got {val_manifest}."
-        )
-
     fold = int(metadata["fold"])
     seed = int(metadata["seed"])
     validate_fold_seed_sources(
@@ -169,6 +169,7 @@ def main() -> None:
 
     config = config_from_summary(metadata["model_config"])
     feature_backend = str(metadata.get("feature_backend", "librosa")) if args.feature_backend == "auto" else args.feature_backend
+    qualification = result_qualification_fields(feature_backend, fold=fold, seed=seed)
     device = resolve_device(args.device)
     model = load_hier_model(ckpt, config, device=device)
     ds_val = build_hier_dataset(val_manifest, config, feature_backend=feature_backend)
@@ -478,10 +479,23 @@ def main() -> None:
         "train_manifest_sha256": file_sha256(train_manifest),
         "val_manifest": str(val_manifest.resolve()),
         "val_manifest_sha256": file_sha256(val_manifest),
+        "project_relative_paths": {
+            "prototype_bundle": project_relative_path(bundle_path),
+            "checkpoint": project_relative_path(ckpt),
+            "train_manifest": project_relative_path(train_manifest),
+            "val_manifest": project_relative_path(val_manifest),
+        },
+        "paths": {
+            "prototype_bundle": path_record(bundle_path),
+            "checkpoint": path_record(ckpt),
+            "train_manifest": path_record(train_manifest),
+            "val_manifest": path_record(val_manifest),
+        },
         "fold": fold,
         "seed": seed,
         "model_config": metadata["model_config"],
         "feature_backend": feature_backend,
+        **qualification,
         "allow_relocated_checkpoint": bool(args.allow_relocated_checkpoint),
         "unsafe_allow_checkpoint_sha_mismatch": bool(args.unsafe_allow_checkpoint_sha_mismatch),
         "selection_method": selection_method,

@@ -30,6 +30,7 @@ from prototype_model_adapter import (
     prototype_probabilities_from_bundle,
     prototype_sample_frame,
     require_file,
+    result_qualification_fields,
     save_prototype_bundle,
     training_exact_feature_config,
     validate_expected_config,
@@ -219,6 +220,11 @@ def main() -> None:
             "hop_length": config.hop_length,
             "win_length": config.win_length,
         }
+    qualification = result_qualification_fields(
+        feature_params["feature_backend"],
+        fold=fold,
+        seed=seed,
+    )
     created_at = datetime.now(timezone.utc).isoformat()
     metadata = {
         "artifact_type": "hier_acoustic_prototype_bundle",
@@ -258,6 +264,7 @@ def main() -> None:
         "input_hashes": hashes,
         "model_config": config_to_jsonable(config),
         "feature_backend": feature_params["feature_backend"],
+        **qualification,
         "feature_params": feature_params,
         "feature_config_hash": feature_config_hash(feature_params),
         "dur_s": float(config.dur_s),
@@ -382,6 +389,7 @@ def main() -> None:
         },
         "no_test_tuning": True,
         "unknown_detection_claim": False,
+        **qualification,
     }
     run_manifest_path = out_root / "run_manifest.json"
     assert_new_file(run_manifest_path, args.allow_overwrite)

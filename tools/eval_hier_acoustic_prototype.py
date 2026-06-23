@@ -17,6 +17,7 @@ from prototype_model_adapter import (
     multiclass_metrics,
     read_json,
     require_file,
+    result_qualification_fields,
     write_json,
 )
 
@@ -117,6 +118,17 @@ def main() -> None:
     out_dir = prepare_evaluation_dir(Path(args.out_dir), args.allow_overwrite)
 
     df = pd.read_csv(pred_csv)
+    prediction_metadata_path = pred_csv.parent / "prediction_metadata.json"
+    prediction_metadata: dict[str, Any] = {}
+    if prediction_metadata_path.exists():
+        prediction_metadata = read_json(prediction_metadata_path)
+        input_role = str(prediction_metadata.get("input_role", prediction_metadata.get("input_kind", "")))
+        if input_role and input_role != "frozen_test":
+            raise RuntimeError(
+                f"Evaluation requires frozen_test predictions; got input_role={input_role}."
+            )
+    else:
+        input_role = "frozen_test"
     if df["y_true"].isna().all() or (df["y_true"].astype(str).str.len() == 0).all():
         raise RuntimeError("Evaluation requires labeled manifest predictions, not single-audio predictions.")
     y_true = df["y_true_id"].to_numpy(dtype=np.int64)
@@ -209,6 +221,13 @@ def main() -> None:
         "seed": calibration.get("seed"),
         "labels": labels,
         "aux_labels": aux_labels,
+        **result_qualification_fields(
+            prediction_metadata.get("feature_backend", calibration.get("feature_backend", "training_exact")),
+            fold=calibration.get("fold"),
+            seed=calibration.get("seed"),
+            input_role=input_role,
+        ),
+        "input_role": input_role,
         "selection_method": selected_method,
         "method_best_params": calibration.get("method_best_params", {}),
         "prototype_temperature": calibration.get("prototype_temperature"),

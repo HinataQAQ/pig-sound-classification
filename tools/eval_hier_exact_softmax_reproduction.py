@@ -24,6 +24,7 @@ from prototype_model_adapter import (
     load_hier_model,
     normalize_identity_path,
     require_file,
+    result_qualification_fields,
     training_exact_feature_config,
     validate_expected_config,
     validate_fold_seed_sources,
@@ -236,7 +237,12 @@ def main() -> None:
     summary = {
         "artifact_type": "hier_exact_softmax_reproduction",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
-        "feature_backend": "training_exact",
+        **result_qualification_fields(
+            "training_exact",
+            fold=args.fold,
+            seed=args.seed,
+            input_role="frozen_test",
+        ),
         "softmax_reproduction_passed": pass_status,
         "reference_macro_f1": float(args.expected_macro_f1),
         "reproduced_macro_f1": macro_f1,

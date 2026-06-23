@@ -13,6 +13,7 @@ from prototype_model_adapter import (
     assert_no_leakage,
     audit_manifest_disjointness,
     build_hier_dataset,
+    calibration_float_param,
     config_from_summary,
     extract_embeddings,
     file_sha256,
@@ -21,13 +22,18 @@ from prototype_model_adapter import (
     load_hier_model,
     load_prototype_bundle,
     make_numpy_logmel_feature,
+    path_record,
     prediction_frame,
+    project_relative_path,
     prototype_scores_from_bundle,
     read_json,
     require_file,
+    result_qualification_fields,
     resolve_recorded_file,
+    select_prediction_input_role,
     temperature_scale_probabilities,
     validate_fold_seed_sources,
+    verify_manifest_matches_metadata,
     write_json,
 )
 
@@ -199,10 +205,13 @@ def main() -> None:
     bundle_path = require_file(args.prototype_bundle, "prototype bundle")
     calibration_path = require_file(args.calibration_json, "calibration JSON")
     ckpt = require_file(args.ckpt, "hierarchical checkpoint")
-    manifest_arg = args.manifest or args.test_manifest
-    audio_arg = args.audio
-    if bool(manifest_arg) == bool(audio_arg):
-        raise ValueError("Provide exactly one of --manifest/--test_manifest or --audio.")
+    input_spec = select_prediction_input_role(
+        test_manifest=args.test_manifest,
+        manifest=args.manifest,
+        audio=args.audio,
+    )
+    input_role = input_spec["input_role"]
+    input_path = input_spec["input_path"]
 
     out_dir = prepare_evaluation_dir(Path(args.out_dir), args.allow_overwrite)
 
@@ -210,10 +219,6 @@ def main() -> None:
     bundle_meta = bundle["metadata"]
     calibration = read_json(calibration_path)
 
-    for expected_key, actual in [("prototype_bundle", bundle_path)]:
-        expected = calibration.get(expected_key)
-        if expected and not same_resolved_path(expected, actual):
-            raise RuntimeError(f"{expected_key} mismatch. Calibration expects {expected}, but got {actual}.")
     expected_ckpt = calibration.get("checkpoint_path")
     ckpt_sha = file_sha256(ckpt)
     if expected_ckpt and not same_resolved_path(expected_ckpt, ckpt) and not args.allow_relocated_checkpoint:
@@ -234,10 +239,23 @@ def main() -> None:
         relative_key="train_manifest",
         description="train manifest from prototype metadata",
     )
-    val_manifest = require_file(calibration["val_manifest"], "validation manifest from calibration")
+    val_manifest = resolve_recorded_file(
+        calibration,
+        absolute_key="val_manifest",
+        relative_key="val_manifest",
+        sha256_key="val_manifest_sha256",
+        description="validation manifest from calibration",
+    )
+    verify_file = verify_manifest_matches_metadata
     test_manifest: Path | None = None
-    if manifest_arg:
-        test_manifest = require_file(manifest_arg, "prediction/test manifest")
+    audio_arg = ""
+    if input_role in {"frozen_test", "inference_manifest"}:
+        test_manifest = require_file(
+            input_path,
+            "frozen test manifest" if input_role == "frozen_test" else "inference manifest",
+        )
+    if input_role == "frozen_test":
+        verify_file(test_manifest, bundle_meta, "test")
         audit = audit_manifest_disjointness({"train": train_manifest, "val": val_manifest, "test": test_manifest})
     else:
         audit = audit_manifest_disjointness({"train": train_manifest, "val": val_manifest})
@@ -260,6 +278,12 @@ def main() -> None:
 
     config = config_from_summary(bundle_meta["model_config"])
     feature_backend = str(calibration.get("feature_backend", bundle_meta.get("feature_backend", "librosa"))) if args.feature_backend == "auto" else args.feature_backend
+    qualification = result_qualification_fields(
+        feature_backend,
+        fold=fold,
+        seed=seed,
+        input_role=input_role,
+    )
     device = resolve_device(args.device)
     model = load_hier_model(ckpt, config, device=device)
     if test_manifest is not None:
@@ -271,38 +295,46 @@ def main() -> None:
             batch_size=args.batch_size,
             num_workers=args.num_workers,
         )
-        input_kind = "manifest"
         n_rows = int(len(ds_test))
     else:
+        audio_arg = input_path
         audio_path = require_file(audio_arg, "audio file")
         extracted = extract_single_audio(audio_path, model, config, device=device, feature_backend=feature_backend)
-        input_kind = "audio"
         n_rows = 1
 
     method_best_params = calibration.get("method_best_params", {})
     raw_softmax_probs = extracted["softmax_probs"]
-    calibrated_softmax_temperature = float(
-        method_best_params.get("calibrated_softmax", {}).get("softmax_temperature")
-        or calibration.get("softmax_temperature")
-        or 1.0
+    calibrated_softmax_temperature = calibration_float_param(
+        calibration,
+        "calibrated_softmax",
+        "softmax_temperature",
+        fallback_keys=("softmax_temperature",),
+        default=1.0,
     )
     calibrated_softmax_probs = temperature_scale_probabilities(
         extracted["softmax_probs"],
         calibrated_softmax_temperature,
     )
-    prototype_temperature = float(
-        method_best_params.get("prototype", {}).get("prototype_temperature")
-        or calibration.get("prototype_temperature")
-        or 1.0
+    prototype_temperature = calibration_float_param(
+        calibration,
+        "prototype",
+        "prototype_temperature",
+        fallback_keys=("prototype_temperature", "temperature"),
+        default=1.0,
     )
-    hierarchical_temperature = float(
-        method_best_params.get("hierarchical", {}).get("prototype_temperature")
-        or calibration.get("prototype_temperature")
-        or prototype_temperature
+    hierarchical_temperature = calibration_float_param(
+        calibration,
+        "hierarchical",
+        "prototype_temperature",
+        fallback_keys=("prototype_temperature", "temperature"),
+        default=prototype_temperature,
     )
-    hierarchical_aux_weight = float(
-        method_best_params.get("hierarchical", {}).get("hier_aux_prob_weight")
-        or calibration.get("hier_aux_prob_weight", 0.5)
+    hierarchical_aux_weight = calibration_float_param(
+        calibration,
+        "hierarchical",
+        "hier_aux_prob_weight",
+        fallback_keys=("hier_aux_prob_weight",),
+        default=0.5,
     )
     proto_scores = prototype_scores_from_bundle(
         extracted["embeddings"],
@@ -316,7 +348,13 @@ def main() -> None:
         temperature=hierarchical_temperature,
         hier_aux_weight=hierarchical_aux_weight,
     )
-    fusion_alpha = float(method_best_params.get("fused", {}).get("softmax_weight") or calibration.get("softmax_weight") or 0.0)
+    fusion_alpha = calibration_float_param(
+        calibration,
+        "fused",
+        "softmax_weight",
+        fallback_keys=("softmax_weight",),
+        default=0.0,
+    )
     fused = fuse_probabilities(
         calibrated_softmax_probs,
         hier_scores["hierarchical"],
@@ -341,7 +379,7 @@ def main() -> None:
         aux_proto_probs=hier_scores["aux_prototype"],
         prototype_scores=hier_scores,
     )
-    if input_kind == "audio":
+    if input_role == "single_audio":
         pred["y_true_id"] = ""
         pred["y_true"] = ""
         pred["aux_true_id"] = ""
@@ -385,6 +423,9 @@ def main() -> None:
     pred["known_state_per_class"] = np.where(pred["accept_per_class"], "known", "uncertain")
     pred["reject_label"] = str(calibration.get("reject_label", "uncertain"))
     pred["unknown_detection_claim"] = False
+    pred["input_role"] = input_role
+    for key, value in qualification.items():
+        pred[key] = value
 
     pred_out = out_dir / "test_predictions.csv"
     pred_json = out_dir / "test_predictions.json"
@@ -394,7 +435,8 @@ def main() -> None:
     metadata = {
         "artifact_type": "hier_acoustic_prototype_frozen_predictions",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
-        "input_kind": input_kind,
+        "input_kind": input_role,
+        "input_role": input_role,
         "prototype_bundle": str(bundle_path.resolve()),
         "prototype_bundle_sha256": file_sha256(bundle_path),
         "calibration_json": str(calibration_path.resolve()),
@@ -405,10 +447,29 @@ def main() -> None:
         "val_manifest": str(val_manifest.resolve()),
         "test_manifest": str(test_manifest.resolve()) if test_manifest is not None else None,
         "audio": str(Path(audio_arg).resolve()) if audio_arg else None,
+        "project_relative_paths": {
+            "prototype_bundle": project_relative_path(bundle_path),
+            "calibration_json": project_relative_path(calibration_path),
+            "checkpoint": project_relative_path(ckpt),
+            "train_manifest": project_relative_path(train_manifest),
+            "val_manifest": project_relative_path(val_manifest),
+            "test_manifest": project_relative_path(test_manifest) if test_manifest is not None else None,
+            "audio": project_relative_path(audio_arg) if audio_arg else None,
+        },
+        "paths": {
+            "prototype_bundle": path_record(bundle_path),
+            "calibration_json": path_record(calibration_path),
+            "checkpoint": path_record(ckpt),
+            "train_manifest": path_record(train_manifest),
+            "val_manifest": path_record(val_manifest),
+            "test_manifest": path_record(test_manifest) if test_manifest is not None else None,
+            "audio": path_record(audio_arg) if audio_arg else None,
+        },
         "fold": fold,
         "seed": seed,
         "selection_method": selected_method,
         "feature_backend": feature_backend,
+        **qualification,
         "allow_relocated_checkpoint": bool(args.allow_relocated_checkpoint),
         "unsafe_allow_checkpoint_sha_mismatch": bool(args.unsafe_allow_checkpoint_sha_mismatch),
         "method_best_params": method_best_params,

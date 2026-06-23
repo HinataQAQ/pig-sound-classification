@@ -35,8 +35,9 @@ For each fold-seed:
    calibrated Softmax temperature by NLL, prototype temperature for prototype
    methods, fusion alpha after both sides are fixed, hierarchy confidence
    penalty, and reject thresholds.
-7. Freeze all calibration parameters before running test prediction.
-8. Evaluate test predictions without selecting any parameter from test metrics.
+7. Verify manifest content SHA256 before calibration or frozen test prediction.
+8. Freeze all calibration parameters before running test prediction.
+9. Evaluate test predictions without selecting any parameter from test metrics.
 
 The output label for rejection is `uncertain`. Without a real unknown validation
 set, these results are not formal unknown detection, open-set recognition, or
@@ -61,6 +62,29 @@ euclidean_distance = sqrt(2 - 2 * cosine_similarity)
 
 Both are saved for audit, but they should not be interpreted as independent
 evidence in Phase 1.
+
+## Manifest Identity
+
+Build metadata records train, validation, and test manifest SHA256 values. During
+calibration, the supplied validation manifest must match the recorded validation
+SHA256. During frozen test prediction, the supplied test manifest must match the
+recorded test SHA256. A path match alone is not sufficient.
+
+Prediction inputs have distinct roles:
+
+- `--test_manifest`: `input_role=frozen_test`; checked against the recorded test
+  SHA256 and eligible for formal fold evaluation when other qualification fields
+  allow it.
+- `--manifest`: `input_role=inference_manifest`; used for prediction only and
+  not treated as the recorded CV test split.
+- `--audio`: `input_role=single_audio`; used for prediction only.
+
+Every structured build, calibration, prediction, and evaluation output records
+`feature_pipeline_equivalent`, `single_fold_debug`,
+`eligible_for_cv_aggregation`, `paper_main_result`, and `feature_backend`.
+`training_exact` sets `feature_pipeline_equivalent=true`; `numpy_logmel` sets it
+to false. The fold0/seed3407 Phase 1 run is marked `single_fold_debug=true` and
+`paper_main_result=false`.
 
 ## Phase 1 Commands
 
@@ -205,6 +229,7 @@ Sample paths are written to CSV/JSON for audit. Audio files are not copied.
 `test_predictions.csv` includes:
 
 - true labels when a manifest is used
+- `input_role` and paper-qualification fields
 - `raw_softmax` top-k from the uncalibrated model head
 - `calibrated_softmax` top-k after validation-selected softmax temperature
 - main-prototype, hierarchical-prototype, and fused top-k

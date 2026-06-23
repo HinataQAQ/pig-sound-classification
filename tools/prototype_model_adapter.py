@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import posixpath
 import re
 import hashlib
 from functools import lru_cache
@@ -90,9 +91,6 @@ def resolve_recorded_file(
     root: str | Path = ROOT,
 ) -> Path:
     candidates: list[Path] = []
-    absolute = record.get(absolute_key)
-    if absolute:
-        candidates.append(Path(str(absolute)))
     project_paths = record.get("project_relative_paths")
     if relative_key and isinstance(project_paths, Mapping):
         rel = project_paths.get(relative_key)
@@ -103,6 +101,9 @@ def resolve_recorded_file(
         payload = paths_record.get(relative_key)
         if isinstance(payload, Mapping) and payload.get("project_relative"):
             candidates.append(Path(root) / str(payload["project_relative"]))
+    absolute = record.get(absolute_key)
+    if absolute:
+        candidates.append(Path(str(absolute)))
 
     expected_sha = str(record.get(sha256_key, "")) if sha256_key else ""
     if not expected_sha and relative_key and isinstance(paths_record, Mapping):
@@ -135,12 +136,139 @@ def resolve_recorded_file(
 def normalize_identity_path(value: Any) -> str:
     text = str(value).strip().replace("\\", "/")
     text = re.sub(r"/+", "/", text)
-    try:
-        text = str(Path(text).as_posix())
-    except (TypeError, ValueError):
-        pass
-    text = text.lstrip("./")
+    text = posixpath.normpath(text)
+    if text == ".":
+        text = ""
+    elif text.startswith("./"):
+        text = text[2:]
     return text.lower()
+
+
+def recorded_manifest_sha(metadata: Mapping[str, Any], split: str) -> str | None:
+    key = f"{split}_manifest"
+    manifest_sha = metadata.get("manifest_sha256")
+    if isinstance(manifest_sha, Mapping) and manifest_sha.get(split):
+        return str(manifest_sha[split])
+
+    paths_record = metadata.get("paths")
+    if isinstance(paths_record, Mapping):
+        payload = paths_record.get(key)
+        if isinstance(payload, Mapping) and payload.get("sha256"):
+            return str(payload["sha256"])
+
+    input_hashes = metadata.get("input_hashes")
+    if isinstance(input_hashes, Mapping):
+        payload = input_hashes.get(key)
+        if isinstance(payload, Mapping) and payload.get("sha256"):
+            return str(payload["sha256"])
+
+    direct_key = f"{key}_sha256"
+    if metadata.get(direct_key):
+        return str(metadata[direct_key])
+    return None
+
+
+def verify_file_sha256(path: str | Path, expected_sha256: str | None, description: str) -> str:
+    actual = file_sha256(path)
+    if expected_sha256 and actual.lower() != str(expected_sha256).lower():
+        raise RuntimeError(
+            f"{description} SHA256 mismatch: expected {expected_sha256}, got {actual}"
+        )
+    return actual
+
+
+def verify_manifest_matches_metadata(
+    manifest_path: str | Path,
+    metadata: Mapping[str, Any],
+    split: str,
+) -> str:
+    expected = recorded_manifest_sha(metadata, split)
+    if not expected:
+        raise RuntimeError(f"Missing recorded {split} manifest SHA256 in metadata.")
+    return verify_file_sha256(manifest_path, expected, f"{split} manifest")
+
+
+def canonical_feature_backend(feature_backend: str) -> str:
+    backend = str(feature_backend).strip()
+    if backend == "librosa":
+        return "training_exact"
+    return backend
+
+
+def result_qualification_fields(
+    feature_backend: str,
+    *,
+    fold: int | None,
+    seed: int | None,
+    input_role: str | None = None,
+) -> dict[str, Any]:
+    backend = canonical_feature_backend(feature_backend)
+    feature_pipeline_equivalent = backend == "training_exact"
+    single_fold_debug = fold is not None and seed is not None and int(fold) == 0 and int(seed) == 3407
+    return {
+        "feature_pipeline_equivalent": bool(feature_pipeline_equivalent),
+        "single_fold_debug": bool(single_fold_debug),
+        "eligible_for_cv_aggregation": bool(feature_pipeline_equivalent),
+        "paper_main_result": bool(
+            feature_pipeline_equivalent
+            and not single_fold_debug
+            and input_role == "frozen_test"
+        ),
+        "feature_backend": backend,
+    }
+
+
+def select_prediction_input_role(
+    *,
+    test_manifest: str | Path | None,
+    manifest: str | Path | None,
+    audio: str | Path | None,
+) -> dict[str, str]:
+    provided = [
+        ("frozen_test", test_manifest),
+        ("inference_manifest", manifest),
+        ("single_audio", audio),
+    ]
+    selected = [(role, value) for role, value in provided if value is not None and str(value) != ""]
+    if len(selected) != 1:
+        raise ValueError("Provide exactly one of --test_manifest, --manifest, or --audio.")
+    role, value = selected[0]
+    return {"input_role": role, "input_path": str(value)}
+
+
+def _value_is_missing(value: Any) -> bool:
+    if value is None:
+        return True
+    if isinstance(value, (list, tuple, dict)):
+        return False
+    try:
+        return bool(pd.isna(value))
+    except (TypeError, ValueError):
+        return False
+
+
+def calibration_float_param(
+    calibration: Mapping[str, Any],
+    method: str,
+    param: str,
+    *,
+    fallback_keys: Sequence[str] = (),
+    default: float | None = None,
+) -> float:
+    method_params = calibration.get("method_best_params", {})
+    if isinstance(method_params, Mapping):
+        payload = method_params.get(method)
+        if isinstance(payload, Mapping):
+            value = payload.get(param)
+            if not _value_is_missing(value):
+                return float(value)
+    for key in fallback_keys:
+        value = calibration.get(key)
+        if not _value_is_missing(value):
+            return float(value)
+    if default is None:
+        raise RuntimeError(f"Missing calibration parameter {method}.{param}")
+    return float(default)
 
 
 def normalize_source_id(value: Any) -> str:
@@ -1586,7 +1714,12 @@ def audit_manifest_disjointness(
 
 def assert_no_leakage(report: Mapping[str, Any]) -> None:
     if not bool(report.get("ok", False)):
-        raise RuntimeError(f"Manifest leakage detected: {report.get('overlaps')}")
+        raise RuntimeError(
+            "Manifest leakage detected: "
+            f"missing_columns={report.get('missing_columns')}; "
+            f"invalid_values={report.get('invalid_values')}; "
+            f"overlaps={report.get('overlaps')}"
+        )
 
 
 def finite_float(value: Any) -> float | None:

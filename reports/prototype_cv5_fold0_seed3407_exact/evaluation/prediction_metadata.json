@@ -1,0 +1,128 @@
+{
+  "artifact_type": "hier_acoustic_prototype_frozen_predictions",
+  "created_at_utc": "2026-06-23T14:08:41.101255+00:00",
+  "input_kind": "frozen_test",
+  "input_role": "frozen_test",
+  "prototype_bundle": "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\artifacts\\prototype_bundle.npz",
+  "prototype_bundle_sha256": "13ad5032a00743c0243d08bba9edae4441bbef593225ba9c468120bafd9080c6",
+  "calibration_json": "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\calibration\\calibration.json",
+  "calibration_json_sha256": "3697bd5ae30d6a6af1241016cdd4982596a068f4b112cfd9400e30fc5a74a718",
+  "checkpoint_path": "<PROJECT_ROOT>\\checkpoints\\cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407.pt",
+  "checkpoint_sha256": "d6ec8dcdd6b16a6b3212a732e1d235428ba4c7c1f5702b5b1330ca9a3c449347",
+  "train_manifest": "<PROJECT_ROOT>\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold0\\train.csv",
+  "val_manifest": "<PROJECT_ROOT>\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold0\\val.csv",
+  "test_manifest": "<PROJECT_ROOT>\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold0\\test.csv",
+  "audio": null,
+  "project_relative_paths": {
+    "prototype_bundle": "reports/prototype_cv5_fold0_seed3407_exact/artifacts/prototype_bundle.npz",
+    "calibration_json": "reports/prototype_cv5_fold0_seed3407_exact/calibration/calibration.json",
+    "checkpoint": "checkpoints/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407.pt",
+    "train_manifest": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold0/train.csv",
+    "val_manifest": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold0/val.csv",
+    "test_manifest": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold0/test.csv",
+    "audio": null
+  },
+  "paths": {
+    "prototype_bundle": {
+      "project_relative": "reports/prototype_cv5_fold0_seed3407_exact/artifacts/prototype_bundle.npz",
+      "original_absolute": "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\artifacts\\prototype_bundle.npz",
+      "sha256": "13ad5032a00743c0243d08bba9edae4441bbef593225ba9c468120bafd9080c6"
+    },
+    "calibration_json": {
+      "project_relative": "reports/prototype_cv5_fold0_seed3407_exact/calibration/calibration.json",
+      "original_absolute": "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\calibration\\calibration.json",
+      "sha256": "3697bd5ae30d6a6af1241016cdd4982596a068f4b112cfd9400e30fc5a74a718"
+    },
+    "checkpoint": {
+      "project_relative": "checkpoints/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407.pt",
+      "original_absolute": "<PROJECT_ROOT>\\checkpoints\\cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407.pt",
+      "sha256": "d6ec8dcdd6b16a6b3212a732e1d235428ba4c7c1f5702b5b1330ca9a3c449347"
+    },
+    "train_manifest": {
+      "project_relative": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold0/train.csv",
+      "original_absolute": "<PROJECT_ROOT>\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold0\\train.csv",
+      "sha256": "33337bf683c9a07b8bdf9dc5a0020e53e6883716924c6deafc06af85720b005b"
+    },
+    "val_manifest": {
+      "project_relative": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold0/val.csv",
+      "original_absolute": "<PROJECT_ROOT>\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold0\\val.csv",
+      "sha256": "ed86bb19512f4b36d3ed4630251e5e15b9fe38d8d2d42119eb90058e6689dd79"
+    },
+    "test_manifest": {
+      "project_relative": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold0/test.csv",
+      "original_absolute": "<PROJECT_ROOT>\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold0\\test.csv",
+      "sha256": "4c2eedb0766725c84da2a41b9ec0793b874f9a3d10a80a0a79f4ada7342c5e68"
+    },
+    "audio": null
+  },
+  "fold": 0,
+  "seed": 3407,
+  "selection_method": "hierarchical",
+  "feature_backend": "training_exact",
+  "feature_pipeline_equivalent": true,
+  "single_fold_debug": true,
+  "eligible_for_cv_aggregation": true,
+  "paper_main_result": false,
+  "allow_relocated_checkpoint": false,
+  "unsafe_allow_checkpoint_sha_mismatch": false,
+  "method_best_params": {
+    "raw_softmax": {
+      "method": "raw_softmax",
+      "prototype_temperature": null,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null
+    },
+    "calibrated_softmax": {
+      "method": "calibrated_softmax",
+      "prototype_temperature": null,
+      "softmax_temperature": 1.0,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null
+    },
+    "prototype": {
+      "method": "prototype",
+      "prototype_temperature": 0.1,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null
+    },
+    "hierarchical": {
+      "method": "hierarchical",
+      "prototype_temperature": 0.1,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": 0.5,
+      "fusion_kind": null
+    },
+    "fused": {
+      "method": "fused",
+      "prototype_temperature": 0.1,
+      "softmax_temperature": 1.0,
+      "softmax_weight": 1.0,
+      "hier_aux_prob_weight": 0.5,
+      "fusion_kind": "pure_softmax"
+    }
+  },
+  "prototype_temperature": 0.1,
+  "hierarchical_prototype_temperature": 0.1,
+  "calibrated_softmax_temperature": 1.0,
+  "softmax_weight": 1.0,
+  "hierarchy_confidence_penalty": 1.0,
+  "global_rejection_threshold": 0.8532125353813171,
+  "per_class_rejection_thresholds": {
+    "cough": 0.9999885559082031,
+    "calm_grunt": 0.9998204708099365,
+    "feeding": 0.7066035270690918,
+    "stress_vocal": 0.7599887847900391
+  },
+  "rows_after_filtering": 168,
+  "test_used_for_parameter_selection": false,
+  "unknown_detection_claim": false,
+  "prediction_csv": "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\evaluation\\test_predictions.csv",
+  "prediction_json": "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\evaluation\\test_predictions.json",
+  "leakage_audit_path": "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\evaluation\\leakage_audit.json"
+}

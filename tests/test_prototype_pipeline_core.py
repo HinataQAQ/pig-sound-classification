@@ -18,8 +18,10 @@ from prototype_model_adapter import (  # noqa: E402
     HierModelConfig,
     apply_hierarchy_confidence_penalty,
     align_prediction_frames_by_path,
+    assert_no_leakage,
     audit_manifest_disjointness,
     calibration_relevant_parameters,
+    calibration_float_param,
     calibration_metrics,
     compute_class_prototypes,
     compute_distance_statistics,
@@ -29,10 +31,14 @@ from prototype_model_adapter import (  # noqa: E402
     make_numpy_logmel_feature,
     map_aux_probabilities_to_main,
     multiclass_metrics,
+    normalize_identity_path,
+    result_qualification_fields,
+    select_prediction_input_role,
     training_exact_feature_config,
     fusion_formula_metadata,
     prototype_scores_from_bundle,
     validate_expected_config,
+    verify_manifest_matches_metadata,
 )
 
 
@@ -199,6 +205,78 @@ class PrototypePipelineCoreTests(unittest.TestCase):
         self.assertEqual(fusion_mode_from_alpha(1.0), "pure_softmax")
         self.assertEqual(fusion_mode_from_alpha(0.25), "mixed")
 
+    def test_calibration_float_param_preserves_zero_alpha(self):
+        calibration = {
+            "softmax_weight": 0.75,
+            "method_best_params": {
+                "fused": {
+                    "softmax_weight": 0.0,
+                }
+            },
+        }
+
+        alpha = calibration_float_param(
+            calibration,
+            "fused",
+            "softmax_weight",
+            fallback_keys=("softmax_weight",),
+            default=1.0,
+        )
+
+        self.assertEqual(alpha, 0.0)
+
+    def test_calibration_float_param_preserves_zero_hier_aux_weight(self):
+        calibration = {
+            "hier_aux_prob_weight": 0.5,
+            "method_best_params": {
+                "hierarchical": {
+                    "hier_aux_prob_weight": 0.0,
+                }
+            },
+        }
+
+        weight = calibration_float_param(
+            calibration,
+            "hierarchical",
+            "hier_aux_prob_weight",
+            fallback_keys=("hier_aux_prob_weight",),
+            default=0.5,
+        )
+
+        self.assertEqual(weight, 0.0)
+
+    def test_select_prediction_input_role_requires_exactly_one_input(self):
+        self.assertEqual(
+            select_prediction_input_role(test_manifest="test.csv", manifest="", audio="")["input_role"],
+            "frozen_test",
+        )
+        self.assertEqual(
+            select_prediction_input_role(test_manifest="", manifest="infer.csv", audio="")["input_role"],
+            "inference_manifest",
+        )
+        self.assertEqual(
+            select_prediction_input_role(test_manifest="", manifest="", audio="x.wav")["input_role"],
+            "single_audio",
+        )
+        with self.assertRaisesRegex(ValueError, "exactly one"):
+            select_prediction_input_role(test_manifest="test.csv", manifest="infer.csv", audio="")
+
+    def test_result_qualification_fields_mark_fold0_debug_not_paper_main(self):
+        exact = result_qualification_fields("training_exact", fold=0, seed=3407, input_role="frozen_test")
+
+        self.assertTrue(exact["feature_pipeline_equivalent"])
+        self.assertTrue(exact["single_fold_debug"])
+        self.assertTrue(exact["eligible_for_cv_aggregation"])
+        self.assertFalse(exact["paper_main_result"])
+        self.assertEqual(exact["feature_backend"], "training_exact")
+
+    def test_result_qualification_fields_reject_numpy_for_cv_aggregation(self):
+        numpy = result_qualification_fields("numpy_logmel", fold=2, seed=1, input_role="frozen_test")
+
+        self.assertFalse(numpy["feature_pipeline_equivalent"])
+        self.assertFalse(numpy["eligible_for_cv_aggregation"])
+        self.assertFalse(numpy["paper_main_result"])
+
     def test_numpy_logmel_feature_is_finite_and_has_expected_shape(self):
         y = np.zeros(32000 * 2, dtype=np.float32)
 
@@ -334,6 +412,24 @@ class PrototypePipelineCoreTests(unittest.TestCase):
         self.assertFalse(report["ok"])
         self.assertEqual(report["overlaps"][0]["column"], "path")
 
+    def test_audit_manifest_disjointness_normalizes_dotdot_segments(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            train = root / "train.csv"
+            val = root / "val.csv"
+            pd.DataFrame(
+                [{"path": "data/a.wav", "source_id": "a", "md5": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]
+            ).to_csv(train, index=False)
+            pd.DataFrame(
+                [{"path": "data/x/../a.wav", "source_id": "b", "md5": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}]
+            ).to_csv(val, index=False)
+
+            report = audit_manifest_disjointness({"train": train, "val": val})
+
+        self.assertFalse(report["ok"])
+        self.assertEqual(report["overlaps"][0]["column"], "path")
+        self.assertEqual(normalize_identity_path("data/x/../a.wav"), "data/a.wav")
+
     def test_audit_manifest_disjointness_rejects_empty_values(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -350,6 +446,45 @@ class PrototypePipelineCoreTests(unittest.TestCase):
 
         self.assertFalse(report["ok"])
         self.assertEqual(report["invalid_values"][0]["column"], "path")
+
+    def test_assert_no_leakage_error_includes_audit_sections(self):
+        report = {
+            "ok": False,
+            "missing_columns": {"train": ["md5"]},
+            "invalid_values": [{"split": "val", "column": "path"}],
+            "overlaps": [{"column": "source_id"}],
+        }
+
+        with self.assertRaisesRegex(RuntimeError, "missing_columns.*invalid_values.*overlaps"):
+            assert_no_leakage(report)
+
+    def test_verify_manifest_matches_metadata_rejects_changed_val_content_same_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "val.csv"
+            pd.DataFrame(
+                [{"path": "a.wav", "source_id": "a", "md5": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]
+            ).to_csv(path, index=False)
+            metadata = {"manifest_sha256": {"val": file_sha256(path)}}
+            pd.DataFrame(
+                [{"path": "b.wav", "source_id": "b", "md5": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}]
+            ).to_csv(path, index=False)
+
+            with self.assertRaisesRegex(RuntimeError, "val manifest SHA256 mismatch"):
+                verify_manifest_matches_metadata(path, metadata, "val")
+
+    def test_verify_manifest_matches_metadata_rejects_changed_test_content_same_path(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.csv"
+            pd.DataFrame(
+                [{"path": "a.wav", "source_id": "a", "md5": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]
+            ).to_csv(path, index=False)
+            metadata = {"manifest_sha256": {"test": file_sha256(path)}}
+            pd.DataFrame(
+                [{"path": "c.wav", "source_id": "c", "md5": "cccccccccccccccccccccccccccccccc"}]
+            ).to_csv(path, index=False)
+
+            with self.assertRaisesRegex(RuntimeError, "test manifest SHA256 mismatch"):
+                verify_manifest_matches_metadata(path, metadata, "test")
 
     def test_align_prediction_frames_by_path_detects_missing_extra_and_matches(self):
         reference = pd.DataFrame(
