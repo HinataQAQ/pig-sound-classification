@@ -22,3 +22,17 @@
   valid; validation and frozen test manifest SHA mismatch negative tests passed.
 - Paper usability: exact outputs are `feature_pipeline_equivalent=true` but
   `single_fold_debug=true`, so `paper_main_result=false`.
+
+## 2026-06-23 - Exact prototype provenance qualification fix
+
+- Status: completed
+- Branch: `prototype-exact-review`
+- Task: Restricted paper-main provenance to aggregate summaries only, required
+  prediction metadata during evaluation, added prediction/calibration SHA
+  verification, and added the exact CV aggregate gate script.
+- Metrics: fold0/seed3407 exact metrics unchanged; hierarchical prototype
+  Macro-F1 remained `0.9522727272727273`.
+- Tests: 37 core unit tests passed, including metadata-missing, inference-role,
+  edited prediction CSV SHA mismatch, fold1/seed42 non-paper-main, and aggregate
+  paper-main gate tests.
+- Scope: no full CV and no lambda=1.0 run was started.

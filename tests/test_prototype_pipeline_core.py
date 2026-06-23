@@ -40,6 +40,8 @@ from prototype_model_adapter import (  # noqa: E402
     validate_expected_config,
     verify_manifest_matches_metadata,
 )
+from eval_hier_acoustic_prototype import load_and_validate_prediction_metadata  # noqa: E402
+from summarize_cv5_exact_prototype import validate_aggregate_records  # noqa: E402
 
 
 class PrototypePipelineCoreTests(unittest.TestCase):
@@ -262,20 +264,195 @@ class PrototypePipelineCoreTests(unittest.TestCase):
             select_prediction_input_role(test_manifest="test.csv", manifest="infer.csv", audio="")
 
     def test_result_qualification_fields_mark_fold0_debug_not_paper_main(self):
-        exact = result_qualification_fields("training_exact", fold=0, seed=3407, input_role="frozen_test")
+        exact = result_qualification_fields(
+            "training_exact",
+            fold=0,
+            seed=3407,
+            input_role="frozen_test",
+            unsafe_allow_checkpoint_sha_mismatch=False,
+            manifest_sha_verified=True,
+            leakage_audit_ok=True,
+        )
 
         self.assertTrue(exact["feature_pipeline_equivalent"])
         self.assertTrue(exact["single_fold_debug"])
         self.assertTrue(exact["eligible_for_cv_aggregation"])
         self.assertFalse(exact["paper_main_result"])
         self.assertEqual(exact["feature_backend"], "training_exact")
+        self.assertEqual(exact["run_scope"], "fold_seed")
+
+    def test_result_qualification_fields_never_mark_single_fold_paper_main(self):
+        exact = result_qualification_fields(
+            "training_exact",
+            fold=1,
+            seed=42,
+            input_role="frozen_test",
+            unsafe_allow_checkpoint_sha_mismatch=False,
+            manifest_sha_verified=True,
+            leakage_audit_ok=True,
+        )
+
+        self.assertTrue(exact["eligible_for_cv_aggregation"])
+        self.assertFalse(exact["paper_main_result"])
+        self.assertEqual(exact["run_scope"], "fold_seed")
 
     def test_result_qualification_fields_reject_numpy_for_cv_aggregation(self):
-        numpy = result_qualification_fields("numpy_logmel", fold=2, seed=1, input_role="frozen_test")
+        numpy = result_qualification_fields(
+            "numpy_logmel",
+            fold=2,
+            seed=1,
+            input_role="frozen_test",
+            unsafe_allow_checkpoint_sha_mismatch=False,
+            manifest_sha_verified=True,
+            leakage_audit_ok=True,
+        )
 
         self.assertFalse(numpy["feature_pipeline_equivalent"])
         self.assertFalse(numpy["eligible_for_cv_aggregation"])
         self.assertFalse(numpy["paper_main_result"])
+
+    def test_result_qualification_fields_require_frozen_test_for_prediction_aggregation(self):
+        infer = result_qualification_fields(
+            "training_exact",
+            fold=2,
+            seed=1,
+            input_role="inference_manifest",
+            unsafe_allow_checkpoint_sha_mismatch=False,
+            manifest_sha_verified=True,
+            leakage_audit_ok=True,
+        )
+
+        self.assertFalse(infer["eligible_for_cv_aggregation"])
+        self.assertFalse(infer["paper_main_result"])
+
+    def test_evaluation_requires_prediction_metadata(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pred = root / "test_predictions.csv"
+            cal = root / "calibration.json"
+            pred.write_text("path,y_true,y_pred\n", encoding="utf-8")
+            cal.write_text("{}", encoding="utf-8")
+
+            with self.assertRaisesRegex(FileNotFoundError, "prediction_metadata.json"):
+                load_and_validate_prediction_metadata(pred, cal)
+
+    def test_evaluation_rejects_inference_manifest_role(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pred = root / "test_predictions.csv"
+            cal = root / "calibration.json"
+            meta = root / "prediction_metadata.json"
+            pred.write_text("path,y_true,y_pred\n", encoding="utf-8")
+            cal.write_text("{}", encoding="utf-8")
+            meta.write_text(
+                json.dumps(
+                    {
+                        "input_role": "inference_manifest",
+                        "prediction_csv_sha256": file_sha256(pred),
+                        "calibration_json_sha256": file_sha256(cal),
+                        "fold": 0,
+                        "seed": 3407,
+                        "feature_backend": "training_exact",
+                        "feature_pipeline_equivalent": True,
+                        "eligible_for_cv_aggregation": False,
+                        "paper_main_result": False,
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(RuntimeError, "input_role=inference_manifest"):
+                load_and_validate_prediction_metadata(pred, cal)
+
+    def test_evaluation_rejects_prediction_csv_sha_mismatch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            pred = root / "test_predictions.csv"
+            cal = root / "calibration.json"
+            meta = root / "prediction_metadata.json"
+            pred.write_text("path,y_true,y_pred\n", encoding="utf-8")
+            cal.write_text("{}", encoding="utf-8")
+            recorded_sha = file_sha256(pred)
+            pred.write_text("path,y_true,y_pred\na.wav,cough,feeding\n", encoding="utf-8")
+            meta.write_text(
+                json.dumps(
+                    {
+                        "input_role": "frozen_test",
+                        "prediction_csv_sha256": recorded_sha,
+                        "calibration_json_sha256": file_sha256(cal),
+                        "fold": 0,
+                        "seed": 3407,
+                        "feature_backend": "training_exact",
+                        "feature_pipeline_equivalent": True,
+                        "eligible_for_cv_aggregation": True,
+                        "paper_main_result": False,
+                        "run_scope": "fold_seed",
+                        "leakage_audit_ok": True,
+                        "manifest_sha_verified": True,
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(RuntimeError, "prediction CSV SHA256 mismatch"):
+                load_and_validate_prediction_metadata(pred, cal)
+
+    def test_only_complete_aggregate_can_be_paper_main_result(self):
+        records = []
+        for fold in range(5):
+            for seed in (42, 2024, 3407):
+                records.append(
+                    {
+                        "fold": fold,
+                        "seed": seed,
+                        "lambda": 0.5,
+                        "eligible_for_cv_aggregation": True,
+                        "feature_backend": "training_exact",
+                        "feature_pipeline_equivalent": True,
+                        "input_role": "frozen_test",
+                        "unsafe_allow_checkpoint_sha_mismatch": False,
+                        "leakage_audit_ok": True,
+                        "manifest_sha_verified": True,
+                        "softmax_reproduction_passed": True,
+                    }
+                )
+
+        aggregate = validate_aggregate_records(
+            records,
+            expected_folds=[0, 1, 2, 3, 4],
+            expected_seeds=[42, 2024, 3407],
+            expected_lambda=0.5,
+        )
+
+        self.assertEqual(aggregate["run_scope"], "aggregate")
+        self.assertTrue(aggregate["paper_main_result"])
+        self.assertTrue(aggregate["screening_result"])
+        self.assertFalse(aggregate["final_25_run_result"])
+
+    def test_incomplete_aggregate_cannot_be_paper_main_result(self):
+        records = [
+            {
+                "fold": 0,
+                "seed": 42,
+                "lambda": 0.5,
+                "eligible_for_cv_aggregation": True,
+                "feature_backend": "training_exact",
+                "feature_pipeline_equivalent": True,
+                "input_role": "frozen_test",
+                "unsafe_allow_checkpoint_sha_mismatch": False,
+                "leakage_audit_ok": True,
+                "manifest_sha_verified": True,
+                "softmax_reproduction_passed": True,
+            }
+        ]
+
+        with self.assertRaisesRegex(RuntimeError, "missing fold-seed combinations"):
+            validate_aggregate_records(
+                records,
+                expected_folds=[0, 1],
+                expected_seeds=[42],
+                expected_lambda=0.5,
+            )
 
     def test_numpy_logmel_feature_is_finite_and_has_expected_shape(self):
         y = np.zeros(32000 * 2, dtype=np.float32)

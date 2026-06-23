@@ -18,12 +18,18 @@
     "frightened_stress",
     "anxious_stress"
   ],
+  "run_scope": "fold_seed",
   "feature_pipeline_equivalent": true,
   "single_fold_debug": true,
   "eligible_for_cv_aggregation": true,
   "paper_main_result": false,
   "feature_backend": "training_exact",
   "input_role": "frozen_test",
+  "prediction_metadata_json": "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\evaluation\\prediction_metadata.json",
+  "prediction_csv_sha256": "654e3f69f33abaade05d15ffb031d70f883bfcc59602890debc3ba0382ec8726",
+  "calibration_json_sha256": "7991405fcd1c6ea0cf0732c1c8a568a74fa189c26e716ee4271524f6359ebf2c",
+  "leakage_audit_ok": true,
+  "manifest_sha_verified": true,
   "selection_method": "hierarchical",
   "method_best_params": {
     "raw_softmax": {

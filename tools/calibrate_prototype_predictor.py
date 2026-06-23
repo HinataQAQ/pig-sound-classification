@@ -169,7 +169,14 @@ def main() -> None:
 
     config = config_from_summary(metadata["model_config"])
     feature_backend = str(metadata.get("feature_backend", "librosa")) if args.feature_backend == "auto" else args.feature_backend
-    qualification = result_qualification_fields(feature_backend, fold=fold, seed=seed)
+    qualification = result_qualification_fields(
+        feature_backend,
+        fold=fold,
+        seed=seed,
+        unsafe_allow_checkpoint_sha_mismatch=bool(args.unsafe_allow_checkpoint_sha_mismatch),
+        manifest_sha_verified=True,
+        leakage_audit_ok=bool(audit.get("ok", False)),
+    )
     device = resolve_device(args.device)
     model = load_hier_model(ckpt, config, device=device)
     ds_val = build_hier_dataset(val_manifest, config, feature_backend=feature_backend)

@@ -59,6 +59,16 @@ prototype-exact-review
   legitimate `0.0` values are preserved.
 - Path identity normalization now folds `.`, `..`, repeated slashes, backslash
   variants, and Windows case.
+- Single fold-seed outputs now always carry `run_scope=fold_seed` and
+  `paper_main_result=false`.
+- Prediction metadata now records prediction CSV SHA, calibration JSON SHA,
+  prototype bundle SHA, leakage audit status, manifest SHA verification status,
+  and run scope.
+- Evaluation now requires `prediction_metadata.json` and verifies input role,
+  prediction CSV SHA, calibration JSON SHA, fold/seed/backend provenance, and
+  qualification fields before computing metrics.
+- Added `tools/summarize_cv5_exact_prototype.py`; only a complete aggregate may
+  set `run_scope=aggregate` and `paper_main_result=true`.
 
 ## Data Separation Audit
 - prototype source: fold0 train manifest only
@@ -78,6 +88,10 @@ prototype-exact-review
   calibration by SHA; modified frozen test manifest content failed prediction by
   SHA; `numpy_logmel` qualification flags are non-paper-equivalent and not
   eligible for CV aggregation.
+- Final provenance-only review tests passed: metadata missing fails evaluation,
+  inference-manifest predictions fail evaluation, edited prediction CSV fails
+  evaluation by SHA mismatch, fold1/seed42 single run remains non-paper-main,
+  and only complete aggregate validation may produce `paper_main_result=true`.
 - No checkpoint, audio, NPZ, embedding, or cache files should be included in the
   review commit.
 

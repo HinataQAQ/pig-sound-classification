@@ -12,6 +12,7 @@ from prototype_model_adapter import (
     calibration_metrics,
     config_from_summary,
     coverage_risk_curve,
+    file_sha256,
     hierarchy_consistency_rate,
     method_metrics_table,
     multiclass_metrics,
@@ -23,6 +24,16 @@ from prototype_model_adapter import (
 
 
 METHODS = ["raw_softmax", "calibrated_softmax", "prototype", "hierarchical", "fused"]
+REQUIRED_QUALIFICATION_FIELDS = [
+    "run_scope",
+    "feature_pipeline_equivalent",
+    "single_fold_debug",
+    "eligible_for_cv_aggregation",
+    "paper_main_result",
+    "feature_backend",
+    "leakage_audit_ok",
+    "manifest_sha_verified",
+]
 
 
 def parse_args() -> argparse.Namespace:
@@ -105,12 +116,74 @@ def jsonable_row(row: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def _require_sha_match(path: Path, expected: Any, description: str) -> None:
+    if not expected:
+        raise RuntimeError(f"prediction metadata missing required {description} SHA256.")
+    actual = file_sha256(path)
+    if actual.lower() != str(expected).lower():
+        raise RuntimeError(f"{description} SHA256 mismatch: expected {expected}, got {actual}")
+
+
+def load_and_validate_prediction_metadata(
+    pred_csv: str | Path,
+    calibration_json: str | Path,
+    metadata_path: str | Path | None = None,
+    calibration: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    pred_path = require_file(pred_csv, "prediction CSV")
+    cal_path = require_file(calibration_json, "calibration JSON")
+    meta_path = Path(metadata_path) if metadata_path is not None else pred_path.parent / "prediction_metadata.json"
+    if not meta_path.exists():
+        raise FileNotFoundError(f"Missing prediction_metadata.json: {meta_path}")
+    metadata = read_json(meta_path)
+
+    input_role = str(metadata.get("input_role", ""))
+    if input_role != "frozen_test":
+        raise RuntimeError(f"Evaluation requires input_role=frozen_test; got input_role={input_role}.")
+
+    _require_sha_match(pred_path, metadata.get("prediction_csv_sha256"), "prediction CSV")
+    _require_sha_match(cal_path, metadata.get("calibration_json_sha256"), "calibration JSON")
+
+    missing = [field for field in REQUIRED_QUALIFICATION_FIELDS if field not in metadata]
+    if missing:
+        raise RuntimeError(f"prediction metadata missing qualification fields: {missing}")
+    if metadata.get("run_scope") != "fold_seed":
+        raise RuntimeError(f"Evaluation requires run_scope=fold_seed; got {metadata.get('run_scope')}.")
+    if bool(metadata.get("paper_main_result")):
+        raise RuntimeError("Single fold-seed prediction metadata must have paper_main_result=false.")
+    if not bool(metadata.get("leakage_audit_ok")):
+        raise RuntimeError("Prediction metadata indicates leakage_audit_ok=false.")
+    if not bool(metadata.get("manifest_sha_verified")):
+        raise RuntimeError("Prediction metadata indicates manifest_sha_verified=false.")
+    if bool(metadata.get("unsafe_allow_checkpoint_sha_mismatch", False)):
+        raise RuntimeError("Unsafe checkpoint SHA mismatch runs cannot be evaluated as frozen test results.")
+
+    if calibration is not None:
+        for key in ("fold", "seed"):
+            if metadata.get(key) != calibration.get(key):
+                raise RuntimeError(
+                    f"prediction metadata {key} mismatch: metadata={metadata.get(key)}, "
+                    f"calibration={calibration.get(key)}"
+                )
+        if str(metadata.get("feature_backend")) != str(calibration.get("feature_backend")):
+            raise RuntimeError(
+                "prediction metadata feature_backend mismatch: "
+                f"metadata={metadata.get('feature_backend')}, calibration={calibration.get('feature_backend')}"
+            )
+    return metadata
+
+
 def main() -> None:
     args = parse_args()
 
     pred_csv = require_file(args.pred_csv, "prediction CSV")
     calibration_json = require_file(args.calibration_json, "calibration JSON")
     calibration = read_json(calibration_json)
+    prediction_metadata = load_and_validate_prediction_metadata(
+        pred_csv,
+        calibration_json,
+        calibration=calibration,
+    )
     config = config_from_summary(calibration["model_config"])
     labels = config.main_labels
     aux_labels = config.aux_labels
@@ -118,17 +191,7 @@ def main() -> None:
     out_dir = prepare_evaluation_dir(Path(args.out_dir), args.allow_overwrite)
 
     df = pd.read_csv(pred_csv)
-    prediction_metadata_path = pred_csv.parent / "prediction_metadata.json"
-    prediction_metadata: dict[str, Any] = {}
-    if prediction_metadata_path.exists():
-        prediction_metadata = read_json(prediction_metadata_path)
-        input_role = str(prediction_metadata.get("input_role", prediction_metadata.get("input_kind", "")))
-        if input_role and input_role != "frozen_test":
-            raise RuntimeError(
-                f"Evaluation requires frozen_test predictions; got input_role={input_role}."
-            )
-    else:
-        input_role = "frozen_test"
+    input_role = str(prediction_metadata["input_role"])
     if df["y_true"].isna().all() or (df["y_true"].astype(str).str.len() == 0).all():
         raise RuntimeError("Evaluation requires labeled manifest predictions, not single-audio predictions.")
     y_true = df["y_true_id"].to_numpy(dtype=np.int64)
@@ -226,8 +289,18 @@ def main() -> None:
             fold=calibration.get("fold"),
             seed=calibration.get("seed"),
             input_role=input_role,
+            unsafe_allow_checkpoint_sha_mismatch=bool(
+                prediction_metadata.get("unsafe_allow_checkpoint_sha_mismatch", False)
+            ),
+            manifest_sha_verified=bool(prediction_metadata.get("manifest_sha_verified", False)),
+            leakage_audit_ok=bool(prediction_metadata.get("leakage_audit_ok", False)),
         ),
         "input_role": input_role,
+        "prediction_metadata_json": str((pred_csv.parent / "prediction_metadata.json").resolve()),
+        "prediction_csv_sha256": prediction_metadata.get("prediction_csv_sha256"),
+        "calibration_json_sha256": prediction_metadata.get("calibration_json_sha256"),
+        "leakage_audit_ok": bool(prediction_metadata.get("leakage_audit_ok", False)),
+        "manifest_sha_verified": bool(prediction_metadata.get("manifest_sha_verified", False)),
         "selection_method": selected_method,
         "method_best_params": calibration.get("method_best_params", {}),
         "prototype_temperature": calibration.get("prototype_temperature"),

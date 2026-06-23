@@ -254,8 +254,10 @@ def main() -> None:
             input_path,
             "frozen test manifest" if input_role == "frozen_test" else "inference manifest",
         )
+    manifest_sha_verified = False
     if input_role == "frozen_test":
         verify_file(test_manifest, bundle_meta, "test")
+        manifest_sha_verified = True
         audit = audit_manifest_disjointness({"train": train_manifest, "val": val_manifest, "test": test_manifest})
     else:
         audit = audit_manifest_disjointness({"train": train_manifest, "val": val_manifest})
@@ -283,6 +285,9 @@ def main() -> None:
         fold=fold,
         seed=seed,
         input_role=input_role,
+        unsafe_allow_checkpoint_sha_mismatch=bool(args.unsafe_allow_checkpoint_sha_mismatch),
+        manifest_sha_verified=manifest_sha_verified,
+        leakage_audit_ok=bool(audit.get("ok", False)),
     )
     device = resolve_device(args.device)
     model = load_hier_model(ckpt, config, device=device)
@@ -431,6 +436,8 @@ def main() -> None:
     pred_json = out_dir / "test_predictions.json"
     pred.to_csv(pred_out, index=False, encoding="utf-8-sig")
     pred.to_json(pred_json, orient="records", force_ascii=False, indent=2)
+    prediction_csv_sha256 = file_sha256(pred_out)
+    prediction_json_sha256 = file_sha256(pred_json)
 
     metadata = {
         "artifact_type": "hier_acoustic_prototype_frozen_predictions",
@@ -441,6 +448,8 @@ def main() -> None:
         "prototype_bundle_sha256": file_sha256(bundle_path),
         "calibration_json": str(calibration_path.resolve()),
         "calibration_json_sha256": file_sha256(calibration_path),
+        "prediction_csv_sha256": prediction_csv_sha256,
+        "prediction_json_sha256": prediction_json_sha256,
         "checkpoint_path": str(ckpt.resolve()),
         "checkpoint_sha256": ckpt_sha,
         "train_manifest": str(train_manifest.resolve()),
@@ -470,6 +479,8 @@ def main() -> None:
         "selection_method": selected_method,
         "feature_backend": feature_backend,
         **qualification,
+        "leakage_audit_ok": bool(audit.get("ok", False)),
+        "manifest_sha_verified": bool(manifest_sha_verified),
         "allow_relocated_checkpoint": bool(args.allow_relocated_checkpoint),
         "unsafe_allow_checkpoint_sha_mismatch": bool(args.unsafe_allow_checkpoint_sha_mismatch),
         "method_best_params": method_best_params,

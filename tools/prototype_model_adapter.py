@@ -201,19 +201,28 @@ def result_qualification_fields(
     fold: int | None,
     seed: int | None,
     input_role: str | None = None,
+    unsafe_allow_checkpoint_sha_mismatch: bool = False,
+    manifest_sha_verified: bool = True,
+    leakage_audit_ok: bool = True,
+    run_scope: str = "fold_seed",
 ) -> dict[str, Any]:
     backend = canonical_feature_backend(feature_backend)
     feature_pipeline_equivalent = backend == "training_exact"
     single_fold_debug = fold is not None and seed is not None and int(fold) == 0 and int(seed) == 3407
+    frozen_test_ok = input_role is None or str(input_role) == "frozen_test"
+    eligible = (
+        feature_pipeline_equivalent
+        and frozen_test_ok
+        and not bool(unsafe_allow_checkpoint_sha_mismatch)
+        and bool(manifest_sha_verified)
+        and bool(leakage_audit_ok)
+    )
     return {
+        "run_scope": run_scope,
         "feature_pipeline_equivalent": bool(feature_pipeline_equivalent),
         "single_fold_debug": bool(single_fold_debug),
-        "eligible_for_cv_aggregation": bool(feature_pipeline_equivalent),
-        "paper_main_result": bool(
-            feature_pipeline_equivalent
-            and not single_fold_debug
-            and input_role == "frozen_test"
-        ),
+        "eligible_for_cv_aggregation": bool(eligible),
+        "paper_main_result": False,
         "feature_backend": backend,
     }
 

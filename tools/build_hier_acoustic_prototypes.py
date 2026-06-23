@@ -224,6 +224,9 @@ def main() -> None:
         feature_params["feature_backend"],
         fold=fold,
         seed=seed,
+        unsafe_allow_checkpoint_sha_mismatch=False,
+        manifest_sha_verified=True,
+        leakage_audit_ok=bool(leakage.get("ok", False)),
     )
     created_at = datetime.now(timezone.utc).isoformat()
     metadata = {

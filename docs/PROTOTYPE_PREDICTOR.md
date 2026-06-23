@@ -86,13 +86,20 @@ Every structured build, calibration, prediction, and evaluation output records
 to false. The fold0/seed3407 Phase 1 run is marked `single_fold_debug=true` and
 `paper_main_result=false`.
 
+Single fold-seed outputs always use `run_scope=fold_seed` and
+`paper_main_result=false`, regardless of fold or seed. Paper-main status is set
+only by `tools\summarize_cv5_exact_prototype.py` after it verifies a complete,
+unique fold x seed aggregate with exact features, frozen test role, safe
+checkpoint provenance, manifest SHA checks, leakage audits, and Softmax
+reproduction.
+
 ## Phase 1 Commands
 
 PowerShell setup:
 
 ```powershell
 conda activate pigsound-gpu
-cd C:\py\pigsound\pig-sound-classification
+cd <PROJECT_ROOT>
 $env:PYTHONNOUSERSITE="1"
 $ROOT="reports\prototype_cv5_fold0_seed3407"
 $TRAIN="paper_results\manifests\manifests_pigvocal_4class_expanded_train_cv5_cap3x\fold0\train.csv"
@@ -164,6 +171,21 @@ python tools\plot_acoustic_prototype_atlas.py `
   --prototype_bundle $ROOT\artifacts\prototype_bundle.npz `
   --out_dir $ROOT
 ```
+
+Aggregate only after all approved fold-seed runs exist:
+
+```powershell
+python tools\summarize_cv5_exact_prototype.py `
+  --metrics_json <one metrics.json per fold-seed> `
+  --expected_folds 0,1,2,3,4 `
+  --expected_seeds 42,2024,3407 `
+  --expected_lambda 0.5 `
+  --out_json reports\prototype_cv5_exact_w05_screening_summary.json
+```
+
+A 5 folds x 3 seeds aggregate is marked `screening_result=true` and
+`final_25_run_result=false`. A 5 folds x 5 seeds aggregate is the 25-run final
+form.
 
 ## Outputs
 

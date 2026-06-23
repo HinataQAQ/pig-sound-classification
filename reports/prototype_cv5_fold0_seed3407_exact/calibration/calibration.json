@@ -1,8 +1,8 @@
 {
   "artifact_type": "hier_acoustic_prototype_calibration",
-  "created_at_utc": "2026-06-23T14:07:55.475604+00:00",
+  "created_at_utc": "2026-06-23T14:54:09.007630+00:00",
   "prototype_bundle": "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\artifacts\\prototype_bundle.npz",
-  "prototype_bundle_sha256": "13ad5032a00743c0243d08bba9edae4441bbef593225ba9c468120bafd9080c6",
+  "prototype_bundle_sha256": "4f019a663ee337600aa4f924749963f60ca5cfdb9efd967c013d4e5472095fda",
   "checkpoint_path": "<PROJECT_ROOT>\\checkpoints\\cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407.pt",
   "checkpoint_sha256": "d6ec8dcdd6b16a6b3212a732e1d235428ba4c7c1f5702b5b1330ca9a3c449347",
   "train_manifest": "<PROJECT_ROOT>\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold0\\train.csv",
@@ -19,7 +19,7 @@
     "prototype_bundle": {
       "project_relative": "reports/prototype_cv5_fold0_seed3407_exact/artifacts/prototype_bundle.npz",
       "original_absolute": "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\artifacts\\prototype_bundle.npz",
-      "sha256": "13ad5032a00743c0243d08bba9edae4441bbef593225ba9c468120bafd9080c6"
+      "sha256": "4f019a663ee337600aa4f924749963f60ca5cfdb9efd967c013d4e5472095fda"
     },
     "checkpoint": {
       "project_relative": "checkpoints/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407.pt",
@@ -71,6 +71,7 @@
     "hier_aux_weight": 0.5
   },
   "feature_backend": "training_exact",
+  "run_scope": "fold_seed",
   "feature_pipeline_equivalent": true,
   "single_fold_debug": true,
   "eligible_for_cv_aggregation": true,
