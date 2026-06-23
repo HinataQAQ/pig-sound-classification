@@ -25,6 +25,7 @@ from prototype_model_adapter import (
     prototype_scores_from_bundle,
     read_json,
     require_file,
+    resolve_recorded_file,
     temperature_scale_probabilities,
     validate_fold_seed_sources,
     write_json,
@@ -182,7 +183,12 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--batch_size", type=int, default=32)
     ap.add_argument("--num_workers", type=int, default=0)
     ap.add_argument("--feature_backend", choices=["auto", "training_exact", "librosa", "numpy_logmel"], default="auto")
-    ap.add_argument("--allow_ckpt_mismatch", action="store_true")
+    ap.add_argument("--allow_relocated_checkpoint", action="store_true", help="Allow checkpoint path relocation only when SHA256 matches.")
+    ap.add_argument(
+        "--unsafe_allow_checkpoint_sha_mismatch",
+        action="store_true",
+        help="Unsafe audit-only bypass for checkpoint SHA mismatch. Do not use for paper runs.",
+    )
     ap.add_argument("--allow_overwrite", action="store_true")
     return ap.parse_args()
 
@@ -204,19 +210,30 @@ def main() -> None:
     bundle_meta = bundle["metadata"]
     calibration = read_json(calibration_path)
 
-    for expected_key, actual in [
-        ("prototype_bundle", bundle_path),
-        ("checkpoint_path", ckpt),
-    ]:
+    for expected_key, actual in [("prototype_bundle", bundle_path)]:
         expected = calibration.get(expected_key)
-        if expected and not same_resolved_path(expected, actual) and not args.allow_ckpt_mismatch:
+        if expected and not same_resolved_path(expected, actual):
             raise RuntimeError(f"{expected_key} mismatch. Calibration expects {expected}, but got {actual}.")
-    if calibration.get("checkpoint_sha256") and file_sha256(ckpt) != str(calibration["checkpoint_sha256"]) and not args.allow_ckpt_mismatch:
+    expected_ckpt = calibration.get("checkpoint_path")
+    ckpt_sha = file_sha256(ckpt)
+    if expected_ckpt and not same_resolved_path(expected_ckpt, ckpt) and not args.allow_relocated_checkpoint:
+        raise RuntimeError(
+            f"checkpoint_path mismatch. Calibration expects {expected_ckpt}, but got {ckpt}. "
+            "Use --allow_relocated_checkpoint only if SHA256 matches."
+        )
+    if calibration.get("checkpoint_sha256") and ckpt_sha != str(calibration["checkpoint_sha256"]) and not args.unsafe_allow_checkpoint_sha_mismatch:
         raise RuntimeError("Checkpoint SHA256 mismatch between calibration JSON and --ckpt.")
+    if calibration.get("checkpoint_sha256") and ckpt_sha != str(calibration["checkpoint_sha256"]) and args.unsafe_allow_checkpoint_sha_mismatch:
+        print("[WARN] unsafe checkpoint SHA mismatch bypass enabled; do not use this run for paper results.")
     if calibration.get("prototype_bundle_sha256") and file_sha256(bundle_path) != str(calibration["prototype_bundle_sha256"]):
         raise RuntimeError("Prototype bundle SHA256 mismatch between calibration JSON and --prototype_bundle.")
 
-    train_manifest = require_file(bundle_meta["train_manifest"], "train manifest from prototype metadata")
+    train_manifest = resolve_recorded_file(
+        bundle_meta,
+        absolute_key="train_manifest",
+        relative_key="train_manifest",
+        description="train manifest from prototype metadata",
+    )
     val_manifest = require_file(calibration["val_manifest"], "validation manifest from calibration")
     test_manifest: Path | None = None
     if manifest_arg:
@@ -262,25 +279,54 @@ def main() -> None:
         input_kind = "audio"
         n_rows = 1
 
-    softmax_probs = temperature_scale_probabilities(
+    method_best_params = calibration.get("method_best_params", {})
+    raw_softmax_probs = extracted["softmax_probs"]
+    calibrated_softmax_temperature = float(
+        method_best_params.get("calibrated_softmax", {}).get("softmax_temperature")
+        or calibration.get("softmax_temperature")
+        or 1.0
+    )
+    calibrated_softmax_probs = temperature_scale_probabilities(
         extracted["softmax_probs"],
-        float(calibration.get("softmax_temperature", 1.0)),
+        calibrated_softmax_temperature,
+    )
+    prototype_temperature = float(
+        method_best_params.get("prototype", {}).get("prototype_temperature")
+        or calibration.get("prototype_temperature")
+        or 1.0
+    )
+    hierarchical_temperature = float(
+        method_best_params.get("hierarchical", {}).get("prototype_temperature")
+        or calibration.get("prototype_temperature")
+        or prototype_temperature
+    )
+    hierarchical_aux_weight = float(
+        method_best_params.get("hierarchical", {}).get("hier_aux_prob_weight")
+        or calibration.get("hier_aux_prob_weight", 0.5)
     )
     proto_scores = prototype_scores_from_bundle(
         extracted["embeddings"],
         bundle,
-        temperature=float(calibration["prototype_temperature"]),
-        hier_aux_weight=float(calibration.get("hier_aux_prob_weight", 0.5)),
+        temperature=prototype_temperature,
+        hier_aux_weight=hierarchical_aux_weight,
     )
+    hier_scores = prototype_scores_from_bundle(
+        extracted["embeddings"],
+        bundle,
+        temperature=hierarchical_temperature,
+        hier_aux_weight=hierarchical_aux_weight,
+    )
+    fusion_alpha = float(method_best_params.get("fused", {}).get("softmax_weight") or calibration.get("softmax_weight") or 0.0)
     fused = fuse_probabilities(
-        softmax_probs,
-        proto_scores["hierarchical"],
-        softmax_weight=float(calibration["softmax_weight"]),
+        calibrated_softmax_probs,
+        hier_scores["hierarchical"],
+        softmax_weight=fusion_alpha,
     )
     probs_by_method = {
-        "softmax": softmax_probs,
+        "raw_softmax": raw_softmax_probs,
+        "calibrated_softmax": calibrated_softmax_probs,
         "prototype": proto_scores["prototype"],
-        "hierarchical": proto_scores["hierarchical"],
+        "hierarchical": hier_scores["hierarchical"],
         "fused": fused,
     }
 
@@ -292,8 +338,8 @@ def main() -> None:
         config.aux_labels,
         probs_by_method,
         aux_probs=extracted["aux_softmax_probs"],
-        aux_proto_probs=proto_scores["aux_prototype"],
-        prototype_scores=proto_scores,
+        aux_proto_probs=hier_scores["aux_prototype"],
+        prototype_scores=hier_scores,
     )
     if input_kind == "audio":
         pred["y_true_id"] = ""
@@ -354,7 +400,7 @@ def main() -> None:
         "calibration_json": str(calibration_path.resolve()),
         "calibration_json_sha256": file_sha256(calibration_path),
         "checkpoint_path": str(ckpt.resolve()),
-        "checkpoint_sha256": file_sha256(ckpt),
+        "checkpoint_sha256": ckpt_sha,
         "train_manifest": str(train_manifest.resolve()),
         "val_manifest": str(val_manifest.resolve()),
         "test_manifest": str(test_manifest.resolve()) if test_manifest is not None else None,
@@ -363,9 +409,13 @@ def main() -> None:
         "seed": seed,
         "selection_method": selected_method,
         "feature_backend": feature_backend,
-        "prototype_temperature": float(calibration["prototype_temperature"]),
-        "softmax_temperature": float(calibration.get("softmax_temperature", 1.0)),
-        "softmax_weight": float(calibration["softmax_weight"]),
+        "allow_relocated_checkpoint": bool(args.allow_relocated_checkpoint),
+        "unsafe_allow_checkpoint_sha_mismatch": bool(args.unsafe_allow_checkpoint_sha_mismatch),
+        "method_best_params": method_best_params,
+        "prototype_temperature": prototype_temperature,
+        "hierarchical_prototype_temperature": hierarchical_temperature,
+        "calibrated_softmax_temperature": calibrated_softmax_temperature,
+        "softmax_weight": fusion_alpha,
         "hierarchy_confidence_penalty": float(calibration.get("hierarchy_confidence_penalty", 1.0)),
         "global_rejection_threshold": global_threshold,
         "per_class_rejection_thresholds": per_class_thresholds,

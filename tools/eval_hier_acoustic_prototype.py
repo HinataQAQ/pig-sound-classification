@@ -21,7 +21,7 @@ from prototype_model_adapter import (
 )
 
 
-METHODS = ["softmax", "prototype", "hierarchical", "fused"]
+METHODS = ["raw_softmax", "calibrated_softmax", "prototype", "hierarchical", "fused"]
 
 
 def parse_args() -> argparse.Namespace:
@@ -165,9 +165,14 @@ def main() -> None:
     selective.to_csv(out_dir / "selective_risk_summary.csv", index=False, encoding="utf-8-sig")
 
     consistency: dict[str, float] = {}
-    if {"softmax_pred", "softmax_aux_pred"}.issubset(df.columns):
-        consistency["softmax_main_vs_aux"] = hierarchy_consistency_rate(
-            df["softmax_pred"].astype(str).tolist(),
+    if {"raw_softmax_pred", "softmax_aux_pred"}.issubset(df.columns):
+        consistency["raw_softmax_main_vs_aux"] = hierarchy_consistency_rate(
+            df["raw_softmax_pred"].astype(str).tolist(),
+            df["softmax_aux_pred"].astype(str).tolist(),
+        )
+    if {"calibrated_softmax_pred", "softmax_aux_pred"}.issubset(df.columns):
+        consistency["calibrated_softmax_main_vs_aux"] = hierarchy_consistency_rate(
+            df["calibrated_softmax_pred"].astype(str).tolist(),
             df["softmax_aux_pred"].astype(str).tolist(),
         )
     if {"prototype_pred", "prototype_aux_pred"}.issubset(df.columns):
@@ -205,9 +210,10 @@ def main() -> None:
         "labels": labels,
         "aux_labels": aux_labels,
         "selection_method": selected_method,
-        "prototype_temperature": float(calibration["prototype_temperature"]),
-        "softmax_temperature": float(calibration.get("softmax_temperature", 1.0)),
-        "softmax_weight": float(calibration["softmax_weight"]),
+        "method_best_params": calibration.get("method_best_params", {}),
+        "prototype_temperature": calibration.get("prototype_temperature"),
+        "softmax_temperature": calibration.get("softmax_temperature"),
+        "softmax_weight": calibration.get("softmax_weight"),
         "hierarchy_confidence_penalty": float(calibration.get("hierarchy_confidence_penalty", 1.0)),
         "global_rejection_threshold": float(calibration["global_rejection_threshold"]),
         "per_class_rejection_thresholds": calibration["per_class_rejection_thresholds"],

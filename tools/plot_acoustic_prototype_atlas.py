@@ -183,14 +183,14 @@ def main() -> None:
     for idx, label in enumerate(main_labels):
         mean_map = main_mean[idx, 0] if main_mean.ndim == 4 else main_mean[idx]
         std_map = main_std[idx, 0] if main_std.ndim == 4 else main_std[idx]
-        plot_map(mean_map, f"{label} train Log-Mel mean", main_dir / f"logmel_mean_{safe_name(label)}.png", args.allow_overwrite)
-        plot_map(std_map, f"{label} train Log-Mel std", main_dir / f"logmel_std_{safe_name(label)}.png", args.allow_overwrite)
+        plot_map(mean_map, f"{label} Normalized Log-Mel mean", main_dir / f"logmel_mean_{safe_name(label)}.png", args.allow_overwrite)
+        plot_map(std_map, f"{label} Normalized Log-Mel standard deviation", main_dir / f"logmel_std_{safe_name(label)}.png", args.allow_overwrite)
 
     for idx, label in enumerate(aux_labels):
         mean_map = aux_mean[idx, 0] if aux_mean.ndim == 4 else aux_mean[idx]
         std_map = aux_std[idx, 0] if aux_std.ndim == 4 else aux_std[idx]
-        plot_map(mean_map, f"{label} train Log-Mel mean", aux_dir / f"logmel_mean_{safe_name(label)}.png", args.allow_overwrite)
-        plot_map(std_map, f"{label} train Log-Mel std", aux_dir / f"logmel_std_{safe_name(label)}.png", args.allow_overwrite)
+        plot_map(mean_map, f"{label} Normalized Log-Mel mean", aux_dir / f"logmel_mean_{safe_name(label)}.png", args.allow_overwrite)
+        plot_map(std_map, f"{label} Normalized Log-Mel standard deviation", aux_dir / f"logmel_std_{safe_name(label)}.png", args.allow_overwrite)
 
     distance_stats: dict[str, Any] | None = None
     if metadata.get("distance_statistics_path"):
@@ -248,6 +248,10 @@ def main() -> None:
         "main_labels": main_labels,
         "aux_labels": aux_labels,
         "audio_copied": False,
+        "logmel_atlas_note": (
+            "Mean and standard-deviation maps use per-sample z-scored training features; "
+            "they do not represent absolute acoustic energy."
+        ),
         "outputs": {
             "main_dir": str(main_dir.resolve()),
             "auxiliary_dir": str(aux_dir.resolve()),

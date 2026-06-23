@@ -13,12 +13,14 @@ from prototype_model_adapter import (
     assert_no_leakage,
     audit_manifest_disjointness,
     build_hier_dataset,
+    calibration_relevant_parameters,
     calibration_metrics,
     config_from_summary,
     coverage_risk_curve,
     extract_embeddings,
     file_sha256,
     fusion_formula_metadata,
+    fusion_mode_from_alpha,
     fuse_probabilities,
     load_hier_model,
     load_prototype_bundle,
@@ -29,6 +31,7 @@ from prototype_model_adapter import (
     prototype_scores_from_bundle,
     read_json,
     require_file,
+    resolve_recorded_file,
     select_per_class_thresholds,
     select_threshold_for_target_coverage,
     temperature_scale_probabilities,
@@ -65,6 +68,15 @@ def finite_or_inf(value: Any) -> float:
     return out if np.isfinite(out) else float("inf")
 
 
+def json_scalar(value: Any) -> Any:
+    if isinstance(value, (int, float, np.number)):
+        return float(value) if np.isfinite(float(value)) else None
+    try:
+        return None if pd.isna(value) else value
+    except (TypeError, ValueError):
+        return value
+
+
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
         description="Calibrate prototype temperatures, fusion weight, hierarchy penalty, and reject thresholds on validation only."
@@ -83,17 +95,28 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--fusion_weight_grid", default="0.0,0.25,0.5,0.75,1.0")
     ap.add_argument("--hierarchy_penalty_grid", default="0.5,0.7,0.85,1.0")
     ap.add_argument("--hier_aux_prob_weight", type=float, default=0.5)
-    ap.add_argument("--selection_method", choices=["softmax", "prototype", "hierarchical", "fused"], default="hierarchical")
+    ap.add_argument(
+        "--selection_method",
+        choices=["raw_softmax", "calibrated_softmax", "softmax", "prototype", "hierarchical", "fused"],
+        default="hierarchical",
+        help="Final method selected from independently calibrated method configurations. 'softmax' aliases calibrated_softmax.",
+    )
     ap.add_argument("--target_coverage", type=float, default=0.95)
     ap.add_argument("--per_class_min_count", type=int, default=5)
     ap.add_argument("--ece_bins", type=int, default=10)
-    ap.add_argument("--allow_ckpt_mismatch", action="store_true")
+    ap.add_argument("--allow_relocated_checkpoint", action="store_true", help="Allow checkpoint path relocation only when SHA256 matches.")
+    ap.add_argument(
+        "--unsafe_allow_checkpoint_sha_mismatch",
+        action="store_true",
+        help="Unsafe audit-only bypass for checkpoint SHA mismatch. Do not use for paper runs.",
+    )
     ap.add_argument("--allow_overwrite", action="store_true")
     return ap.parse_args()
 
 
 def main() -> None:
     args = parse_args()
+    selection_method = "calibrated_softmax" if args.selection_method == "softmax" else args.selection_method
 
     bundle_path = require_file(args.prototype_bundle, "prototype bundle")
     val_manifest = require_file(args.val_manifest, "validation manifest")
@@ -103,20 +126,29 @@ def main() -> None:
 
     bundle = load_prototype_bundle(bundle_path)
     metadata = bundle["metadata"]
-    train_manifest = require_file(metadata["train_manifest"], "train manifest from prototype metadata")
+    train_manifest = resolve_recorded_file(
+        metadata,
+        absolute_key="train_manifest",
+        relative_key="train_manifest",
+        sha256_key=None,
+        description="train manifest from prototype metadata",
+    )
     audit = audit_manifest_disjointness({"train": train_manifest, "val": val_manifest})
     assert_no_leakage(audit)
     write_json(out_dir / "leakage_audit.json", audit)
 
     expected_ckpt = metadata.get("checkpoint_path")
-    if expected_ckpt and not same_resolved_path(expected_ckpt, ckpt) and not args.allow_ckpt_mismatch:
+    ckpt_sha = file_sha256(ckpt)
+    expected_sha = metadata.get("checkpoint_sha256")
+    if expected_ckpt and not same_resolved_path(expected_ckpt, ckpt) and not args.allow_relocated_checkpoint:
         raise RuntimeError(
             "Checkpoint mismatch. Prototype was built with "
-            f"{expected_ckpt}, but --ckpt={ckpt}. Use --allow_ckpt_mismatch only for explicit audits."
+            f"{expected_ckpt}, but --ckpt={ckpt}. Use --allow_relocated_checkpoint only if SHA256 matches."
         )
-    expected_sha = metadata.get("checkpoint_sha256")
-    if expected_sha and file_sha256(ckpt) != str(expected_sha) and not args.allow_ckpt_mismatch:
+    if expected_sha and ckpt_sha != str(expected_sha) and not args.unsafe_allow_checkpoint_sha_mismatch:
         raise RuntimeError("Checkpoint SHA256 mismatch between prototype metadata and --ckpt.")
+    if expected_sha and ckpt_sha != str(expected_sha) and args.unsafe_allow_checkpoint_sha_mismatch:
+        print("[WARN] unsafe checkpoint SHA mismatch bypass enabled; do not use this run for paper results.")
     if metadata.get("val_manifest") and not same_resolved_path(metadata["val_manifest"], val_manifest):
         raise RuntimeError(
             f"Validation manifest mismatch. Prototype metadata expects {metadata['val_manifest']}, got {val_manifest}."
@@ -155,7 +187,52 @@ def main() -> None:
     hierarchy_penalties = parse_csv_floats(args.hierarchy_penalty_grid, name="hierarchy_penalty_grid")
 
     grid_rows: list[dict[str, float | str | int]] = []
-    cached: dict[tuple[float, float, float], dict[str, np.ndarray]] = {}
+    method_probs: dict[str, np.ndarray] = {}
+    method_aux_proto_probs: dict[str, np.ndarray] = {}
+    method_scores: dict[str, dict[str, np.ndarray]] = {}
+
+    def add_metrics_row(method: str, probs: np.ndarray, params: dict[str, Any]) -> dict[str, Any]:
+        row: dict[str, Any] = {**params, "method": method}
+        row.update(multiclass_metrics(extracted["y_main"], probs, config.main_labels))
+        row.update(calibration_metrics(extracted["y_main"], probs, n_bins=args.ece_bins))
+        grid_rows.append(row)
+        return row
+
+    raw_params = calibration_relevant_parameters(
+        "raw_softmax",
+        prototype_temperature=None,
+        softmax_temperature=None,
+        softmax_weight=None,
+        hier_aux_prob_weight=None,
+    )
+    raw_softmax_probs = extracted["softmax_probs"]
+    raw_row = add_metrics_row("raw_softmax", raw_softmax_probs, raw_params)
+    method_probs["raw_softmax"] = raw_softmax_probs
+
+    softmax_rows: list[dict[str, Any]] = []
+    for softmax_temp in softmax_temperatures:
+        softmax_probs = temperature_scale_probabilities(extracted["softmax_probs"], softmax_temp)
+        params = calibration_relevant_parameters(
+            "calibrated_softmax",
+            prototype_temperature=None,
+            softmax_temperature=softmax_temp,
+            softmax_weight=None,
+            hier_aux_prob_weight=None,
+        )
+        softmax_rows.append(add_metrics_row("calibrated_softmax", softmax_probs, params))
+    best_softmax = pd.DataFrame(softmax_rows).sort_values(
+        ["nll", "ece", "macro_f1"],
+        ascending=[True, True, False],
+    ).iloc[0].to_dict()
+    calibrated_softmax_probs = temperature_scale_probabilities(
+        extracted["softmax_probs"],
+        float(best_softmax["softmax_temperature"]),
+    )
+    method_probs["calibrated_softmax"] = calibrated_softmax_probs
+
+    prototype_rows: list[dict[str, Any]] = []
+    hierarchical_rows: list[dict[str, Any]] = []
+    score_cache: dict[float, dict[str, np.ndarray]] = {}
 
     for proto_temp in prototype_temperatures:
         proto_scores = prototype_scores_from_bundle(
@@ -164,64 +241,96 @@ def main() -> None:
             temperature=proto_temp,
             hier_aux_weight=args.hier_aux_prob_weight,
         )
-        for softmax_temp in softmax_temperatures:
-            softmax_probs = temperature_scale_probabilities(extracted["softmax_probs"], softmax_temp)
-            for softmax_weight in fusion_weights:
-                probs_by_method = {
-                    "softmax": softmax_probs,
-                    "prototype": proto_scores["prototype"],
-                    "hierarchical": proto_scores["hierarchical"],
-                    "fused": fuse_probabilities(
-                        softmax_probs,
-                        proto_scores["hierarchical"],
-                        softmax_weight=softmax_weight,
-                    ),
-                }
-                key = (float(proto_temp), float(softmax_temp), float(softmax_weight))
-                cached[key] = {
-                    **probs_by_method,
-                    "aux_prototype": proto_scores["aux_prototype"],
-                    "main_cosine_similarity": proto_scores["main_cosine_similarity"],
-                    "aux_cosine_similarity": proto_scores["aux_cosine_similarity"],
-                    "main_cosine_distance": proto_scores["main_cosine_distance"],
-                    "aux_cosine_distance": proto_scores["aux_cosine_distance"],
-                    "main_euclidean_distance": proto_scores["main_euclidean_distance"],
-                    "aux_euclidean_distance": proto_scores["aux_euclidean_distance"],
-                    "nearest_main_id": proto_scores["nearest_main_id"],
-                    "nearest_aux_id": proto_scores["nearest_aux_id"],
-                }
-                for method, probs in probs_by_method.items():
-                    row: dict[str, float | str | int] = {
-                        "prototype_temperature": float(proto_temp),
-                        "temperature": float(proto_temp),
-                        "softmax_temperature": float(softmax_temp),
-                        "softmax_weight": float(softmax_weight),
-                        "method": method,
-                    }
-                    row.update(multiclass_metrics(extracted["y_main"], probs, config.main_labels))
-                    row.update(calibration_metrics(extracted["y_main"], probs, n_bins=args.ece_bins))
-                    grid_rows.append(row)
+        score_cache[float(proto_temp)] = proto_scores
+        prototype_rows.append(
+            add_metrics_row(
+                "prototype",
+                proto_scores["prototype"],
+                calibration_relevant_parameters(
+                    "prototype",
+                    prototype_temperature=proto_temp,
+                    softmax_temperature=None,
+                    softmax_weight=None,
+                    hier_aux_prob_weight=None,
+                ),
+            )
+        )
+        hierarchical_rows.append(
+            add_metrics_row(
+                "hierarchical",
+                proto_scores["hierarchical"],
+                calibration_relevant_parameters(
+                    "hierarchical",
+                    prototype_temperature=proto_temp,
+                    softmax_temperature=None,
+                    softmax_weight=None,
+                    hier_aux_prob_weight=args.hier_aux_prob_weight,
+                ),
+            )
+        )
+
+    best_prototype = pd.DataFrame(prototype_rows).sort_values(
+        ["macro_f1", "nll", "ece"],
+        ascending=[False, True, True],
+    ).iloc[0].to_dict()
+    best_hierarchical = pd.DataFrame(hierarchical_rows).sort_values(
+        ["macro_f1", "nll", "ece"],
+        ascending=[False, True, True],
+    ).iloc[0].to_dict()
+
+    prototype_scores_best = score_cache[float(best_prototype["prototype_temperature"])]
+    hierarchical_scores_best = score_cache[float(best_hierarchical["prototype_temperature"])]
+    method_probs["prototype"] = prototype_scores_best["prototype"]
+    method_probs["hierarchical"] = hierarchical_scores_best["hierarchical"]
+    method_aux_proto_probs["prototype"] = prototype_scores_best["aux_prototype"]
+    method_aux_proto_probs["hierarchical"] = hierarchical_scores_best["aux_prototype"]
+    method_scores["prototype"] = prototype_scores_best
+    method_scores["hierarchical"] = hierarchical_scores_best
+
+    fused_rows: list[dict[str, Any]] = []
+    for softmax_weight in fusion_weights:
+        fused_probs = fuse_probabilities(
+            calibrated_softmax_probs,
+            hierarchical_scores_best["hierarchical"],
+            softmax_weight=softmax_weight,
+        )
+        params = calibration_relevant_parameters(
+            "fused",
+            prototype_temperature=float(best_hierarchical["prototype_temperature"]),
+            softmax_temperature=float(best_softmax["softmax_temperature"]),
+            softmax_weight=softmax_weight,
+            hier_aux_prob_weight=args.hier_aux_prob_weight,
+        )
+        fused_rows.append(add_metrics_row("fused", fused_probs, params))
+    best_fused = pd.DataFrame(fused_rows).sort_values(
+        ["macro_f1", "nll", "ece"],
+        ascending=[False, True, True],
+    ).iloc[0].to_dict()
+    method_probs["fused"] = fuse_probabilities(
+        calibrated_softmax_probs,
+        hierarchical_scores_best["hierarchical"],
+        softmax_weight=float(best_fused["softmax_weight"]),
+    )
 
     grid = pd.DataFrame(grid_rows)
     grid.to_csv(out_dir / "calibration_grid.csv", index=False, encoding="utf-8-sig")
 
-    choices = grid[grid["method"] == args.selection_method].copy()
-    if choices.empty:
-        raise RuntimeError(f"No calibration rows for selection method={args.selection_method}")
-    choices = choices.sort_values(["macro_f1", "nll", "ece"], ascending=[False, True, True])
-    best = choices.iloc[0].to_dict()
-    best_key = (
-        float(best["prototype_temperature"]),
-        float(best["softmax_temperature"]),
-        float(best["softmax_weight"]),
-    )
-    best_probs = cached[best_key]
-    selected_probs = best_probs[args.selection_method]
+    best_rows: dict[str, dict[str, Any]] = {
+        "raw_softmax": raw_row,
+        "calibrated_softmax": best_softmax,
+        "prototype": best_prototype,
+        "hierarchical": best_hierarchical,
+        "fused": best_fused,
+    }
+    if selection_method not in best_rows:
+        raise RuntimeError(f"No calibration row for selection method={selection_method}")
+    best = best_rows[selection_method]
+    selected_probs = method_probs[selection_method]
     selected_pred = selected_probs.argmax(axis=1)
     selected_conf_raw = selected_probs.max(axis=1)
 
-    main_proto_pred = best_probs["prototype"].argmax(axis=1)
-    aux_proto_pred = best_probs["aux_prototype"].argmax(axis=1)
+    main_proto_pred = method_probs["prototype"].argmax(axis=1)
+    aux_proto_pred = hierarchical_scores_best["aux_prototype"].argmax(axis=1)
     main_proto_labels = [config.main_labels[int(i)] for i in main_proto_pred]
     aux_proto_labels = [config.aux_labels[int(i)] for i in aux_proto_pred]
 
@@ -282,12 +391,7 @@ def main() -> None:
     )
     pd.DataFrame(coverage_rows).to_csv(out_dir / "coverage_risk.csv", index=False, encoding="utf-8-sig")
 
-    probs_by_method = {
-        "softmax": best_probs["softmax"],
-        "prototype": best_probs["prototype"],
-        "hierarchical": best_probs["hierarchical"],
-        "fused": best_probs["fused"],
-    }
+    probs_by_method = dict(method_probs)
     val_pred = prediction_frame(
         extracted["metadata"],
         extracted["y_main"],
@@ -296,11 +400,11 @@ def main() -> None:
         config.aux_labels,
         probs_by_method,
         aux_probs=extracted["aux_softmax_probs"],
-        aux_proto_probs=best_probs["aux_prototype"],
-        prototype_scores=best_probs,
+        aux_proto_probs=hierarchical_scores_best["aux_prototype"],
+        prototype_scores=hierarchical_scores_best,
     )
-    val_pred["selected_method"] = args.selection_method
-    val_pred["selected_pred"] = val_pred[f"{args.selection_method}_pred"]
+    val_pred["selected_method"] = selection_method
+    val_pred["selected_pred"] = val_pred[f"{selection_method}_pred"]
     val_pred["selected_confidence_raw"] = selected_conf_raw
     val_pred["selected_confidence"] = selected_conf
     val_pred["uncertainty"] = 1.0 - selected_conf
@@ -329,13 +433,47 @@ def main() -> None:
     )
     best_metrics.to_csv(out_dir / "metrics_by_method_val.csv", index=False, encoding="utf-8-sig")
 
+    method_best_params = {
+        method: calibration_relevant_parameters(
+            method,
+            prototype_temperature=row.get("prototype_temperature"),
+            softmax_temperature=row.get("softmax_temperature"),
+            softmax_weight=row.get("softmax_weight"),
+            hier_aux_prob_weight=row.get("hier_aux_prob_weight"),
+        )
+        for method, row in best_rows.items()
+    }
+    method_best_metrics = {
+        method: {
+            k: json_scalar(v)
+            for k, v in row.items()
+            if k
+            in {
+                "method",
+                "n",
+                "top1_acc",
+                "macro_f1",
+                "top2_acc",
+                "ece",
+                "brier",
+                "nll",
+                "prototype_temperature",
+                "softmax_temperature",
+                "softmax_weight",
+                "hier_aux_prob_weight",
+                "fusion_kind",
+            }
+        }
+        for method, row in best_rows.items()
+    }
+
     calibration = {
         "artifact_type": "hier_acoustic_prototype_calibration",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "prototype_bundle": str(bundle_path.resolve()),
         "prototype_bundle_sha256": file_sha256(bundle_path),
         "checkpoint_path": str(ckpt.resolve()),
-        "checkpoint_sha256": file_sha256(ckpt),
+        "checkpoint_sha256": ckpt_sha,
         "train_manifest": str(train_manifest.resolve()),
         "train_manifest_sha256": file_sha256(train_manifest),
         "val_manifest": str(val_manifest.resolve()),
@@ -344,12 +482,35 @@ def main() -> None:
         "seed": seed,
         "model_config": metadata["model_config"],
         "feature_backend": feature_backend,
-        "selection_method": args.selection_method,
-        "prototype_temperature": float(best["prototype_temperature"]),
-        "temperature": float(best["prototype_temperature"]),
-        "softmax_temperature": float(best["softmax_temperature"]),
-        "softmax_weight": float(best["softmax_weight"]),
+        "allow_relocated_checkpoint": bool(args.allow_relocated_checkpoint),
+        "unsafe_allow_checkpoint_sha_mismatch": bool(args.unsafe_allow_checkpoint_sha_mismatch),
+        "selection_method": selection_method,
+        "method_best_params": method_best_params,
+        "method_best_metrics": method_best_metrics,
+        "raw_softmax": method_best_params["raw_softmax"],
+        "calibrated_softmax": method_best_params["calibrated_softmax"],
+        "prototype": method_best_params["prototype"],
+        "hierarchical": method_best_params["hierarchical"],
+        "fused": method_best_params["fused"],
+        "fused_is_independent_mixed_fusion": fusion_mode_from_alpha(float(best_fused["softmax_weight"])) == "mixed",
+        "fusion_result_note": (
+            "fused is a mixed Softmax/prototype result only when fusion_kind=mixed; "
+            "alpha=0 is pure_prototype and alpha=1 is pure_softmax."
+        ),
+        "prototype_temperature": (
+            float(best["prototype_temperature"]) if best.get("prototype_temperature") is not None and pd.notna(best.get("prototype_temperature")) else None
+        ),
+        "temperature": (
+            float(best["prototype_temperature"]) if best.get("prototype_temperature") is not None and pd.notna(best.get("prototype_temperature")) else None
+        ),
+        "softmax_temperature": (
+            float(best["softmax_temperature"]) if best.get("softmax_temperature") is not None and pd.notna(best.get("softmax_temperature")) else None
+        ),
+        "softmax_weight": (
+            float(best["softmax_weight"]) if best.get("softmax_weight") is not None and pd.notna(best.get("softmax_weight")) else None
+        ),
         "hier_aux_prob_weight": float(args.hier_aux_prob_weight),
+        "hier_aux_prob_weight_mode": "fixed",
         **fusion_formula_metadata(),
         "hierarchy_confidence_penalty": best_penalty,
         "target_coverage": float(args.target_coverage),
@@ -358,9 +519,9 @@ def main() -> None:
         "reject_label": "uncertain",
         "unknown_detection_claim": False,
         "test_used_for_calibration": False,
-        "best_validation_row": {k: (float(v) if isinstance(v, (int, float, np.number)) else v) for k, v in best.items()},
+        "best_validation_row": {k: json_scalar(v) for k, v in best.items()},
         "best_hierarchy_penalty_row": {
-            k: (float(v) if isinstance(v, (int, float, np.number)) else v)
+            k: json_scalar(v)
             for k, v in best_penalty_row.items()
         },
         "leakage_audit_path": str((out_dir / "leakage_audit.json").resolve()),

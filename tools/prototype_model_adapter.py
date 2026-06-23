@@ -64,6 +64,93 @@ def require_file(path: str | Path, description: str = "file") -> Path:
     return p
 
 
+def project_relative_path(path: str | Path, root: str | Path = ROOT) -> str | None:
+    try:
+        return Path(path).resolve().relative_to(Path(root).resolve()).as_posix()
+    except (OSError, ValueError):
+        return None
+
+
+def path_record(path: str | Path, root: str | Path = ROOT) -> dict[str, str | None]:
+    p = Path(path)
+    return {
+        "project_relative": project_relative_path(p, root=root),
+        "original_absolute": str(p.resolve()),
+        "sha256": file_sha256(p) if p.exists() and p.is_file() else None,
+    }
+
+
+def resolve_recorded_file(
+    record: Mapping[str, Any],
+    *,
+    absolute_key: str,
+    relative_key: str | None = None,
+    sha256_key: str | None = None,
+    description: str = "recorded file",
+    root: str | Path = ROOT,
+) -> Path:
+    candidates: list[Path] = []
+    absolute = record.get(absolute_key)
+    if absolute:
+        candidates.append(Path(str(absolute)))
+    project_paths = record.get("project_relative_paths")
+    if relative_key and isinstance(project_paths, Mapping):
+        rel = project_paths.get(relative_key)
+        if rel:
+            candidates.append(Path(root) / str(rel))
+    paths_record = record.get("paths")
+    if relative_key and isinstance(paths_record, Mapping):
+        payload = paths_record.get(relative_key)
+        if isinstance(payload, Mapping) and payload.get("project_relative"):
+            candidates.append(Path(root) / str(payload["project_relative"]))
+
+    expected_sha = str(record.get(sha256_key, "")) if sha256_key else ""
+    if not expected_sha and relative_key and isinstance(paths_record, Mapping):
+        payload = paths_record.get(relative_key)
+        if isinstance(payload, Mapping) and payload.get("sha256"):
+            expected_sha = str(payload["sha256"])
+
+    seen: set[str] = set()
+    existing: list[Path] = []
+    for candidate in candidates:
+        key = str(candidate)
+        if key in seen:
+            continue
+        seen.add(key)
+        if candidate.exists() and candidate.is_file():
+            existing.append(candidate)
+
+    if not existing:
+        raise FileNotFoundError(
+            f"Missing {description}; tried: {[str(x) for x in candidates]}"
+        )
+    if expected_sha:
+        for candidate in existing:
+            if file_sha256(candidate) == expected_sha:
+                return candidate
+        raise RuntimeError(f"{description} exists but SHA256 does not match recorded metadata.")
+    return existing[0]
+
+
+def normalize_identity_path(value: Any) -> str:
+    text = str(value).strip().replace("\\", "/")
+    text = re.sub(r"/+", "/", text)
+    try:
+        text = str(Path(text).as_posix())
+    except (TypeError, ValueError):
+        pass
+    text = text.lstrip("./")
+    return text.lower()
+
+
+def normalize_source_id(value: Any) -> str:
+    return str(value).strip()
+
+
+def normalize_md5(value: Any) -> str:
+    return str(value).strip().lower()
+
+
 def require_dir(path: str | Path, description: str = "directory", must_be_new: bool = False) -> Path:
     p = Path(path)
     if must_be_new and p.exists():
@@ -579,6 +666,10 @@ def compute_class_prototypes(
             continue
         prototypes[class_id] = emb[mask].mean(axis=0)
 
+    missing = [int(i) for i, count in enumerate(counts) if int(count) == 0]
+    if missing:
+        raise ValueError(f"Cannot compute prototypes with missing classes: {missing}")
+
     prototypes = normalize_rows(prototypes)
     return prototypes.astype(np.float32), counts
 
@@ -811,6 +902,73 @@ def fuse_probabilities(
         softmax_weight * np.asarray(softmax_probs, dtype=np.float32)
         + (1.0 - softmax_weight) * np.asarray(prototype_probs, dtype=np.float32)
     )
+
+
+def fusion_mode_from_alpha(alpha: float, eps: float = 1e-9) -> str:
+    value = float(alpha)
+    if abs(value) <= eps:
+        return "pure_prototype"
+    if abs(value - 1.0) <= eps:
+        return "pure_softmax"
+    return "mixed"
+
+
+def calibration_relevant_parameters(
+    method: str,
+    *,
+    prototype_temperature: float | None,
+    softmax_temperature: float | None,
+    softmax_weight: float | None,
+    hier_aux_prob_weight: float | None,
+) -> dict[str, Any]:
+    method = str(method)
+    if method == "raw_softmax":
+        return {
+            "method": method,
+            "prototype_temperature": None,
+            "softmax_temperature": None,
+            "softmax_weight": None,
+            "hier_aux_prob_weight": None,
+            "fusion_kind": None,
+        }
+    if method == "calibrated_softmax":
+        return {
+            "method": method,
+            "prototype_temperature": None,
+            "softmax_temperature": float(softmax_temperature) if softmax_temperature is not None else None,
+            "softmax_weight": None,
+            "hier_aux_prob_weight": None,
+            "fusion_kind": None,
+        }
+    if method == "prototype":
+        return {
+            "method": method,
+            "prototype_temperature": float(prototype_temperature) if prototype_temperature is not None else None,
+            "softmax_temperature": None,
+            "softmax_weight": None,
+            "hier_aux_prob_weight": None,
+            "fusion_kind": None,
+        }
+    if method == "hierarchical":
+        return {
+            "method": method,
+            "prototype_temperature": float(prototype_temperature) if prototype_temperature is not None else None,
+            "softmax_temperature": None,
+            "softmax_weight": None,
+            "hier_aux_prob_weight": float(hier_aux_prob_weight) if hier_aux_prob_weight is not None else None,
+            "fusion_kind": None,
+        }
+    if method == "fused":
+        alpha = float(softmax_weight) if softmax_weight is not None else None
+        return {
+            "method": method,
+            "prototype_temperature": float(prototype_temperature) if prototype_temperature is not None else None,
+            "softmax_temperature": float(softmax_temperature) if softmax_temperature is not None else None,
+            "softmax_weight": alpha,
+            "hier_aux_prob_weight": float(hier_aux_prob_weight) if hier_aux_prob_weight is not None else None,
+            "fusion_kind": fusion_mode_from_alpha(alpha) if alpha is not None else None,
+        }
+    raise ValueError(f"Unknown calibration method: {method}")
 
 
 def topk_labels(probs: np.ndarray, labels: Sequence[str], k: int = 2) -> list[str]:
@@ -1253,27 +1411,156 @@ def hierarchy_consistency_rate(
     return float(np.mean(ok))
 
 
+def align_prediction_frames_by_path(
+    reference: pd.DataFrame,
+    reproduced: pd.DataFrame,
+    path_col: str = "path",
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    if path_col not in reference.columns:
+        raise ValueError(f"reference predictions are missing required path column: {path_col}")
+    if path_col not in reproduced.columns:
+        raise ValueError(f"reproduced predictions are missing required path column: {path_col}")
+
+    ref = reference.copy()
+    rep = reproduced.copy()
+    ref["_norm_path"] = [normalize_identity_path(x) for x in ref[path_col].tolist()]
+    rep["_norm_path"] = [normalize_identity_path(x) for x in rep[path_col].tolist()]
+
+    ref_duplicates = sorted(ref.loc[ref["_norm_path"].duplicated(keep=False), "_norm_path"].unique().tolist())
+    rep_duplicates = sorted(rep.loc[rep["_norm_path"].duplicated(keep=False), "_norm_path"].unique().tolist())
+
+    ref_paths = set(ref["_norm_path"])
+    rep_paths = set(rep["_norm_path"])
+    matched_paths = sorted(ref_paths & rep_paths)
+    missing = sorted(ref_paths - rep_paths)
+    extra = sorted(rep_paths - ref_paths)
+
+    rows: list[dict[str, Any]] = []
+    ref_idx = ref.drop_duplicates("_norm_path", keep="first").set_index("_norm_path")
+    rep_idx = rep.drop_duplicates("_norm_path", keep="first").set_index("_norm_path")
+    for path in sorted(ref_paths | rep_paths):
+        in_ref = path in ref_idx.index
+        in_rep = path in rep_idx.index
+        row: dict[str, Any] = {
+            "path": path,
+            "in_reference": bool(in_ref),
+            "in_reproduced": bool(in_rep),
+            "duplicate_in_reference": path in ref_duplicates,
+            "duplicate_in_reproduced": path in rep_duplicates,
+        }
+        if in_ref:
+            row["reference_y_true"] = ref_idx.at[path, "y_true"] if "y_true" in ref_idx.columns else None
+            row["reference_y_pred"] = ref_idx.at[path, "y_pred"] if "y_pred" in ref_idx.columns else None
+        else:
+            row["reference_y_true"] = None
+            row["reference_y_pred"] = None
+        if in_rep:
+            row["reproduced_y_true"] = rep_idx.at[path, "y_true"] if "y_true" in rep_idx.columns else None
+            row["reproduced_y_pred"] = rep_idx.at[path, "y_pred"] if "y_pred" in rep_idx.columns else None
+        else:
+            row["reproduced_y_true"] = None
+            row["reproduced_y_pred"] = None
+        row["y_true_match"] = bool(in_ref and in_rep and str(row["reference_y_true"]) == str(row["reproduced_y_true"]))
+        row["y_pred_match"] = bool(in_ref and in_rep and str(row["reference_y_pred"]) == str(row["reproduced_y_pred"]))
+        rows.append(row)
+
+    report = pd.DataFrame(rows)
+    matched = report[report["in_reference"] & report["in_reproduced"]]
+    summary = {
+        "alignment_ok": bool(
+            not missing
+            and not extra
+            and not ref_duplicates
+            and not rep_duplicates
+            and bool(matched["y_true_match"].all()) if len(matched) else False
+        ),
+        "matched_count": int(len(matched)),
+        "reference_count": int(len(ref)),
+        "reproduced_count": int(len(rep)),
+        "missing_reference_paths": missing,
+        "extra_reproduced_paths": extra,
+        "duplicate_reference_paths": ref_duplicates,
+        "duplicate_reproduced_paths": rep_duplicates,
+        "y_true_match_count": int(matched["y_true_match"].sum()) if len(matched) else 0,
+        "y_pred_match_count": int(matched["y_pred_match"].sum()) if len(matched) else 0,
+        "y_true_all_match": bool(len(matched) > 0 and matched["y_true_match"].all() and not missing and not extra),
+        "y_pred_all_match": bool(len(matched) > 0 and matched["y_pred_match"].all() and not missing and not extra),
+    }
+    return report, summary
+
+
 def audit_manifest_disjointness(
     manifest_paths: Mapping[str, str | Path],
     columns: Sequence[str] = ("path", "source_id", "md5"),
 ) -> dict[str, Any]:
     frames: dict[str, pd.DataFrame] = {}
     counts: dict[str, int] = {}
+    required = list(columns)
+    missing_columns: dict[str, list[str]] = {}
+    invalid_values: list[dict[str, Any]] = []
+    normalized: dict[str, dict[str, list[str]]] = {}
+
+    def invalid_reason(column: str, raw: Any, normalized_value: str) -> str | None:
+        if raw is None:
+            return "null"
+        if pd.isna(raw):
+            return "nan"
+        text = str(raw).strip()
+        if text == "":
+            return "empty"
+        if text.lower() in {"nan", "none"}:
+            return text.lower()
+        if column == "md5" and not re.fullmatch(r"[0-9a-f]{32}", normalized_value):
+            return "invalid_md5"
+        return None
+
+    def normalize(column: str, raw: Any) -> str:
+        if column == "path":
+            return normalize_identity_path(raw)
+        if column == "source_id":
+            return normalize_source_id(raw)
+        if column == "md5":
+            return normalize_md5(raw)
+        return str(raw).strip()
+
     for split, path in manifest_paths.items():
         p = require_file(path, f"{split} manifest")
         df = pd.read_csv(p)
-        frames[str(split)] = df
-        counts[str(split)] = int(len(df))
+        split_name = str(split)
+        frames[split_name] = df
+        counts[split_name] = int(len(df))
+        missing = [column for column in required if column not in df.columns]
+        missing_columns[split_name] = missing
+        normalized[split_name] = {}
+        for column in required:
+            if column in missing:
+                continue
+            values: list[str] = []
+            for row_idx, raw in enumerate(df[column].tolist()):
+                norm = normalize(column, raw)
+                reason = invalid_reason(column, raw, norm)
+                if reason:
+                    invalid_values.append(
+                        {
+                            "split": split_name,
+                            "row": int(row_idx),
+                            "column": column,
+                            "reason": reason,
+                            "value": None if raw is None or pd.isna(raw) else str(raw),
+                        }
+                    )
+                values.append(norm)
+            normalized[split_name][column] = values
 
     overlaps: list[dict[str, Any]] = []
     splits = list(frames.keys())
     for i, left in enumerate(splits):
         for right in splits[i + 1 :]:
-            for column in columns:
-                if column not in frames[left].columns or column not in frames[right].columns:
+            for column in required:
+                if column not in normalized[left] or column not in normalized[right]:
                     continue
-                left_vals = set(frames[left][column].astype(str))
-                right_vals = set(frames[right][column].astype(str))
+                left_vals = set(normalized[left][column])
+                right_vals = set(normalized[right][column])
                 shared = sorted(left_vals & right_vals)
                 if shared:
                     overlaps.append(
@@ -1286,10 +1573,13 @@ def audit_manifest_disjointness(
                         }
                     )
 
+    all_columns_checked = all(not vals for vals in missing_columns.values())
     return {
-        "ok": len(overlaps) == 0,
+        "ok": all_columns_checked and len(invalid_values) == 0 and len(overlaps) == 0,
         "counts": counts,
-        "columns_checked": list(columns),
+        "columns_checked": required if all_columns_checked else [],
+        "missing_columns": missing_columns,
+        "invalid_values": invalid_values,
         "overlaps": overlaps,
     }
 

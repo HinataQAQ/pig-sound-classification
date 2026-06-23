@@ -16,7 +16,31 @@
     "reference_macro_f1": 0.946360153256705,
     "reproduced_macro_f1": 0.946360153256705,
     "prediction_match_count": 168,
+    "sample_alignment_passed": true,
     "probability_max_abs_diff_advisory": 0.0009449124336242676
+  },
+  "calibration": {
+    "raw_softmax": {
+      "softmax_temperature": null
+    },
+    "calibrated_softmax": {
+      "softmax_temperature": 1.0
+    },
+    "prototype": {
+      "prototype_temperature": 0.1,
+      "softmax_weight": null
+    },
+    "hierarchical": {
+      "prototype_temperature": 0.1,
+      "softmax_temperature": null,
+      "hier_aux_prob_weight": 0.5
+    },
+    "fused": {
+      "prototype_temperature": 0.1,
+      "softmax_temperature": 1.0,
+      "softmax_weight": 1.0,
+      "fusion_kind": "pure_softmax"
+    }
   },
   "metrics": {
     "softmax_macro_f1": 0.946360153256705,
@@ -39,6 +63,8 @@
     "reports/prototype_feature_parity_fold0_seed3407/environment_audit.json",
     "reports/prototype_feature_parity_fold0_seed3407/feature_parity_report.csv",
     "reports/prototype_cv5_fold0_seed3407_exact/softmax_reproduction/softmax_reproduction.json",
+    "reports/prototype_cv5_fold0_seed3407_exact/softmax_reproduction/sample_alignment_report.csv",
+    "reports/prototype_cv5_fold0_seed3407_exact/calibration/calibration.json",
     "reports/prototype_cv5_fold0_seed3407_exact/evaluation/metrics.json",
     "reports/prototype_cv5_fold0_seed3407_exact/evaluation/coverage_risk.csv",
     "reports/prototype_cv5_fold0_seed3407_exact/artifacts/leakage_audit.json",

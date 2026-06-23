@@ -19,9 +19,51 @@
                        "anxious_stress"
                    ],
     "selection_method":  "hierarchical",
+    "method_best_params":  {
+                               "raw_softmax":  {
+                                                   "method":  "raw_softmax",
+                                                   "prototype_temperature":  null,
+                                                   "softmax_temperature":  null,
+                                                   "softmax_weight":  null,
+                                                   "hier_aux_prob_weight":  null,
+                                                   "fusion_kind":  null
+                                               },
+                               "calibrated_softmax":  {
+                                                          "method":  "calibrated_softmax",
+                                                          "prototype_temperature":  null,
+                                                          "softmax_temperature":  1.0,
+                                                          "softmax_weight":  null,
+                                                          "hier_aux_prob_weight":  null,
+                                                          "fusion_kind":  null
+                                                      },
+                               "prototype":  {
+                                                 "method":  "prototype",
+                                                 "prototype_temperature":  0.1,
+                                                 "softmax_temperature":  null,
+                                                 "softmax_weight":  null,
+                                                 "hier_aux_prob_weight":  null,
+                                                 "fusion_kind":  null
+                                             },
+                               "hierarchical":  {
+                                                    "method":  "hierarchical",
+                                                    "prototype_temperature":  0.1,
+                                                    "softmax_temperature":  null,
+                                                    "softmax_weight":  null,
+                                                    "hier_aux_prob_weight":  0.5,
+                                                    "fusion_kind":  null
+                                                },
+                               "fused":  {
+                                             "method":  "fused",
+                                             "prototype_temperature":  0.1,
+                                             "softmax_temperature":  1.0,
+                                             "softmax_weight":  1.0,
+                                             "hier_aux_prob_weight":  0.5,
+                                             "fusion_kind":  "pure_softmax"
+                                         }
+                           },
     "prototype_temperature":  0.1,
-    "softmax_temperature":  0.5,
-    "softmax_weight":  0.0,
+    "softmax_temperature":  null,
+    "softmax_weight":  null,
     "hierarchy_confidence_penalty":  1.0,
     "global_rejection_threshold":  0.8533071279525757,
     "per_class_rejection_thresholds":  {
@@ -33,16 +75,26 @@
     "unknown_detection_claim":  false,
     "test_used_for_parameter_selection":  false,
     "methods":  {
-                    "softmax":  {
-                                    "method":  "softmax",
-                                    "n":  168,
-                                    "top1_acc":  0.9464285714285714,
-                                    "macro_f1":  0.946360153256705,
-                                    "top2_acc":  1.0,
-                                    "ece":  0.042938356243428705,
-                                    "brier":  0.09475068002939224,
-                                    "nll":  0.17230388522148132
-                                },
+                    "raw_softmax":  {
+                                        "method":  "raw_softmax",
+                                        "n":  168,
+                                        "top1_acc":  0.9464285714285714,
+                                        "macro_f1":  0.946360153256705,
+                                        "top2_acc":  1.0,
+                                        "ece":  0.028921615509759826,
+                                        "brier":  0.08378985524177551,
+                                        "nll":  0.1271175593137741
+                                    },
+                    "calibrated_softmax":  {
+                                               "method":  "calibrated_softmax",
+                                               "n":  168,
+                                               "top1_acc":  0.9464285714285714,
+                                               "macro_f1":  0.946360153256705,
+                                               "top2_acc":  1.0,
+                                               "ece":  0.028921615509759826,
+                                               "brier":  0.08378986269235611,
+                                               "nll":  0.1271175593137741
+                                           },
                     "prototype":  {
                                       "method":  "prototype",
                                       "n":  168,
@@ -66,12 +118,12 @@
                     "fused":  {
                                   "method":  "fused",
                                   "n":  168,
-                                  "top1_acc":  0.9523809523809523,
-                                  "macro_f1":  0.9522727272727273,
+                                  "top1_acc":  0.9464285714285714,
+                                  "macro_f1":  0.946360153256705,
                                   "top2_acc":  1.0,
-                                  "ece":  0.03415388188191824,
-                                  "brier":  0.07725942134857178,
-                                  "nll":  0.1203778013586998
+                                  "ece":  0.028921615509759826,
+                                  "brier":  0.08378986269235611,
+                                  "nll":  0.1271175593137741
                               }
                 },
     "auxiliary_prototype":  {
@@ -117,10 +169,11 @@
                            }
                        ],
     "hierarchy_consistency":  {
-                                  "softmax_main_vs_aux":  0.9821428571428571,
+                                  "raw_softmax_main_vs_aux":  0.9821428571428571,
+                                  "calibrated_softmax_main_vs_aux":  0.9821428571428571,
                                   "prototype_main_vs_aux":  0.9940476190476191,
                                   "hierarchical_main_vs_aux":  1.0,
-                                  "fused_main_vs_aux":  1.0,
+                                  "fused_main_vs_aux":  0.9940476190476191,
                                   "prototype_main_aux_inconsistent_rate":  0.005952380952380952
                               },
     "outputs":  {
@@ -136,65 +189,26 @@
     "reference_macro_f1":  0.946360153256705,
     "reproduced_macro_f1":  0.946360153256705,
     "prediction_match_count":  168,
-    "probability_max_abs_diff":  0.0009449124336242676,
-    "probability_tolerance_is_advisory":  true,
-    "feature_config":  {
-                           "feature_backend":  "training_exact",
-                           "feature_mode":  "logmel",
-                           "sr":  32000,
-                           "dur_s":  2.0,
-                           "n_mels":  64,
-                           "n_mfcc":  20,
-                           "n_fft":  1024,
-                           "hop_length":  320,
-                           "win_length":  800,
-                           "fmin":  50.0,
-                           "fmax":  8000.0,
-                           "window":  "hann",
-                           "center":  true,
-                           "pad_mode":  "constant",
-                           "power":  2.0,
-                           "mel_htk":  false,
-                           "mel_norm":  "slaney",
-                           "power_to_db_ref":  1.0,
-                           "power_to_db_top_db":  80.0,
-                           "waveform_mono_conversion":  "soundfile always_2d=False; if ndarray ndim==2, average channels",
-                           "resampling":  "scipy.signal.resample_poly when source_sr != target sr",
-                           "center_crop":  "middle crop to int(sr * dur_s)",
-                           "zero_padding":  "symmetric constant zero padding to int(sr * dur_s)",
-                           "norm_map":  "per-sample z-score with eps=1e-6",
-                           "source_functions":  [
-                                                    "train_mctafd_crnn_ablation.load_audio_soundfile",
-                                                    "train_mctafd_crnn_ablation.make_feature",
-                                                    "train_mctafd_crnn_ablation.norm_map",
-                                                    "train_hier_longcontext_crnn.HierPigVocalDataset"
-                                                ],
-                           "feature_config_hash":  "ab208fa867ade80c585059fdaca0523d5fa82c279bbce240b75a07165cb45b94"
-                       },
-    "package_versions":  {
-                             "numba":  {
-                                           "version":  "0.64.0",
-                                           "file":  "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\numba\\__init__.py"
-                                       },
-                             "librosa":  {
-                                             "version":  "0.11.0",
-                                             "file":  "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\librosa\\__init__.py"
-                                         },
-                             "numpy":  {
-                                           "version":  "2.2.6",
-                                           "file":  "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\numpy\\__init__.py"
-                                       },
-                             "soundfile":  {
-                                               "version":  "0.13.1",
-                                               "file":  "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\soundfile.py"
-                                           },
-                             "torch":  {
-                                           "version":  "2.11.0+cu128",
-                                           "file":  "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\torch\\__init__.py"
-                                       },
-                             "scipy":  {
-                                           "version":  "1.15.3",
-                                           "file":  "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\scipy\\__init__.py"
-                                       }
+    "sample_alignment":  {
+                             "alignment_ok":  true,
+                             "matched_count":  168,
+                             "reference_count":  168,
+                             "reproduced_count":  168,
+                             "missing_reference_paths":  [
+
+                                                         ],
+                             "extra_reproduced_paths":  [
+
+                                                        ],
+                             "duplicate_reference_paths":  [
+
+                                                           ],
+                             "duplicate_reproduced_paths":  [
+
+                                                            ],
+                             "y_true_match_count":  168,
+                             "y_pred_match_count":  168,
+                             "y_true_all_match":  true,
+                             "y_pred_all_match":  true
                          }
 }

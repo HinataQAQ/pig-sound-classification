@@ -31,8 +31,10 @@ For each fold-seed:
 3. Reuse `HierCRNN.encode(x)` to extract shared embeddings.
 4. L2-normalize embeddings.
 5. Build main and auxiliary prototypes from train embeddings only.
-6. Use validation only to choose prototype temperature, softmax temperature,
-   fusion weight, hierarchy confidence penalty, and reject thresholds.
+6. Use validation only to choose method-specific calibration parameters:
+   calibrated Softmax temperature by NLL, prototype temperature for prototype
+   methods, fusion alpha after both sides are fixed, hierarchy confidence
+   penalty, and reject thresholds.
 7. Freeze all calibration parameters before running test prediction.
 8. Evaluate test predictions without selecting any parameter from test metrics.
 
@@ -162,6 +164,19 @@ python tools\plot_acoustic_prototype_atlas.py `
 - `metrics_by_method_val.csv`
 - `leakage_audit.json`
 
+`calibration.json` stores independent best parameters for `raw_softmax`,
+`calibrated_softmax`, `prototype`, `hierarchical`, and `fused`. `raw_softmax`
+has no temperature scaling. `calibrated_softmax` selects only
+`softmax_temperature`, primarily by validation NLL. Prototype methods select
+only prototype-side parameters. Fused predictions use:
+
+```text
+fused = alpha * softmax + (1 - alpha) * prototype
+```
+
+where `alpha=0` is `pure_prototype`, `alpha=1` is `pure_softmax`, and only
+`fusion_kind=mixed` should be interpreted as a genuine fusion result.
+
 `evaluation\` contains:
 
 - `test_predictions.csv`
@@ -175,9 +190,13 @@ python tools\plot_acoustic_prototype_atlas.py `
 - `prediction_metadata.json`
 - `leakage_audit.json`
 
-`atlas\` contains main and auxiliary Log-Mel mean/std heatmaps, prototype norm
-CSVs, distance-statistic CSVs, representative/farthest/ambiguous sample lists,
-prototype cosine-similarity matrices, and feeding/stress focused analysis.
+`atlas\` contains main and auxiliary normalized Log-Mel mean/std heatmaps,
+prototype norm CSVs, distance-statistic CSVs, representative/farthest/ambiguous
+sample lists, prototype cosine-similarity matrices, and feeding/stress focused
+analysis. These heatmaps are titled `Normalized Log-Mel mean` and `Normalized
+Log-Mel standard deviation` because they use the training feature tensors after
+the training pipeline's per-sample z-score normalization. They support relative
+pattern inspection and do not represent absolute acoustic energy.
 
 Sample paths are written to CSV/JSON for audit. Audio files are not copied.
 
@@ -186,7 +205,9 @@ Sample paths are written to CSV/JSON for audit. Audio files are not copied.
 `test_predictions.csv` includes:
 
 - true labels when a manifest is used
-- softmax, main-prototype, hierarchical-prototype, and optional fused top-k
+- `raw_softmax` top-k from the uncalibrated model head
+- `calibrated_softmax` top-k after validation-selected softmax temperature
+- main-prototype, hierarchical-prototype, and fused top-k
 - auxiliary prototype top-k
 - class probabilities
 - nearest main and auxiliary prototypes

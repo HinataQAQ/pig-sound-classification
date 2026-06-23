@@ -17,12 +17,15 @@ from prototype_model_adapter import (  # noqa: E402
     DEFAULT_MAIN_LABELS,
     HierModelConfig,
     apply_hierarchy_confidence_penalty,
+    align_prediction_frames_by_path,
     audit_manifest_disjointness,
+    calibration_relevant_parameters,
     calibration_metrics,
     compute_class_prototypes,
     compute_distance_statistics,
     coverage_risk_curve,
     file_sha256,
+    fusion_mode_from_alpha,
     make_numpy_logmel_feature,
     map_aux_probabilities_to_main,
     multiclass_metrics,
@@ -51,6 +54,13 @@ class PrototypePipelineCoreTests(unittest.TestCase):
         np.testing.assert_allclose(prototypes[0], [1.0, 0.0], atol=1e-6)
         np.testing.assert_allclose(prototypes[1], [0.0, 1.0], atol=1e-6)
         np.testing.assert_array_equal(counts, [2, 2])
+
+    def test_compute_class_prototypes_rejects_missing_class(self):
+        embeddings = np.array([[1.0, 0.0], [0.5, 0.5]], dtype=np.float32)
+        labels = np.array([0, 0], dtype=np.int64)
+
+        with self.assertRaisesRegex(ValueError, "missing classes"):
+            compute_class_prototypes(embeddings, labels, num_classes=2)
 
     def test_distance_statistics_use_train_embeddings_only_geometry(self):
         embeddings = np.array(
@@ -164,6 +174,31 @@ class PrototypePipelineCoreTests(unittest.TestCase):
         self.assertEqual(meta["fusion_weight_alpha_1"], "pure softmax")
         self.assertIn("penalized_confidence", meta["hierarchy_penalty_formula"])
 
+    def test_calibration_relevant_parameters_drop_irrelevant_knobs(self):
+        hierarchical = calibration_relevant_parameters(
+            "hierarchical",
+            prototype_temperature=0.1,
+            softmax_temperature=2.0,
+            softmax_weight=0.75,
+            hier_aux_prob_weight=0.5,
+        )
+        prototype = calibration_relevant_parameters(
+            "prototype",
+            prototype_temperature=0.2,
+            softmax_temperature=0.5,
+            softmax_weight=0.25,
+            hier_aux_prob_weight=0.5,
+        )
+
+        self.assertIsNone(hierarchical["softmax_temperature"])
+        self.assertIsNone(hierarchical["softmax_weight"])
+        self.assertIsNone(prototype["softmax_weight"])
+
+    def test_fusion_mode_from_alpha_marks_pure_endpoints(self):
+        self.assertEqual(fusion_mode_from_alpha(0.0), "pure_prototype")
+        self.assertEqual(fusion_mode_from_alpha(1.0), "pure_softmax")
+        self.assertEqual(fusion_mode_from_alpha(0.25), "mixed")
+
     def test_numpy_logmel_feature_is_finite_and_has_expected_shape(self):
         y = np.zeros(32000 * 2, dtype=np.float32)
 
@@ -239,13 +274,13 @@ class PrototypePipelineCoreTests(unittest.TestCase):
             val = root / "val.csv"
             test = root / "test.csv"
             pd.DataFrame(
-                [{"path": "a.wav", "label": "cough", "source_id": "src-a", "md5": "same"}]
+                [{"path": "a.wav", "label": "cough", "source_id": "src-a", "md5": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]
             ).to_csv(train, index=False)
             pd.DataFrame(
-                [{"path": "b.wav", "label": "cough", "source_id": "src-b", "md5": "same"}]
+                [{"path": "b.wav", "label": "cough", "source_id": "src-b", "md5": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}]
             ).to_csv(val, index=False)
             pd.DataFrame(
-                [{"path": "c.wav", "label": "feeding", "source_id": "src-c", "md5": "other"}]
+                [{"path": "c.wav", "label": "feeding", "source_id": "src-c", "md5": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}]
             ).to_csv(test, index=False)
 
             report = audit_manifest_disjointness(
@@ -255,6 +290,88 @@ class PrototypePipelineCoreTests(unittest.TestCase):
 
         self.assertFalse(report["ok"])
         self.assertEqual(report["overlaps"][0]["column"], "md5")
+
+    def test_audit_manifest_disjointness_requires_md5(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            train = root / "train.csv"
+            val = root / "val.csv"
+            pd.DataFrame([{"path": "a.wav", "source_id": "a"}]).to_csv(train, index=False)
+            pd.DataFrame([{"path": "b.wav", "source_id": "b"}]).to_csv(val, index=False)
+
+            report = audit_manifest_disjointness({"train": train, "val": val})
+
+        self.assertFalse(report["ok"])
+        self.assertIn("md5", report["missing_columns"]["train"])
+
+    def test_audit_manifest_disjointness_requires_source_id(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            train = root / "train.csv"
+            val = root / "val.csv"
+            pd.DataFrame([{"path": "a.wav", "md5": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]).to_csv(train, index=False)
+            pd.DataFrame([{"path": "b.wav", "md5": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}]).to_csv(val, index=False)
+
+            report = audit_manifest_disjointness({"train": train, "val": val})
+
+        self.assertFalse(report["ok"])
+        self.assertIn("source_id", report["missing_columns"]["train"])
+
+    def test_audit_manifest_disjointness_normalizes_windows_slashes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            train = root / "train.csv"
+            val = root / "val.csv"
+            pd.DataFrame(
+                [{"path": r"data\a.wav", "source_id": "a", "md5": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]
+            ).to_csv(train, index=False)
+            pd.DataFrame(
+                [{"path": "data/a.wav", "source_id": "b", "md5": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}]
+            ).to_csv(val, index=False)
+
+            report = audit_manifest_disjointness({"train": train, "val": val})
+
+        self.assertFalse(report["ok"])
+        self.assertEqual(report["overlaps"][0]["column"], "path")
+
+    def test_audit_manifest_disjointness_rejects_empty_values(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            train = root / "train.csv"
+            val = root / "val.csv"
+            pd.DataFrame(
+                [{"path": "", "source_id": "src-a", "md5": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}]
+            ).to_csv(train, index=False)
+            pd.DataFrame(
+                [{"path": "b.wav", "source_id": "src-b", "md5": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"}]
+            ).to_csv(val, index=False)
+
+            report = audit_manifest_disjointness({"train": train, "val": val})
+
+        self.assertFalse(report["ok"])
+        self.assertEqual(report["invalid_values"][0]["column"], "path")
+
+    def test_align_prediction_frames_by_path_detects_missing_extra_and_matches(self):
+        reference = pd.DataFrame(
+            [
+                {"path": r"data\a.wav", "y_true": "cough", "y_pred": "cough"},
+                {"path": "data/b.wav", "y_true": "feeding", "y_pred": "feeding"},
+            ]
+        )
+        reproduced = pd.DataFrame(
+            [
+                {"path": "data/a.wav", "y_true": "cough", "y_pred": "cough"},
+                {"path": "data/c.wav", "y_true": "feeding", "y_pred": "feeding"},
+            ]
+        )
+
+        report, summary = align_prediction_frames_by_path(reference, reproduced)
+
+        self.assertFalse(summary["alignment_ok"])
+        self.assertEqual(summary["matched_count"], 1)
+        self.assertEqual(summary["missing_reference_paths"], ["data/b.wav"])
+        self.assertEqual(summary["extra_reproduced_paths"], ["data/c.wav"])
+        self.assertTrue(report.loc[report["path"] == "data/a.wav", "y_pred_match"].iloc[0])
 
     def test_file_sha256_is_stable(self):
         with tempfile.TemporaryDirectory() as tmp:
