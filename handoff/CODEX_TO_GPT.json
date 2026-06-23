@@ -1,15 +1,56 @@
 {
   "status": "completed",
-  "branch": "current-mctafd-ablation",
-  "commit": "",
-  "task": "",
-  "paper_usable": false,
-  "feature_backend": "",
-  "metrics": {},
-  "leakage_audit": {},
-  "changed_files": [],
-  "outputs": [],
-  "failed_checks": [],
-  "questions": [],
-  "recommended_next_step": ""
+  "branch": "prototype-exact-review",
+  "scope": {
+    "lambda": 0.5,
+    "fold": 0,
+    "seed": 3407,
+    "feature_backend": "training_exact",
+    "full_cv_started": false,
+    "lambda_1_ablation_started": false
+  },
+  "paper_usable": true,
+  "softmax_reproduction": {
+    "passed": true,
+    "test_rows": 168,
+    "reference_macro_f1": 0.946360153256705,
+    "reproduced_macro_f1": 0.946360153256705,
+    "prediction_match_count": 168,
+    "probability_max_abs_diff_advisory": 0.0009449124336242676
+  },
+  "metrics": {
+    "softmax_macro_f1": 0.946360153256705,
+    "main_prototype_macro_f1": 0.946360153256705,
+    "hierarchical_prototype_macro_f1": 0.9522727272727273,
+    "auxiliary_prototype_macro_f1": 0.8355042016806723,
+    "selected_ece": 0.03415388188191824,
+    "selected_brier": 0.07725942134857178,
+    "selected_nll": 0.1203778013586998
+  },
+  "leakage_audit": {
+    "ok": true,
+    "train_rows": 1174,
+    "val_rows": 120,
+    "test_rows": 168,
+    "checked": ["path", "source_id", "md5"],
+    "overlaps": []
+  },
+  "outputs": [
+    "reports/prototype_feature_parity_fold0_seed3407/environment_audit.json",
+    "reports/prototype_feature_parity_fold0_seed3407/feature_parity_report.csv",
+    "reports/prototype_cv5_fold0_seed3407_exact/softmax_reproduction/softmax_reproduction.json",
+    "reports/prototype_cv5_fold0_seed3407_exact/evaluation/metrics.json",
+    "reports/prototype_cv5_fold0_seed3407_exact/evaluation/coverage_risk.csv",
+    "reports/prototype_cv5_fold0_seed3407_exact/artifacts/leakage_audit.json",
+    "reports/prototype_cv5_fold0_seed3407_exact/run_manifest.json"
+  ],
+  "excluded": [
+    "checkpoints",
+    "audio",
+    "embedding arrays",
+    "npz artifacts",
+    "cache directories",
+    "personal absolute paths"
+  ],
+  "recommended_next_step": "Review the branch, then consider lambda 0.5 5-fold x 3-seed exact prototype runs."
 }

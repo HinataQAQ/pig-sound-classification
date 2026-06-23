@@ -1,0 +1,386 @@
+from __future__ import annotations
+
+import argparse
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import pandas as pd
+
+from prototype_model_adapter import (
+    apply_hierarchy_confidence_penalty,
+    assert_no_leakage,
+    audit_manifest_disjointness,
+    build_hier_dataset,
+    config_from_summary,
+    extract_embeddings,
+    file_sha256,
+    fuse_probabilities,
+    load_audio_numpy,
+    load_hier_model,
+    load_prototype_bundle,
+    make_numpy_logmel_feature,
+    prediction_frame,
+    prototype_scores_from_bundle,
+    read_json,
+    require_file,
+    temperature_scale_probabilities,
+    validate_fold_seed_sources,
+    write_json,
+)
+
+
+def resolve_device(device: str) -> str:
+    if device != "auto":
+        return device
+    import torch
+
+    return "cuda" if torch.cuda.is_available() else "cpu"
+
+
+def same_resolved_path(left: str | Path, right: str | Path) -> bool:
+    return str(Path(left).resolve()).lower() == str(Path(right).resolve()).lower()
+
+
+def prepare_evaluation_dir(root: Path, allow_overwrite: bool) -> Path:
+    root.mkdir(parents=True, exist_ok=True)
+    out_dir = root / "evaluation"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    planned = [out_dir / "test_predictions.csv", out_dir / "test_predictions.json", out_dir / "prediction_metadata.json"]
+    for path in planned:
+        if path.exists() and not allow_overwrite:
+            raise FileExistsError(f"Refusing to overwrite existing output: {path}")
+    return out_dir
+
+
+def add_normalized_distance_columns(pred: pd.DataFrame, distance_stats: dict[str, Any] | None) -> pd.DataFrame:
+    if not distance_stats:
+        return pred
+
+    def class_stat(section: str, label: str, stat: str) -> float | None:
+        try:
+            val = distance_stats[section]["classes"][label]["cosine_distance"][stat]
+        except KeyError:
+            return None
+        return float(val) if val is not None else None
+
+    main_norm: list[float | None] = []
+    main_z: list[float | None] = []
+    aux_norm: list[float | None] = []
+    aux_z: list[float | None] = []
+
+    for _, row in pred.iterrows():
+        main_label = str(row.get("nearest_main_prototype", ""))
+        aux_label = str(row.get("nearest_aux_prototype", ""))
+        main_dist = float(row.get("nearest_main_cosine_distance", np.nan))
+        aux_dist = float(row.get("nearest_aux_cosine_distance", np.nan))
+        main_q95 = class_stat("main", main_label, "q95")
+        main_mean = class_stat("main", main_label, "mean")
+        main_std = class_stat("main", main_label, "std")
+        aux_q95 = class_stat("auxiliary", aux_label, "q95")
+        aux_mean = class_stat("auxiliary", aux_label, "mean")
+        aux_std = class_stat("auxiliary", aux_label, "std")
+        main_norm.append(main_dist / main_q95 if main_q95 and main_q95 > 0 else None)
+        aux_norm.append(aux_dist / aux_q95 if aux_q95 and aux_q95 > 0 else None)
+        main_z.append((main_dist - main_mean) / main_std if main_mean is not None and main_std and main_std > 0 else None)
+        aux_z.append((aux_dist - aux_mean) / aux_std if aux_mean is not None and aux_std and aux_std > 0 else None)
+
+    extra = pd.DataFrame(
+        {
+            "nearest_main_normalized_cosine_distance_q95": main_norm,
+            "nearest_main_cosine_distance_z": main_z,
+            "nearest_aux_normalized_cosine_distance_q95": aux_norm,
+            "nearest_aux_cosine_distance_z": aux_z,
+        }
+    )
+    return pd.concat([pred.reset_index(drop=True), extra], axis=1).copy()
+
+
+def extract_single_audio(
+    audio_path: Path,
+    model,
+    config,
+    device: str,
+    feature_backend: str,
+) -> dict[str, Any]:
+    import torch
+
+    if feature_backend == "training_exact":
+        feature_backend = "librosa"
+    if feature_backend == "numpy_logmel":
+        y, sr = load_audio_numpy(audio_path, sr=config.sr, dur_s=config.dur_s)
+        x = make_numpy_logmel_feature(
+            y,
+            sr=sr,
+            n_mels=config.n_mels,
+            n_fft=config.n_fft,
+            hop_length=config.hop_length,
+            win_length=config.win_length,
+            fmin=config.fmin,
+            fmax=config.fmax,
+        )
+    elif feature_backend == "librosa":
+        from train_hier_longcontext_crnn import load_audio_soundfile, make_feature
+
+        y, sr = load_audio_soundfile(audio_path, sr=config.sr, dur_s=config.dur_s)
+        x = make_feature(
+            y,
+            feature_mode=config.feature_mode,
+            sr=sr,
+            n_mels=config.n_mels,
+            n_mfcc=config.n_mfcc,
+            n_fft=config.n_fft,
+            hop_length=config.hop_length,
+            win_length=config.win_length,
+            fmin=config.fmin,
+            fmax=config.fmax,
+        )
+    else:
+        raise ValueError(f"Unknown feature_backend={feature_backend}")
+
+    xb = torch.from_numpy(x).float().unsqueeze(0).to(device)
+    model.eval()
+    with torch.no_grad():
+        z = model.encode(xb)
+        main_logits = model.main_head(z)
+        aux_logits = model.aux_head(z)
+    return {
+        "metadata": pd.DataFrame(
+            [
+                {
+                    "path": str(audio_path),
+                    "label": "",
+                    "subtype": "",
+                    "source_id": "",
+                    "md5": "",
+                    "aux_label": "",
+                    "input_type": "audio",
+                }
+            ]
+        ),
+        "embeddings": z.detach().cpu().numpy().astype(np.float32),
+        "softmax_probs": torch.softmax(main_logits, dim=1).detach().cpu().numpy().astype(np.float32),
+        "aux_softmax_probs": torch.softmax(aux_logits, dim=1).detach().cpu().numpy().astype(np.float32),
+        "y_main": np.zeros(1, dtype=np.int64),
+        "y_aux": np.zeros(1, dtype=np.int64),
+    }
+
+
+def parse_args() -> argparse.Namespace:
+    ap = argparse.ArgumentParser(
+        description="Run frozen prediction with calibrated hierarchical acoustic prototypes."
+    )
+    ap.add_argument("--prototype_bundle", required=True)
+    ap.add_argument("--calibration_json", required=True)
+    ap.add_argument("--test_manifest", default="", help="Frozen test manifest. Alias: --manifest.")
+    ap.add_argument("--manifest", default="", help="Manifest input for prediction.")
+    ap.add_argument("--audio", default="", help="Single audio file input for prediction.")
+    ap.add_argument("--ckpt", required=True)
+    ap.add_argument("--out_dir", required=True, help="Phase root directory; evaluation/ is created inside it.")
+    ap.add_argument("--device", default="auto")
+    ap.add_argument("--batch_size", type=int, default=32)
+    ap.add_argument("--num_workers", type=int, default=0)
+    ap.add_argument("--feature_backend", choices=["auto", "training_exact", "librosa", "numpy_logmel"], default="auto")
+    ap.add_argument("--allow_ckpt_mismatch", action="store_true")
+    ap.add_argument("--allow_overwrite", action="store_true")
+    return ap.parse_args()
+
+
+def main() -> None:
+    args = parse_args()
+
+    bundle_path = require_file(args.prototype_bundle, "prototype bundle")
+    calibration_path = require_file(args.calibration_json, "calibration JSON")
+    ckpt = require_file(args.ckpt, "hierarchical checkpoint")
+    manifest_arg = args.manifest or args.test_manifest
+    audio_arg = args.audio
+    if bool(manifest_arg) == bool(audio_arg):
+        raise ValueError("Provide exactly one of --manifest/--test_manifest or --audio.")
+
+    out_dir = prepare_evaluation_dir(Path(args.out_dir), args.allow_overwrite)
+
+    bundle = load_prototype_bundle(bundle_path)
+    bundle_meta = bundle["metadata"]
+    calibration = read_json(calibration_path)
+
+    for expected_key, actual in [
+        ("prototype_bundle", bundle_path),
+        ("checkpoint_path", ckpt),
+    ]:
+        expected = calibration.get(expected_key)
+        if expected and not same_resolved_path(expected, actual) and not args.allow_ckpt_mismatch:
+            raise RuntimeError(f"{expected_key} mismatch. Calibration expects {expected}, but got {actual}.")
+    if calibration.get("checkpoint_sha256") and file_sha256(ckpt) != str(calibration["checkpoint_sha256"]) and not args.allow_ckpt_mismatch:
+        raise RuntimeError("Checkpoint SHA256 mismatch between calibration JSON and --ckpt.")
+    if calibration.get("prototype_bundle_sha256") and file_sha256(bundle_path) != str(calibration["prototype_bundle_sha256"]):
+        raise RuntimeError("Prototype bundle SHA256 mismatch between calibration JSON and --prototype_bundle.")
+
+    train_manifest = require_file(bundle_meta["train_manifest"], "train manifest from prototype metadata")
+    val_manifest = require_file(calibration["val_manifest"], "validation manifest from calibration")
+    test_manifest: Path | None = None
+    if manifest_arg:
+        test_manifest = require_file(manifest_arg, "prediction/test manifest")
+        audit = audit_manifest_disjointness({"train": train_manifest, "val": val_manifest, "test": test_manifest})
+    else:
+        audit = audit_manifest_disjointness({"train": train_manifest, "val": val_manifest})
+    assert_no_leakage(audit)
+    write_json(out_dir / "leakage_audit.json", audit)
+
+    fold = int(bundle_meta["fold"])
+    seed = int(bundle_meta["seed"])
+    validate_fold_seed_sources(
+        fold=fold,
+        seed=seed,
+        sources={
+            "prototype_bundle": bundle_path,
+            "calibration_json": calibration_path,
+            "checkpoint": ckpt,
+            "manifest": test_manifest,
+            "out_dir": args.out_dir,
+        },
+    )
+
+    config = config_from_summary(bundle_meta["model_config"])
+    feature_backend = str(calibration.get("feature_backend", bundle_meta.get("feature_backend", "librosa"))) if args.feature_backend == "auto" else args.feature_backend
+    device = resolve_device(args.device)
+    model = load_hier_model(ckpt, config, device=device)
+    if test_manifest is not None:
+        ds_test = build_hier_dataset(test_manifest, config, feature_backend=feature_backend)
+        extracted = extract_embeddings(
+            model,
+            ds_test,
+            device=device,
+            batch_size=args.batch_size,
+            num_workers=args.num_workers,
+        )
+        input_kind = "manifest"
+        n_rows = int(len(ds_test))
+    else:
+        audio_path = require_file(audio_arg, "audio file")
+        extracted = extract_single_audio(audio_path, model, config, device=device, feature_backend=feature_backend)
+        input_kind = "audio"
+        n_rows = 1
+
+    softmax_probs = temperature_scale_probabilities(
+        extracted["softmax_probs"],
+        float(calibration.get("softmax_temperature", 1.0)),
+    )
+    proto_scores = prototype_scores_from_bundle(
+        extracted["embeddings"],
+        bundle,
+        temperature=float(calibration["prototype_temperature"]),
+        hier_aux_weight=float(calibration.get("hier_aux_prob_weight", 0.5)),
+    )
+    fused = fuse_probabilities(
+        softmax_probs,
+        proto_scores["hierarchical"],
+        softmax_weight=float(calibration["softmax_weight"]),
+    )
+    probs_by_method = {
+        "softmax": softmax_probs,
+        "prototype": proto_scores["prototype"],
+        "hierarchical": proto_scores["hierarchical"],
+        "fused": fused,
+    }
+
+    pred = prediction_frame(
+        extracted["metadata"],
+        extracted["y_main"],
+        extracted["y_aux"],
+        config.main_labels,
+        config.aux_labels,
+        probs_by_method,
+        aux_probs=extracted["aux_softmax_probs"],
+        aux_proto_probs=proto_scores["aux_prototype"],
+        prototype_scores=proto_scores,
+    )
+    if input_kind == "audio":
+        pred["y_true_id"] = ""
+        pred["y_true"] = ""
+        pred["aux_true_id"] = ""
+        pred["aux_true"] = ""
+
+    distance_stats: dict[str, Any] | None = None
+    if bundle_meta.get("distance_statistics_path"):
+        distance_stats = read_json(bundle_meta["distance_statistics_path"])
+    pred = add_normalized_distance_columns(pred, distance_stats)
+
+    selected_method = str(calibration["selection_method"])
+    global_threshold = float(calibration["global_rejection_threshold"])
+    per_class_thresholds = {str(k): float(v) for k, v in calibration["per_class_rejection_thresholds"].items()}
+    selected_probs = probs_by_method[selected_method]
+    selected_conf_raw = selected_probs.max(axis=1)
+    main_proto_labels = pred["prototype_pred"].astype(str).tolist()
+    aux_proto_labels = pred["prototype_aux_pred"].astype(str).tolist()
+    selected_conf, hierarchy_inconsistent = apply_hierarchy_confidence_penalty(
+        selected_conf_raw,
+        main_proto_labels,
+        aux_proto_labels,
+        penalty=float(calibration.get("hierarchy_confidence_penalty", 1.0)),
+    )
+    pred["selected_method"] = selected_method
+    pred["selected_pred"] = pred[f"{selected_method}_pred"]
+    pred["selected_confidence_raw"] = selected_conf_raw
+    pred["selected_confidence"] = selected_conf
+    pred["uncertainty"] = 1.0 - selected_conf
+    pred["hierarchy_confidence_penalty"] = float(calibration.get("hierarchy_confidence_penalty", 1.0))
+    pred["hierarchy_inconsistent"] = hierarchy_inconsistent
+    pred["accept_global"] = pred["selected_confidence"] >= global_threshold
+    pred["pred_or_uncertain_global"] = np.where(pred["accept_global"], pred["selected_pred"], "uncertain")
+    pred["accept_per_class"] = [
+        conf >= per_class_thresholds[pred_label]
+        for pred_label, conf in zip(pred["selected_pred"], pred["selected_confidence"])
+    ]
+    pred["pred_or_uncertain_per_class"] = np.where(
+        pred["accept_per_class"], pred["selected_pred"], "uncertain"
+    )
+    pred["known_state_global"] = np.where(pred["accept_global"], "known", "uncertain")
+    pred["known_state_per_class"] = np.where(pred["accept_per_class"], "known", "uncertain")
+    pred["reject_label"] = str(calibration.get("reject_label", "uncertain"))
+    pred["unknown_detection_claim"] = False
+
+    pred_out = out_dir / "test_predictions.csv"
+    pred_json = out_dir / "test_predictions.json"
+    pred.to_csv(pred_out, index=False, encoding="utf-8-sig")
+    pred.to_json(pred_json, orient="records", force_ascii=False, indent=2)
+
+    metadata = {
+        "artifact_type": "hier_acoustic_prototype_frozen_predictions",
+        "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        "input_kind": input_kind,
+        "prototype_bundle": str(bundle_path.resolve()),
+        "prototype_bundle_sha256": file_sha256(bundle_path),
+        "calibration_json": str(calibration_path.resolve()),
+        "calibration_json_sha256": file_sha256(calibration_path),
+        "checkpoint_path": str(ckpt.resolve()),
+        "checkpoint_sha256": file_sha256(ckpt),
+        "train_manifest": str(train_manifest.resolve()),
+        "val_manifest": str(val_manifest.resolve()),
+        "test_manifest": str(test_manifest.resolve()) if test_manifest is not None else None,
+        "audio": str(Path(audio_arg).resolve()) if audio_arg else None,
+        "fold": fold,
+        "seed": seed,
+        "selection_method": selected_method,
+        "feature_backend": feature_backend,
+        "prototype_temperature": float(calibration["prototype_temperature"]),
+        "softmax_temperature": float(calibration.get("softmax_temperature", 1.0)),
+        "softmax_weight": float(calibration["softmax_weight"]),
+        "hierarchy_confidence_penalty": float(calibration.get("hierarchy_confidence_penalty", 1.0)),
+        "global_rejection_threshold": global_threshold,
+        "per_class_rejection_thresholds": per_class_thresholds,
+        "rows_after_filtering": n_rows,
+        "test_used_for_parameter_selection": False,
+        "unknown_detection_claim": False,
+        "prediction_csv": str(pred_out.resolve()),
+        "prediction_json": str(pred_json.resolve()),
+        "leakage_audit_path": str((out_dir / "leakage_audit.json").resolve()),
+    }
+    write_json(out_dir / "prediction_metadata.json", metadata)
+
+    print(f"[OK] wrote frozen predictions -> {pred_out}")
+    print(f"[OK] wrote prediction metadata -> {out_dir / 'prediction_metadata.json'}")
+
+
+if __name__ == "__main__":
+    main()

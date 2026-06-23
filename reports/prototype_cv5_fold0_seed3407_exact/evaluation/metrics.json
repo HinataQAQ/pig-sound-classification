@@ -1,0 +1,200 @@
+﻿{
+    "artifact_type":  "hier_acoustic_prototype_test_evaluation",
+    "prediction_csv":  "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\evaluation\\test_predictions.csv",
+    "calibration_json":  "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\calibration\\calibration.json",
+    "fold":  0,
+    "seed":  3407,
+    "labels":  [
+                   "cough",
+                   "calm_grunt",
+                   "feeding",
+                   "stress_vocal"
+               ],
+    "aux_labels":  [
+                       "dry_cough",
+                       "abdominal_cough",
+                       "calm_grunt",
+                       "feeding",
+                       "frightened_stress",
+                       "anxious_stress"
+                   ],
+    "selection_method":  "hierarchical",
+    "prototype_temperature":  0.1,
+    "softmax_temperature":  0.5,
+    "softmax_weight":  0.0,
+    "hierarchy_confidence_penalty":  1.0,
+    "global_rejection_threshold":  0.8533071279525757,
+    "per_class_rejection_thresholds":  {
+                                           "cough":  0.9999885559082031,
+                                           "calm_grunt":  0.9998204112052917,
+                                           "feeding":  0.7065877318382263,
+                                           "stress_vocal":  0.7600834369659424
+                                       },
+    "unknown_detection_claim":  false,
+    "test_used_for_parameter_selection":  false,
+    "methods":  {
+                    "softmax":  {
+                                    "method":  "softmax",
+                                    "n":  168,
+                                    "top1_acc":  0.9464285714285714,
+                                    "macro_f1":  0.946360153256705,
+                                    "top2_acc":  1.0,
+                                    "ece":  0.042938356243428705,
+                                    "brier":  0.09475068002939224,
+                                    "nll":  0.17230388522148132
+                                },
+                    "prototype":  {
+                                      "method":  "prototype",
+                                      "n":  168,
+                                      "top1_acc":  0.9464285714285714,
+                                      "macro_f1":  0.946360153256705,
+                                      "top2_acc":  1.0,
+                                      "ece":  0.03553056575003125,
+                                      "brier":  0.07599373161792755,
+                                      "nll":  0.11828641593456268
+                                  },
+                    "hierarchical":  {
+                                         "method":  "hierarchical",
+                                         "n":  168,
+                                         "top1_acc":  0.9523809523809523,
+                                         "macro_f1":  0.9522727272727273,
+                                         "top2_acc":  1.0,
+                                         "ece":  0.03415388188191824,
+                                         "brier":  0.07725942134857178,
+                                         "nll":  0.1203778013586998
+                                     },
+                    "fused":  {
+                                  "method":  "fused",
+                                  "n":  168,
+                                  "top1_acc":  0.9523809523809523,
+                                  "macro_f1":  0.9522727272727273,
+                                  "top2_acc":  1.0,
+                                  "ece":  0.03415388188191824,
+                                  "brier":  0.07725942134857178,
+                                  "nll":  0.1203778013586998
+                              }
+                },
+    "auxiliary_prototype":  {
+                                "n":  168,
+                                "top1_acc":  0.8690476190476191,
+                                "macro_f1":  0.8355042016806723,
+                                "top2_acc":  0.9702380952380952,
+                                "ece":  0.09687749988266402,
+                                "brier":  0.22871848940849304,
+                                "nll":  0.37055161595344543
+                            },
+    "selected_method_metrics":  {
+                                    "method":  "hierarchical",
+                                    "n":  168,
+                                    "top1_acc":  0.9523809523809523,
+                                    "macro_f1":  0.9522727272727273,
+                                    "top2_acc":  1.0,
+                                    "ece":  0.03415388188191824,
+                                    "brier":  0.07725942134857178,
+                                    "nll":  0.1203778013586998
+                                },
+    "selected_method_calibration":  {
+                                        "ece":  0.03415388188191824,
+                                        "brier":  0.07725942134857178,
+                                        "nll":  0.1203778013586998
+                                    },
+    "selective_risk":  [
+                           {
+                               "accept_rule":  "accept_global",
+                               "n_total":  168,
+                               "n_accepted":  151,
+                               "coverage":  0.8988095238095238,
+                               "selective_acc":  0.9867549668874173,
+                               "selective_risk":  0.013245033112582738
+                           },
+                           {
+                               "accept_rule":  "accept_per_class",
+                               "n_total":  168,
+                               "n_accepted":  157,
+                               "coverage":  0.9345238095238095,
+                               "selective_acc":  0.9617834394904459,
+                               "selective_risk":  0.03821656050955413
+                           }
+                       ],
+    "hierarchy_consistency":  {
+                                  "softmax_main_vs_aux":  0.9821428571428571,
+                                  "prototype_main_vs_aux":  0.9940476190476191,
+                                  "hierarchical_main_vs_aux":  1.0,
+                                  "fused_main_vs_aux":  1.0,
+                                  "prototype_main_aux_inconsistent_rate":  0.005952380952380952
+                              },
+    "outputs":  {
+                    "metrics_by_method_csv":  "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\evaluation\\metrics_by_method_test.csv",
+                    "coverage_risk_csv":  "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\evaluation\\coverage_risk.csv",
+                    "selective_risk_csv":  "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\evaluation\\selective_risk_summary.csv",
+                    "confusion_matrices_json":  "<PROJECT_ROOT>\\reports\\prototype_cv5_fold0_seed3407_exact\\evaluation\\confusion_matrices.json"
+                },
+    "feature_backend":  "training_exact",
+    "feature_equivalence_status":  "paper_equivalent_softmax_reproduced",
+    "paper_usable":  true,
+    "softmax_reproduction_passed":  true,
+    "reference_macro_f1":  0.946360153256705,
+    "reproduced_macro_f1":  0.946360153256705,
+    "prediction_match_count":  168,
+    "probability_max_abs_diff":  0.0009449124336242676,
+    "probability_tolerance_is_advisory":  true,
+    "feature_config":  {
+                           "feature_backend":  "training_exact",
+                           "feature_mode":  "logmel",
+                           "sr":  32000,
+                           "dur_s":  2.0,
+                           "n_mels":  64,
+                           "n_mfcc":  20,
+                           "n_fft":  1024,
+                           "hop_length":  320,
+                           "win_length":  800,
+                           "fmin":  50.0,
+                           "fmax":  8000.0,
+                           "window":  "hann",
+                           "center":  true,
+                           "pad_mode":  "constant",
+                           "power":  2.0,
+                           "mel_htk":  false,
+                           "mel_norm":  "slaney",
+                           "power_to_db_ref":  1.0,
+                           "power_to_db_top_db":  80.0,
+                           "waveform_mono_conversion":  "soundfile always_2d=False; if ndarray ndim==2, average channels",
+                           "resampling":  "scipy.signal.resample_poly when source_sr != target sr",
+                           "center_crop":  "middle crop to int(sr * dur_s)",
+                           "zero_padding":  "symmetric constant zero padding to int(sr * dur_s)",
+                           "norm_map":  "per-sample z-score with eps=1e-6",
+                           "source_functions":  [
+                                                    "train_mctafd_crnn_ablation.load_audio_soundfile",
+                                                    "train_mctafd_crnn_ablation.make_feature",
+                                                    "train_mctafd_crnn_ablation.norm_map",
+                                                    "train_hier_longcontext_crnn.HierPigVocalDataset"
+                                                ],
+                           "feature_config_hash":  "ab208fa867ade80c585059fdaca0523d5fa82c279bbce240b75a07165cb45b94"
+                       },
+    "package_versions":  {
+                             "numba":  {
+                                           "version":  "0.64.0",
+                                           "file":  "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\numba\\__init__.py"
+                                       },
+                             "librosa":  {
+                                             "version":  "0.11.0",
+                                             "file":  "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\librosa\\__init__.py"
+                                         },
+                             "numpy":  {
+                                           "version":  "2.2.6",
+                                           "file":  "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\numpy\\__init__.py"
+                                       },
+                             "soundfile":  {
+                                               "version":  "0.13.1",
+                                               "file":  "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\soundfile.py"
+                                           },
+                             "torch":  {
+                                           "version":  "2.11.0+cu128",
+                                           "file":  "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\torch\\__init__.py"
+                                       },
+                             "scipy":  {
+                                           "version":  "1.15.3",
+                                           "file":  "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\scipy\\__init__.py"
+                                       }
+                         }
+}

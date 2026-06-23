@@ -1,0 +1,14 @@
+﻿{
+  "ok": true,
+  "counts": {
+    "train": 1174,
+    "val": 120,
+    "test": 168
+  },
+  "columns_checked": [
+    "path",
+    "source_id",
+    "md5"
+  ],
+  "overlaps": []
+}
