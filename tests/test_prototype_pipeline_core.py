@@ -41,10 +41,89 @@ from prototype_model_adapter import (  # noqa: E402
     verify_manifest_matches_metadata,
 )
 from eval_hier_acoustic_prototype import load_and_validate_prediction_metadata  # noqa: E402
-from summarize_cv5_exact_prototype import validate_aggregate_records  # noqa: E402
+from summarize_cv5_exact_prototype import (  # noqa: E402
+    aggregate_confusion_matrices,
+    aggregate_method_metrics,
+    paired_macro_f1_statistics,
+    validate_aggregate_records,
+)
 
 
 class PrototypePipelineCoreTests(unittest.TestCase):
+    def _aggregate_record(
+        self,
+        fold=0,
+        seed=42,
+        lambda_value=0.5,
+        *,
+        raw_macro=0.80,
+        calibrated_macro=0.81,
+        prototype_macro=0.82,
+        hierarchical_macro=0.84,
+        fused_macro=0.83,
+        confusion_matrices_json=None,
+    ):
+        methods = {
+            "raw_softmax": {
+                "macro_f1": raw_macro,
+                "top1_acc": raw_macro - 0.10,
+                "top2_acc": 0.95,
+                "ece": 0.10,
+                "brier": 0.20,
+                "nll": 0.30,
+            },
+            "calibrated_softmax": {
+                "macro_f1": calibrated_macro,
+                "top1_acc": calibrated_macro - 0.10,
+                "top2_acc": 0.96,
+                "ece": 0.09,
+                "brier": 0.19,
+                "nll": 0.29,
+            },
+            "prototype": {
+                "macro_f1": prototype_macro,
+                "top1_acc": prototype_macro - 0.10,
+                "top2_acc": 0.97,
+                "ece": 0.08,
+                "brier": 0.18,
+                "nll": 0.28,
+            },
+            "hierarchical": {
+                "macro_f1": hierarchical_macro,
+                "top1_acc": hierarchical_macro - 0.10,
+                "top2_acc": 0.98,
+                "ece": 0.07,
+                "brier": 0.17,
+                "nll": 0.27,
+            },
+            "fused": {
+                "macro_f1": fused_macro,
+                "top1_acc": fused_macro - 0.10,
+                "top2_acc": 0.99,
+                "ece": 0.06,
+                "brier": 0.16,
+                "nll": 0.26,
+            },
+        }
+        return {
+            "fold": fold,
+            "seed": seed,
+            "lambda": lambda_value,
+            "eligible_for_cv_aggregation": True,
+            "feature_backend": "training_exact",
+            "feature_pipeline_equivalent": True,
+            "input_role": "frozen_test",
+            "unsafe_allow_checkpoint_sha_mismatch": False,
+            "leakage_audit_ok": True,
+            "manifest_sha_verified": True,
+            "softmax_reproduction_passed": True,
+            "methods": methods,
+            "confusion_matrices_json": confusion_matrices_json,
+        }
+
+    def _aggregate_records(self, seeds, **kwargs):
+        return [self._aggregate_record(fold=fold, seed=seed, **kwargs) for fold in range(5) for seed in seeds]
+
     def test_compute_class_prototypes_uses_normalized_class_means(self):
         embeddings = np.array(
             [
@@ -397,25 +476,19 @@ class PrototypePipelineCoreTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "prediction CSV SHA256 mismatch"):
                 load_and_validate_prediction_metadata(pred, cal)
 
-    def test_only_complete_aggregate_can_be_paper_main_result(self):
-        records = []
-        for fold in range(5):
-            for seed in (42, 2024, 3407):
-                records.append(
-                    {
-                        "fold": fold,
-                        "seed": seed,
-                        "lambda": 0.5,
-                        "eligible_for_cv_aggregation": True,
-                        "feature_backend": "training_exact",
-                        "feature_pipeline_equivalent": True,
-                        "input_role": "frozen_test",
-                        "unsafe_allow_checkpoint_sha_mismatch": False,
-                        "leakage_audit_ok": True,
-                        "manifest_sha_verified": True,
-                        "softmax_reproduction_passed": True,
-                    }
-                )
+    def test_one_by_one_aggregate_must_fail(self):
+        records = [self._aggregate_record(fold=0, seed=42)]
+
+        with self.assertRaisesRegex(RuntimeError, "unsupported aggregate protocol"):
+            validate_aggregate_records(
+                records,
+                expected_folds=[0],
+                expected_seeds=[42],
+                expected_lambda=0.5,
+            )
+
+    def test_screening_5x3_is_candidate_not_paper_main_result(self):
+        records = self._aggregate_records(seeds=[42, 2024, 3407])
 
         aggregate = validate_aggregate_records(
             records,
@@ -425,34 +498,142 @@ class PrototypePipelineCoreTests(unittest.TestCase):
         )
 
         self.assertEqual(aggregate["run_scope"], "aggregate")
-        self.assertTrue(aggregate["paper_main_result"])
         self.assertTrue(aggregate["screening_result"])
+        self.assertTrue(aggregate["paper_candidate_result"])
+        self.assertFalse(aggregate["paper_main_result"])
         self.assertFalse(aggregate["final_25_run_result"])
+        self.assertEqual(aggregate["n_runs"], 15)
 
-    def test_incomplete_aggregate_cannot_be_paper_main_result(self):
-        records = [
-            {
-                "fold": 0,
-                "seed": 42,
-                "lambda": 0.5,
-                "eligible_for_cv_aggregation": True,
-                "feature_backend": "training_exact",
-                "feature_pipeline_equivalent": True,
-                "input_role": "frozen_test",
-                "unsafe_allow_checkpoint_sha_mismatch": False,
-                "leakage_audit_ok": True,
-                "manifest_sha_verified": True,
-                "softmax_reproduction_passed": True,
-            }
-        ]
+    def test_final_5x5_is_paper_main_result(self):
+        records = self._aggregate_records(seeds=[42, 2024, 3407, 7, 99])
 
-        with self.assertRaisesRegex(RuntimeError, "missing fold-seed combinations"):
+        aggregate = validate_aggregate_records(
+            records,
+            expected_folds=[0, 1, 2, 3, 4],
+            expected_seeds=[42, 2024, 3407, 7, 99],
+            expected_lambda=0.5,
+        )
+
+        self.assertEqual(aggregate["run_scope"], "aggregate")
+        self.assertFalse(aggregate["screening_result"])
+        self.assertTrue(aggregate["paper_candidate_result"])
+        self.assertTrue(aggregate["paper_main_result"])
+        self.assertTrue(aggregate["final_25_run_result"])
+        self.assertEqual(aggregate["n_runs"], 25)
+
+    def test_four_by_five_aggregate_must_fail(self):
+        records = [self._aggregate_record(fold=fold, seed=seed) for fold in range(4) for seed in [1, 2, 3, 4, 5]]
+
+        with self.assertRaisesRegex(RuntimeError, "folds must be exactly"):
             validate_aggregate_records(
                 records,
-                expected_folds=[0, 1],
-                expected_seeds=[42],
+                expected_folds=[0, 1, 2, 3],
+                expected_seeds=[1, 2, 3, 4, 5],
                 expected_lambda=0.5,
             )
+
+    def test_mixed_lambda_aggregate_must_fail(self):
+        records = self._aggregate_records(seeds=[42, 2024, 3407])
+        records[-1]["lambda"] = 1.0
+
+        with self.assertRaisesRegex(RuntimeError, "mixed lambda"):
+            validate_aggregate_records(
+                records,
+                expected_folds=[0, 1, 2, 3, 4],
+                expected_seeds=[42, 2024, 3407],
+                expected_lambda=0.5,
+            )
+
+    def test_duplicate_fold_seed_aggregate_must_fail(self):
+        records = self._aggregate_records(seeds=[42, 2024, 3407])
+        records.append(dict(records[0]))
+
+        with self.assertRaisesRegex(RuntimeError, "duplicate fold-seed"):
+            validate_aggregate_records(
+                records,
+                expected_folds=[0, 1, 2, 3, 4],
+                expected_seeds=[42, 2024, 3407],
+                expected_lambda=0.5,
+            )
+
+    def test_unexpected_fold_aggregate_must_fail(self):
+        records = self._aggregate_records(seeds=[42, 2024, 3407])
+        records[-1]["fold"] = 9
+
+        with self.assertRaisesRegex(RuntimeError, "unexpected fold"):
+            validate_aggregate_records(
+                records,
+                expected_folds=[0, 1, 2, 3, 4],
+                expected_seeds=[42, 2024, 3407],
+                expected_lambda=0.5,
+            )
+
+    def test_paired_stats_calculate_mean_std_and_win_tie_loss_counts(self):
+        records = [
+            self._aggregate_record(fold=0, seed=1, raw_macro=0.50, prototype_macro=0.50, hierarchical_macro=0.60),
+            self._aggregate_record(fold=0, seed=2, raw_macro=0.70, prototype_macro=0.75, hierarchical_macro=0.70),
+            self._aggregate_record(fold=0, seed=3, raw_macro=0.90, prototype_macro=0.95, hierarchical_macro=0.80),
+        ]
+
+        stats = paired_macro_f1_statistics(records, bootstrap_samples=100, random_seed=3407)
+        hier_vs_raw = next(row for row in stats if row["comparison"] == "hierarchical - raw_softmax")
+
+        self.assertEqual(hier_vs_raw["n"], 3)
+        self.assertAlmostEqual(hier_vs_raw["mean_delta"], 0.0, places=7)
+        self.assertAlmostEqual(hier_vs_raw["std_delta"], 0.1, places=7)
+        self.assertEqual(hier_vs_raw["wins"], 1)
+        self.assertEqual(hier_vs_raw["ties"], 1)
+        self.assertEqual(hier_vs_raw["losses"], 1)
+
+    def test_bootstrap_ci_is_reproducible_with_fixed_seed(self):
+        records = [
+            self._aggregate_record(fold=0, seed=1, raw_macro=0.50, hierarchical_macro=0.60),
+            self._aggregate_record(fold=0, seed=2, raw_macro=0.70, hierarchical_macro=0.72),
+            self._aggregate_record(fold=0, seed=3, raw_macro=0.80, hierarchical_macro=0.78),
+        ]
+
+        a = paired_macro_f1_statistics(records, bootstrap_samples=200, random_seed=3407)
+        b = paired_macro_f1_statistics(records, bootstrap_samples=200, random_seed=3407)
+
+        self.assertEqual(a, b)
+
+    def test_confusion_aggregation_result_is_correct(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cm_path = Path(tmp) / "confusion_matrices.json"
+            payload = {}
+            for method in ["raw_softmax", "prototype", "hierarchical"]:
+                payload[method] = {
+                    "labels": ["cough", "calm_grunt", "feeding", "stress_vocal"],
+                    "matrix": [
+                        [2, 0, 0, 0],
+                        [0, 2, 0, 0],
+                        [0, 0, 1, 1],
+                        [0, 0, 1, 1],
+                    ],
+                }
+            cm_path.write_text(json.dumps(payload), encoding="utf-8")
+            records = [self._aggregate_record(confusion_matrices_json=str(cm_path))]
+
+            rows = aggregate_confusion_matrices(records)
+            raw = next(row for row in rows if row["method"] == "raw_softmax")
+
+            self.assertEqual(raw["feeding_to_stress"], 1)
+            self.assertEqual(raw["stress_to_feeding"], 1)
+            self.assertAlmostEqual(raw["feeding_recall"], 0.5, places=7)
+            self.assertAlmostEqual(raw["stress_recall"], 0.5, places=7)
+
+    def test_confusion_aggregation_requires_file(self):
+        records = [self._aggregate_record(confusion_matrices_json="missing_confusion.json")]
+
+        with self.assertRaisesRegex(FileNotFoundError, "confusion_matrices.json"):
+            aggregate_confusion_matrices(records)
+
+    def test_method_metric_summary_requires_every_method(self):
+        records = [self._aggregate_record()]
+        del records[0]["methods"]["fused"]
+
+        with self.assertRaisesRegex(RuntimeError, "missing method metrics"):
+            aggregate_method_metrics(records)
 
     def test_numpy_logmel_feature_is_finite_and_has_expected_shape(self):
         y = np.zeros(32000 * 2, dtype=np.float32)

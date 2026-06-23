@@ -9,7 +9,6 @@
     "full_cv_started": false,
     "lambda_1_ablation_started": false
   },
-  "paper_usable": true,
   "qualification_fields": {
     "feature_pipeline_equivalent": true,
     "single_fold_debug": true,
@@ -75,22 +74,38 @@
     "single fold-seed outputs always use run_scope=fold_seed and paper_main_result=false",
     "prediction metadata records prediction CSV SHA256, calibration JSON SHA256, prototype bundle SHA256, leakage audit status, manifest SHA verification, and run scope",
     "evaluation requires prediction_metadata.json and verifies provenance before metrics",
-    "aggregate paper_main_result is only set by summarize_cv5_exact_prototype.py"
+    "aggregate paper_main_result is only set by summarize_cv5_exact_prototype.py",
+    "aggregate summary now allows only fixed 5x3 screening or 5x5 final protocols",
+    "5x3 screening aggregates set paper_candidate_result=true and paper_main_result=false",
+    "5x5 final aggregates set paper_candidate_result=true and paper_main_result=true",
+    "aggregate summary emits method summary, paired statistics, and confusion summary CSVs"
   ],
   "provenance_review_tests": {
-    "unit_tests": 37,
-    "fold1_seed42_single_run_paper_main_result": false,
-    "missing_prediction_metadata_evaluation_fails": true,
-    "inference_manifest_evaluation_fails": true,
-    "edited_prediction_csv_sha_mismatch_fails": true,
-    "complete_aggregate_can_set_paper_main_result": true
+    "unit_tests": 47,
+    "one_by_one_aggregate_fails": true,
+    "screening_5x3_paper_main_result": false,
+    "screening_5x3_paper_candidate_result": true,
+    "final_5x5_paper_main_result": true,
+    "four_by_five_aggregate_fails": true,
+    "mixed_lambda_aggregate_fails": true,
+    "duplicate_fold_seed_aggregate_fails": true,
+    "unexpected_fold_aggregate_fails": true,
+    "paired_statistics_verified": true,
+    "bootstrap_ci_fixed_seed_reproducible": true,
+    "confusion_aggregation_verified": true,
+    "missing_confusion_file_fails": true,
+    "missing_method_metrics_fail": true
   },
   "leakage_audit": {
     "ok": true,
     "train_rows": 1174,
     "val_rows": 120,
     "test_rows": 168,
-    "checked": ["path", "source_id", "md5"],
+    "checked": [
+      "path",
+      "source_id",
+      "md5"
+    ],
     "overlaps": []
   },
   "outputs": [
@@ -112,5 +127,11 @@
     "cache directories",
     "personal absolute paths"
   ],
-  "recommended_next_step": "Review the branch, then consider lambda 0.5 5-fold x 3-seed exact prototype runs."
+  "recommended_next_step": "Review the branch, then consider lambda 0.5 5-fold x 3-seed exact prototype runs.",
+  "paper_usable_as_single_run_evidence": true,
+  "paper_main_result": false,
+  "changed_files": [
+    "tools/summarize_cv5_exact_prototype.py",
+    "tests/test_prototype_pipeline_core.py"
+  ]
 }

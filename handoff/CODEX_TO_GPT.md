@@ -67,8 +67,10 @@ prototype-exact-review
 - Evaluation now requires `prediction_metadata.json` and verifies input role,
   prediction CSV SHA, calibration JSON SHA, fold/seed/backend provenance, and
   qualification fields before computing metrics.
-- Added `tools/summarize_cv5_exact_prototype.py`; only a complete aggregate may
-  set `run_scope=aggregate` and `paper_main_result=true`.
+- Added `tools/summarize_cv5_exact_prototype.py`; only fixed 5 folds x 3 seeds
+  screening and 5 folds x 5 seeds final protocols may set
+  `run_scope=aggregate`. Screening is a paper candidate but not a paper-main
+  result; only the final 25-run aggregate may set `paper_main_result=true`.
 
 ## Data Separation Audit
 - prototype source: fold0 train manifest only
@@ -91,7 +93,8 @@ prototype-exact-review
 - Final provenance-only review tests passed: metadata missing fails evaluation,
   inference-manifest predictions fail evaluation, edited prediction CSV fails
   evaluation by SHA mismatch, fold1/seed42 single run remains non-paper-main,
-  and only complete aggregate validation may produce `paper_main_result=true`.
+  fixed screening/final aggregate protocols are enforced, paired statistics are
+  generated, and confusion aggregation is validated.
 - No checkpoint, audio, NPZ, embedding, or cache files should be included in the
   review commit.
 

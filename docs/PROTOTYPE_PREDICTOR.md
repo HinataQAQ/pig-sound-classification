@@ -87,11 +87,10 @@ to false. The fold0/seed3407 Phase 1 run is marked `single_fold_debug=true` and
 `paper_main_result=false`.
 
 Single fold-seed outputs always use `run_scope=fold_seed` and
-`paper_main_result=false`, regardless of fold or seed. Paper-main status is set
-only by `tools\summarize_cv5_exact_prototype.py` after it verifies a complete,
-unique fold x seed aggregate with exact features, frozen test role, safe
-checkpoint provenance, manifest SHA checks, leakage audits, and Softmax
-reproduction.
+`paper_main_result=false`, regardless of fold or seed. Aggregate status is set
+only by `tools\summarize_cv5_exact_prototype.py` after it verifies a fixed
+protocol, exact features, frozen test role, safe checkpoint provenance,
+manifest SHA checks, leakage audits, and Softmax reproduction.
 
 ## Phase 1 Commands
 
@@ -180,12 +179,26 @@ python tools\summarize_cv5_exact_prototype.py `
   --expected_folds 0,1,2,3,4 `
   --expected_seeds 42,2024,3407 `
   --expected_lambda 0.5 `
-  --out_json reports\prototype_cv5_exact_w05_screening_summary.json
+  --out_prefix reports\prototype_cv5_exact_w05
 ```
 
-A 5 folds x 3 seeds aggregate is marked `screening_result=true` and
-`final_25_run_result=false`. A 5 folds x 5 seeds aggregate is the 25-run final
-form.
+A 5 folds x 3 seeds aggregate is the only valid screening protocol:
+`screening_result=true`, `paper_candidate_result=true`,
+`paper_main_result=false`, and `final_25_run_result=false`. A 5 folds x 5
+seeds aggregate is the only valid final protocol:
+`screening_result=false`, `paper_candidate_result=true`,
+`paper_main_result=true`, and `final_25_run_result=true`. One-off, partial,
+duplicate, mixed-lambda, or unexpected fold/seed aggregates fail.
+
+The summarizer writes:
+
+- `reports\prototype_cv5_exact_w05_screening_runs.csv`
+- `reports\prototype_cv5_exact_w05_screening_summary.csv`
+- `reports\prototype_cv5_exact_w05_screening_paired_stats.csv`
+- `reports\prototype_cv5_exact_w05_screening_confusion_summary.csv`
+- `reports\prototype_cv5_exact_w05_screening_provenance.json`
+
+For 5 folds x 5 seeds, the same names use the `_final_` suffix.
 
 ## Outputs
 

@@ -36,3 +36,21 @@
   edited prediction CSV SHA mismatch, fold1/seed42 non-paper-main, and aggregate
   paper-main gate tests.
 - Scope: no full CV and no lambda=1.0 run was started.
+
+## 2026-06-23 - Exact prototype aggregate summary protocol fix
+
+- Branch: `prototype-exact-review`
+- Task: Tightened `tools/summarize_cv5_exact_prototype.py` so aggregate paper
+  provenance is allowed only for fixed 5 folds x 3 seeds screening and 5 folds
+  x 5 seeds final protocols.
+- Result qualification: 5x3 screening now sets `paper_candidate_result=true`
+  and `paper_main_result=false`; 5x5 final sets both
+  `paper_candidate_result=true` and `paper_main_result=true`.
+- Statistics: aggregate summary now emits method means/std/min/max,
+  fold-seed-paired deltas with bootstrap CI and Wilcoxon p-value, and aggregated
+  confusion summaries for raw Softmax, prototype, and hierarchical methods.
+- Tests: 47 core unit tests passed, including 1x1, 4x5, duplicate,
+  unexpected-fold, mixed-lambda, paired-statistics, fixed-bootstrap, and
+  confusion-aggregation cases.
+- Scope: no full CV, no fold/seed expansion, and no model, feature,
+  calibration, prediction, or evaluation core logic changes.
