@@ -1,0 +1,197 @@
+{
+  "artifact_type": "hier_acoustic_prototype_test_evaluation",
+  "prediction_csv": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\evaluation\\test_predictions.csv",
+  "calibration_json": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\calibration\\calibration.json",
+  "fold": 2,
+  "seed": 42,
+  "labels": [
+    "cough",
+    "calm_grunt",
+    "feeding",
+    "stress_vocal"
+  ],
+  "aux_labels": [
+    "dry_cough",
+    "abdominal_cough",
+    "calm_grunt",
+    "feeding",
+    "frightened_stress",
+    "anxious_stress"
+  ],
+  "run_scope": "fold_seed",
+  "feature_pipeline_equivalent": true,
+  "single_fold_debug": false,
+  "eligible_for_cv_aggregation": true,
+  "paper_main_result": false,
+  "feature_backend": "training_exact",
+  "input_role": "frozen_test",
+  "prediction_metadata_json": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\evaluation\\prediction_metadata.json",
+  "prediction_csv_sha256": "196caa87a91e534a587814510b8db8003bec9c2707997bc25649f04237cb06dc",
+  "calibration_json_sha256": "8ed698d0324de856fee90c691b2a0e51d2343a99d8ccc32564245dcf829c575b",
+  "leakage_audit_ok": true,
+  "manifest_sha_verified": true,
+  "selection_method": "hierarchical",
+  "method_best_params": {
+    "raw_softmax": {
+      "method": "raw_softmax",
+      "prototype_temperature": null,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null
+    },
+    "calibrated_softmax": {
+      "method": "calibrated_softmax",
+      "prototype_temperature": null,
+      "softmax_temperature": 0.75,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null
+    },
+    "prototype": {
+      "method": "prototype",
+      "prototype_temperature": 0.07,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null
+    },
+    "hierarchical": {
+      "method": "hierarchical",
+      "prototype_temperature": 0.07,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": 0.5,
+      "fusion_kind": null
+    },
+    "fused": {
+      "method": "fused",
+      "prototype_temperature": 0.07,
+      "softmax_temperature": 0.75,
+      "softmax_weight": 1.0,
+      "hier_aux_prob_weight": 0.5,
+      "fusion_kind": "pure_softmax"
+    }
+  },
+  "prototype_temperature": 0.07,
+  "softmax_temperature": null,
+  "softmax_weight": null,
+  "hierarchy_confidence_penalty": 1.0,
+  "global_rejection_threshold": 0.8171396851539612,
+  "per_class_rejection_thresholds": {
+    "cough": 1.0,
+    "calm_grunt": 0.9999987483024597,
+    "feeding": 0.5934004783630371,
+    "stress_vocal": 0.7733570337295532
+  },
+  "unknown_detection_claim": false,
+  "test_used_for_parameter_selection": false,
+  "methods": {
+    "raw_softmax": {
+      "method": "raw_softmax",
+      "n": 168,
+      "top1_acc": 0.9464285714285714,
+      "macro_f1": 0.9464209780297661,
+      "top2_acc": 1.0,
+      "ece": 0.027143396082378583,
+      "brier": 0.07509344816207886,
+      "nll": 0.1262502670288086
+    },
+    "calibrated_softmax": {
+      "method": "calibrated_softmax",
+      "n": 168,
+      "top1_acc": 0.9464285714285714,
+      "macro_f1": 0.9464209780297661,
+      "top2_acc": 1.0,
+      "ece": 0.025192238745235268,
+      "brier": 0.07754646986722946,
+      "nll": 0.13710252940654755
+    },
+    "prototype": {
+      "method": "prototype",
+      "n": 168,
+      "top1_acc": 0.9464285714285714,
+      "macro_f1": 0.9464209780297661,
+      "top2_acc": 1.0,
+      "ece": 0.022303147330170622,
+      "brier": 0.07469435036182404,
+      "nll": 0.12739157676696777
+    },
+    "hierarchical": {
+      "method": "hierarchical",
+      "n": 168,
+      "top1_acc": 0.9464285714285714,
+      "macro_f1": 0.9464209780297661,
+      "top2_acc": 1.0,
+      "ece": 0.023099017285165287,
+      "brier": 0.07403868436813354,
+      "nll": 0.12774360179901123
+    },
+    "fused": {
+      "method": "fused",
+      "n": 168,
+      "top1_acc": 0.9464285714285714,
+      "macro_f1": 0.9464209780297661,
+      "top2_acc": 1.0,
+      "ece": 0.025192238745235268,
+      "brier": 0.07754646986722946,
+      "nll": 0.13710252940654755
+    }
+  },
+  "auxiliary_prototype": {
+    "n": 168,
+    "top1_acc": 0.8809523809523809,
+    "macro_f1": 0.8580427117012482,
+    "top2_acc": 0.9821428571428571,
+    "ece": 0.06916465610265733,
+    "brier": 0.20063205063343048,
+    "nll": 0.33114081621170044
+  },
+  "selected_method_metrics": {
+    "method": "hierarchical",
+    "n": 168,
+    "top1_acc": 0.9464285714285714,
+    "macro_f1": 0.9464209780297661,
+    "top2_acc": 1.0,
+    "ece": 0.023099017285165287,
+    "brier": 0.07403868436813354,
+    "nll": 0.12774360179901123
+  },
+  "selected_method_calibration": {
+    "ece": 0.023099017285165287,
+    "brier": 0.07403868436813354,
+    "nll": 0.12774360179901123
+  },
+  "selective_risk": [
+    {
+      "accept_rule": "accept_global",
+      "n_total": 168,
+      "n_accepted": 157,
+      "coverage": 0.9345238095238095,
+      "selective_acc": 0.9745222929936306,
+      "selective_risk": 0.02547770700636942
+    },
+    {
+      "accept_rule": "accept_per_class",
+      "n_total": 168,
+      "n_accepted": 155,
+      "coverage": 0.9226190476190477,
+      "selective_acc": 0.967741935483871,
+      "selective_risk": 0.032258064516129004
+    }
+  ],
+  "hierarchy_consistency": {
+    "raw_softmax_main_vs_aux": 1.0,
+    "calibrated_softmax_main_vs_aux": 1.0,
+    "prototype_main_vs_aux": 0.9940476190476191,
+    "hierarchical_main_vs_aux": 0.9940476190476191,
+    "fused_main_vs_aux": 0.9940476190476191,
+    "prototype_main_aux_inconsistent_rate": 0.005952380952380952
+  },
+  "outputs": {
+    "metrics_by_method_csv": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\evaluation\\metrics_by_method_test.csv",
+    "coverage_risk_csv": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\evaluation\\coverage_risk.csv",
+    "selective_risk_csv": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\evaluation\\selective_risk_summary.csv",
+    "confusion_matrices_json": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\evaluation\\confusion_matrices.json"
+  }
+}

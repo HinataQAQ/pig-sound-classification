@@ -1,0 +1,8 @@
+{
+  "raw_softmax_main_vs_aux": 0.9226190476190477,
+  "calibrated_softmax_main_vs_aux": 0.9226190476190477,
+  "prototype_main_vs_aux": 0.9761904761904762,
+  "hierarchical_main_vs_aux": 0.9880952380952381,
+  "fused_main_vs_aux": 0.9880952380952381,
+  "prototype_main_aux_inconsistent_rate": 0.023809523809523808
+}

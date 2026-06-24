@@ -1,137 +1,212 @@
 {
   "status": "completed",
-  "branch": "prototype-exact-review",
+  "task": "lambda_0_5_exact_prototype_cv5_screening",
+  "branch": "prototype-cv5-screening-w05",
+  "base_branch": "current-mctafd-ablation",
+  "pr_1_squash_merge_commit": "9ee233c04ef377a6acbaeaf233da7137f2add2d4",
   "scope": {
     "lambda": 0.5,
-    "fold": 0,
-    "seed": 3407,
+    "folds": [0, 1, 2, 3, 4],
+    "seeds": [42, 2024, 3407],
+    "n_runs": 15,
     "feature_backend": "training_exact",
-    "full_cv_started": false,
-    "lambda_1_ablation_started": false
+    "full_25_run_cv_started": false,
+    "lambda_1_ablation_started": false,
+    "unknown_or_open_set_started": false
   },
-  "qualification_fields": {
-    "feature_pipeline_equivalent": true,
-    "single_fold_debug": true,
-    "eligible_for_cv_aggregation": true,
+  "preflight": {
+    "checkpoints_found": 15,
+    "summaries_found": 15,
+    "reference_test_pred_found": 15,
+    "train_val_test_manifests_found": true,
+    "summaries_hier_aux_weight_0_5": true,
+    "summaries_dur_s_2_0": true,
+    "summaries_feature_mode_logmel": true,
+    "label_order_checked": true,
+    "checkpoint_loadable_count": 15,
+    "checkpoint_note": "Checkpoints are pure state_dict files without hyperparameter metadata; lambda was guarded by matching summary.json and w05 checkpoint family."
+  },
+  "aggregate_provenance": {
+    "run_scope": "aggregate",
+    "screening_result": true,
+    "final_25_run_result": false,
+    "paper_candidate_result": true,
     "paper_main_result": false,
-    "feature_backend": "training_exact",
-    "input_role": "frozen_test"
+    "n_runs": 15,
+    "lambda": 0.5,
+    "provenance_json": "reports/prototype_cv5_exact_w05_screening_provenance.json"
   },
-  "softmax_reproduction": {
-    "passed": true,
-    "test_rows": 168,
-    "reference_macro_f1": 0.946360153256705,
-    "reproduced_macro_f1": 0.946360153256705,
-    "prediction_match_count": 168,
-    "sample_alignment_passed": true,
-    "probability_max_abs_diff_advisory": 0.0009449124336242676
-  },
-  "calibration": {
+  "method_summary": {
     "raw_softmax": {
-      "softmax_temperature": null
+      "n": 15,
+      "mean_macro_f1": 0.9502436893230706,
+      "std_macro_f1": 0.013217625824735258,
+      "mean_top1_acc": 0.9503968253968254,
+      "mean_top2_acc": 1.0,
+      "mean_ece": 0.030944658295502747,
+      "mean_brier": 0.07691362897555033,
+      "mean_nll": 0.12818853954474133
     },
     "calibrated_softmax": {
-      "softmax_temperature": 1.0
+      "n": 15,
+      "mean_macro_f1": 0.9502436893230706,
+      "std_macro_f1": 0.013217625824735258,
+      "mean_top1_acc": 0.9503968253968254,
+      "mean_top2_acc": 1.0,
+      "mean_ece": 0.027277884928006976,
+      "mean_brier": 0.07603206684192022,
+      "mean_nll": 0.12829057325919468
     },
     "prototype": {
-      "prototype_temperature": 0.1,
-      "softmax_weight": null
+      "n": 15,
+      "mean_macro_f1": 0.9523328322649266,
+      "std_macro_f1": 0.01275378419840185,
+      "mean_top1_acc": 0.9523809523809523,
+      "mean_top2_acc": 1.0,
+      "mean_ece": 0.02553311716469508,
+      "mean_brier": 0.07022934357325236,
+      "mean_nll": 0.11769404311974843
     },
     "hierarchical": {
-      "prototype_temperature": 0.1,
-      "softmax_temperature": null,
-      "hier_aux_prob_weight": 0.5
+      "n": 15,
+      "mean_macro_f1": 0.9554992014547394,
+      "std_macro_f1": 0.010792536013919921,
+      "mean_top1_acc": 0.9555555555555555,
+      "mean_top2_acc": 1.0,
+      "mean_ece": 0.029312897461747353,
+      "mean_brier": 0.07141145716110865,
+      "mean_nll": 0.12826984276374181
     },
     "fused": {
-      "prototype_temperature": 0.1,
-      "softmax_temperature": 1.0,
-      "softmax_weight": 1.0,
-      "fusion_kind": "pure_softmax"
+      "n": 15,
+      "mean_macro_f1": 0.954289240307066,
+      "std_macro_f1": 0.009765697188451602,
+      "mean_top1_acc": 0.9543650793650792,
+      "mean_top2_acc": 1.0,
+      "mean_ece": 0.02733572447110736,
+      "mean_brier": 0.07209263170758883,
+      "mean_nll": 0.12191209048032761
     }
   },
-  "metrics": {
-    "softmax_macro_f1": 0.946360153256705,
-    "main_prototype_macro_f1": 0.946360153256705,
-    "hierarchical_prototype_macro_f1": 0.9522727272727273,
-    "auxiliary_prototype_macro_f1": 0.8355042016806723,
-    "selected_ece": 0.034153742094834655,
-    "selected_brier": 0.07724517583847046,
-    "selected_nll": 0.12035306543111801
+  "paired_statistics": {
+    "hierarchical_minus_raw_softmax": {
+      "n": 15,
+      "mean_delta": 0.005255512131668831,
+      "std_delta": 0.012492535067652912,
+      "bootstrap_ci95_low": 0.000026326045249565283,
+      "bootstrap_ci95_high": 0.012109266155346505,
+      "wilcoxon_p": 0.055808463254266596,
+      "wins": 9,
+      "ties": 4,
+      "losses": 2
+    },
+    "prototype_minus_raw_softmax": {
+      "n": 15,
+      "mean_delta": 0.0020891429418560406,
+      "std_delta": 0.009631173444870064,
+      "bootstrap_ci95_low": -0.0019786789429595743,
+      "bootstrap_ci95_high": 0.0073595513792950725,
+      "wilcoxon_p": 0.3428288397234035,
+      "wins": 6,
+      "ties": 6,
+      "losses": 3
+    },
+    "hierarchical_minus_prototype": {
+      "n": 15,
+      "mean_delta": 0.00316636918981279,
+      "std_delta": 0.007059669971987167,
+      "bootstrap_ci95_low": -0.0000027012682458342023,
+      "bootstrap_ci95_high": 0.006741016651492866,
+      "wilcoxon_p": 0.17629637444051116,
+      "wins": 5,
+      "ties": 8,
+      "losses": 2
+    }
   },
-  "negative_tests": {
-    "validation_manifest_sha_mismatch": "passed",
-    "frozen_test_manifest_sha_mismatch": "passed",
-    "numpy_logmel_paper_equivalence": "passed_non_equivalent"
+  "feeding_stress_confusion": {
+    "raw_softmax": {
+      "macro_f1_from_cm": 0.9503897944720056,
+      "feeding_f1": 0.899598393574297,
+      "stress_f1": 0.9019607843137255,
+      "feeding_recall": 0.8888888888888888,
+      "stress_recall": 0.9126984126984127,
+      "feeding_to_stress": 70,
+      "stress_to_feeding": 55
+    },
+    "prototype": {
+      "macro_f1_from_cm": 0.9523766328011611,
+      "feeding_f1": 0.903846153846154,
+      "stress_f1": 0.9056603773584906,
+      "feeding_recall": 0.8952380952380953,
+      "stress_recall": 0.9142857142857143,
+      "feeding_to_stress": 66,
+      "stress_to_feeding": 54
+    },
+    "hierarchical": {
+      "macro_f1_from_cm": 0.9555366230518916,
+      "feeding_f1": 0.9092382495948136,
+      "stress_f1": 0.9129082426127527,
+      "feeding_recall": 0.8904761904761904,
+      "stress_recall": 0.9317460317460318,
+      "feeding_to_stress": 69,
+      "stress_to_feeding": 43
+    }
   },
-  "final_review_fixes": [
-    "calibration validates validation manifest content SHA256",
-    "frozen test prediction validates test manifest content SHA256",
-    "prediction input roles are separated into frozen_test, inference_manifest, and single_audio",
-    "qualification fields are generated by build/calibrate/predict/eval outputs",
-    "numeric calibration parameter restoration preserves 0.0",
-    "path normalization folds dot segments, repeated slashes, backslashes, and Windows case",
-    "assert_no_leakage errors include missing_columns, invalid_values, and overlaps",
-    "single fold-seed outputs always use run_scope=fold_seed and paper_main_result=false",
-    "prediction metadata records prediction CSV SHA256, calibration JSON SHA256, prototype bundle SHA256, leakage audit status, manifest SHA verification, and run scope",
-    "evaluation requires prediction_metadata.json and verifies provenance before metrics",
-    "aggregate paper_main_result is only set by summarize_cv5_exact_prototype.py",
-    "aggregate summary now allows only fixed 5x3 screening or 5x5 final protocols",
-    "5x3 screening aggregates set paper_candidate_result=true and paper_main_result=false",
-    "5x5 final aggregates set paper_candidate_result=true and paper_main_result=true",
-    "aggregate summary emits method summary, paired statistics, and confusion summary CSVs"
-  ],
-  "provenance_review_tests": {
-    "unit_tests": 47,
-    "one_by_one_aggregate_fails": true,
-    "screening_5x3_paper_main_result": false,
-    "screening_5x3_paper_candidate_result": true,
-    "final_5x5_paper_main_result": true,
-    "four_by_five_aggregate_fails": true,
-    "mixed_lambda_aggregate_fails": true,
-    "duplicate_fold_seed_aggregate_fails": true,
-    "unexpected_fold_aggregate_fails": true,
-    "paired_statistics_verified": true,
-    "bootstrap_ci_fixed_seed_reproducible": true,
-    "confusion_aggregation_verified": true,
-    "missing_confusion_file_fails": true,
-    "missing_method_metrics_fail": true
+  "calibration_parameter_distribution": {
+    "calibrated_softmax_temperature": {"1.0": 4, "0.5": 3, "0.75": 8},
+    "prototype_temperature": {"0.07": 7, "0.1": 3, "0.03": 2, "0.05": 3},
+    "hierarchical_prototype_temperature": {"0.07": 6, "0.1": 2, "0.03": 2, "0.05": 5},
+    "hier_aux_prob_weight": {"0.5": 15},
+    "fused_alpha_softmax_weight": {"0.25": 1, "1.0": 8, "0.0": 2, "0.5": 1, "0.75": 3},
+    "fusion_kind": {"mixed": 5, "pure_softmax": 8, "pure_prototype": 2},
+    "hierarchy_confidence_penalty": {"1.0": 14, "0.85": 1}
   },
-  "leakage_audit": {
-    "ok": true,
-    "train_rows": 1174,
-    "val_rows": 120,
-    "test_rows": 168,
-    "checked": [
-      "path",
-      "source_id",
-      "md5"
-    ],
-    "overlaps": []
+  "coverage_selective_risk": {
+    "accept_global": {
+      "mean_coverage": 0.928968,
+      "std_coverage": 0.045802,
+      "mean_selective_risk": 0.022369,
+      "std_selective_risk": 0.010111
+    },
+    "accept_per_class": {
+      "mean_coverage": 0.936905,
+      "std_coverage": 0.038954,
+      "mean_selective_risk": 0.030587,
+      "std_selective_risk": 0.011742
+    }
+  },
+  "reproduction_and_qualification": {
+    "softmax_reproduction_passed_runs": 15,
+    "prediction_match_count_per_run": "168/168 for all 15 runs",
+    "feature_backend_training_exact_runs": 15,
+    "input_role_frozen_test_runs": 15,
+    "manifest_sha_verified_runs": 15,
+    "leakage_audit_ok_runs": 15,
+    "eligible_for_cv_aggregation_runs": 15,
+    "unsafe_checkpoint_sha_mismatch_used": false
+  },
+  "verification": {
+    "help_scripts_passed": 6,
+    "py_compile_passed": true,
+    "unit_tests_passed": true,
+    "unit_tests_count": 47,
+    "preflight_passed": true,
+    "aggregate_summary_passed": true
   },
   "outputs": [
-    "reports/prototype_feature_parity_fold0_seed3407/environment_audit.json",
-    "reports/prototype_feature_parity_fold0_seed3407/feature_parity_report.csv",
-    "reports/prototype_cv5_fold0_seed3407_exact/softmax_reproduction/softmax_reproduction.json",
-    "reports/prototype_cv5_fold0_seed3407_exact/softmax_reproduction/sample_alignment_report.csv",
-    "reports/prototype_cv5_fold0_seed3407_exact/calibration/calibration.json",
-    "reports/prototype_cv5_fold0_seed3407_exact/evaluation/metrics.json",
-    "reports/prototype_cv5_fold0_seed3407_exact/evaluation/coverage_risk.csv",
-    "reports/prototype_cv5_fold0_seed3407_exact/artifacts/leakage_audit.json",
-    "reports/prototype_cv5_fold0_seed3407_exact/run_manifest.json"
+    "reports/prototype_cv5_exact_w05_screening_runs.csv",
+    "reports/prototype_cv5_exact_w05_screening_summary.csv",
+    "reports/prototype_cv5_exact_w05_screening_paired_stats.csv",
+    "reports/prototype_cv5_exact_w05_screening_confusion_summary.csv",
+    "reports/prototype_cv5_exact_w05_screening_provenance.json",
+    "reports/prototype_cv5_exact_w05_fold{fold}_seed{seed}/"
   ],
-  "excluded": [
-    "checkpoints",
-    "audio",
-    "embedding arrays",
-    "npz artifacts",
-    "cache directories",
-    "personal absolute paths"
-  ],
-  "recommended_next_step": "Review the branch, then consider lambda 0.5 5-fold x 3-seed exact prototype runs.",
-  "paper_usable_as_single_run_evidence": true,
-  "paper_main_result": false,
-  "changed_files": [
-    "tools/summarize_cv5_exact_prototype.py",
-    "tests/test_prototype_pipeline_core.py"
-  ]
+  "paper_usability": {
+    "paper_usable_as_screening_evidence": true,
+    "paper_candidate_result": true,
+    "paper_main_result": false,
+    "statistical_significance_claim_allowed": false,
+    "note": "Hierarchical mean Macro-F1 is higher than raw Softmax and the paired mean delta is positive, but Wilcoxon p=0.055808, so do not claim statistical significance."
+  },
+  "recommended_next_step": "Ask for explicit approval before running final 5 folds x 5 seeds lambda 0.5 exact prototype aggregate. Do not run lambda 1.0 yet."
 }

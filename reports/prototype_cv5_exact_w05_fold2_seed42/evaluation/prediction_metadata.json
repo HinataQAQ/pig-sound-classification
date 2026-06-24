@@ -1,0 +1,133 @@
+{
+  "artifact_type": "hier_acoustic_prototype_frozen_predictions",
+  "created_at_utc": "2026-06-24T16:30:12.379233+00:00",
+  "input_kind": "frozen_test",
+  "input_role": "frozen_test",
+  "prototype_bundle": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\artifacts\\prototype_bundle.npz",
+  "prototype_bundle_sha256": "46ef3ee9537f3e6d2171b55ea71a88bbeb4b3154ffee009d8e70f46063c034e1",
+  "calibration_json": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\calibration\\calibration.json",
+  "calibration_json_sha256": "8ed698d0324de856fee90c691b2a0e51d2343a99d8ccc32564245dcf829c575b",
+  "prediction_csv_sha256": "196caa87a91e534a587814510b8db8003bec9c2707997bc25649f04237cb06dc",
+  "prediction_json_sha256": "ff4278651869012e12df21461a38011d6f3bf9c4382a372ebfb2646d4b701b03",
+  "checkpoint_path": "C:\\py\\pigsound\\pig-sound-classification\\checkpoints\\cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed42.pt",
+  "checkpoint_sha256": "ebe0a5ebc6d451a8168b6d3699a4be795ea02de83941748d98ad48e4891bc432",
+  "train_manifest": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\train.csv",
+  "val_manifest": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\val.csv",
+  "test_manifest": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\test.csv",
+  "audio": null,
+  "project_relative_paths": {
+    "prototype_bundle": "reports/prototype_cv5_exact_w05_fold2_seed42/artifacts/prototype_bundle.npz",
+    "calibration_json": "reports/prototype_cv5_exact_w05_fold2_seed42/calibration/calibration.json",
+    "checkpoint": "checkpoints/cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed42.pt",
+    "train_manifest": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/train.csv",
+    "val_manifest": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/val.csv",
+    "test_manifest": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/test.csv",
+    "audio": null
+  },
+  "paths": {
+    "prototype_bundle": {
+      "project_relative": "reports/prototype_cv5_exact_w05_fold2_seed42/artifacts/prototype_bundle.npz",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\artifacts\\prototype_bundle.npz",
+      "sha256": "46ef3ee9537f3e6d2171b55ea71a88bbeb4b3154ffee009d8e70f46063c034e1"
+    },
+    "calibration_json": {
+      "project_relative": "reports/prototype_cv5_exact_w05_fold2_seed42/calibration/calibration.json",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\calibration\\calibration.json",
+      "sha256": "8ed698d0324de856fee90c691b2a0e51d2343a99d8ccc32564245dcf829c575b"
+    },
+    "checkpoint": {
+      "project_relative": "checkpoints/cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed42.pt",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\checkpoints\\cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed42.pt",
+      "sha256": "ebe0a5ebc6d451a8168b6d3699a4be795ea02de83941748d98ad48e4891bc432"
+    },
+    "train_manifest": {
+      "project_relative": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/train.csv",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\train.csv",
+      "sha256": "328e52cf51ea8e6536e9b5626b2352feb7fa7c4b9be456b79fb3f02f31239799"
+    },
+    "val_manifest": {
+      "project_relative": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/val.csv",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\val.csv",
+      "sha256": "b51380b178754a4ef46492397a36e68e5ef57fc00d153c10184c4f23085af550"
+    },
+    "test_manifest": {
+      "project_relative": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/test.csv",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\test.csv",
+      "sha256": "1b35301d7b94fef8f330a8c0de19b32ceaa96a63eb7b8491fd97e9a34ddba4da"
+    },
+    "audio": null
+  },
+  "fold": 2,
+  "seed": 42,
+  "selection_method": "hierarchical",
+  "feature_backend": "training_exact",
+  "run_scope": "fold_seed",
+  "feature_pipeline_equivalent": true,
+  "single_fold_debug": false,
+  "eligible_for_cv_aggregation": true,
+  "paper_main_result": false,
+  "leakage_audit_ok": true,
+  "manifest_sha_verified": true,
+  "allow_relocated_checkpoint": false,
+  "unsafe_allow_checkpoint_sha_mismatch": false,
+  "method_best_params": {
+    "raw_softmax": {
+      "method": "raw_softmax",
+      "prototype_temperature": null,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null
+    },
+    "calibrated_softmax": {
+      "method": "calibrated_softmax",
+      "prototype_temperature": null,
+      "softmax_temperature": 0.75,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null
+    },
+    "prototype": {
+      "method": "prototype",
+      "prototype_temperature": 0.07,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null
+    },
+    "hierarchical": {
+      "method": "hierarchical",
+      "prototype_temperature": 0.07,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": 0.5,
+      "fusion_kind": null
+    },
+    "fused": {
+      "method": "fused",
+      "prototype_temperature": 0.07,
+      "softmax_temperature": 0.75,
+      "softmax_weight": 1.0,
+      "hier_aux_prob_weight": 0.5,
+      "fusion_kind": "pure_softmax"
+    }
+  },
+  "prototype_temperature": 0.07,
+  "hierarchical_prototype_temperature": 0.07,
+  "calibrated_softmax_temperature": 0.75,
+  "softmax_weight": 1.0,
+  "hierarchy_confidence_penalty": 1.0,
+  "global_rejection_threshold": 0.8171396851539612,
+  "per_class_rejection_thresholds": {
+    "cough": 1.0,
+    "calm_grunt": 0.9999987483024597,
+    "feeding": 0.5934004783630371,
+    "stress_vocal": 0.7733570337295532
+  },
+  "rows_after_filtering": 168,
+  "test_used_for_parameter_selection": false,
+  "unknown_detection_claim": false,
+  "prediction_csv": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\evaluation\\test_predictions.csv",
+  "prediction_json": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\evaluation\\test_predictions.json",
+  "leakage_audit_path": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed42\\evaluation\\leakage_audit.json"
+}

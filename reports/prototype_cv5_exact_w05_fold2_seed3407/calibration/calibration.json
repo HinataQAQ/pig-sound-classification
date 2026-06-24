@@ -1,0 +1,296 @@
+{
+  "artifact_type": "hier_acoustic_prototype_calibration",
+  "created_at_utc": "2026-06-24T16:30:44.348134+00:00",
+  "prototype_bundle": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed3407\\artifacts\\prototype_bundle.npz",
+  "prototype_bundle_sha256": "1e7ca16c8589947f96043a7ee7edea040ad7f5bb805eafbd178dd8153a4b0676",
+  "checkpoint_path": "C:\\py\\pigsound\\pig-sound-classification\\checkpoints\\cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed3407.pt",
+  "checkpoint_sha256": "b29ac221de695030ac749281292cc3f55195a1955d69b6aa9e37b9d99246f263",
+  "train_manifest": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\train.csv",
+  "train_manifest_sha256": "328e52cf51ea8e6536e9b5626b2352feb7fa7c4b9be456b79fb3f02f31239799",
+  "val_manifest": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\val.csv",
+  "val_manifest_sha256": "b51380b178754a4ef46492397a36e68e5ef57fc00d153c10184c4f23085af550",
+  "project_relative_paths": {
+    "prototype_bundle": "reports/prototype_cv5_exact_w05_fold2_seed3407/artifacts/prototype_bundle.npz",
+    "checkpoint": "checkpoints/cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed3407.pt",
+    "train_manifest": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/train.csv",
+    "val_manifest": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/val.csv"
+  },
+  "paths": {
+    "prototype_bundle": {
+      "project_relative": "reports/prototype_cv5_exact_w05_fold2_seed3407/artifacts/prototype_bundle.npz",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed3407\\artifacts\\prototype_bundle.npz",
+      "sha256": "1e7ca16c8589947f96043a7ee7edea040ad7f5bb805eafbd178dd8153a4b0676"
+    },
+    "checkpoint": {
+      "project_relative": "checkpoints/cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed3407.pt",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\checkpoints\\cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed3407.pt",
+      "sha256": "b29ac221de695030ac749281292cc3f55195a1955d69b6aa9e37b9d99246f263"
+    },
+    "train_manifest": {
+      "project_relative": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/train.csv",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\train.csv",
+      "sha256": "328e52cf51ea8e6536e9b5626b2352feb7fa7c4b9be456b79fb3f02f31239799"
+    },
+    "val_manifest": {
+      "project_relative": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/val.csv",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\val.csv",
+      "sha256": "b51380b178754a4ef46492397a36e68e5ef57fc00d153c10184c4f23085af550"
+    }
+  },
+  "fold": 2,
+  "seed": 3407,
+  "model_config": {
+    "main_labels": [
+      "cough",
+      "calm_grunt",
+      "feeding",
+      "stress_vocal"
+    ],
+    "aux_labels": [
+      "dry_cough",
+      "abdominal_cough",
+      "calm_grunt",
+      "feeding",
+      "frightened_stress",
+      "anxious_stress"
+    ],
+    "feature_mode": "logmel",
+    "use_se": true,
+    "seed": 3407,
+    "sr": 32000,
+    "dur_s": 2.0,
+    "n_mels": 64,
+    "n_mfcc": 20,
+    "fmin": 50.0,
+    "fmax": 8000.0,
+    "n_fft": 1024,
+    "hop_length": 320,
+    "win_length": 800,
+    "rnn_type": "gru",
+    "pooling_type": "mean",
+    "hier_aux_weight": 0.5
+  },
+  "feature_backend": "training_exact",
+  "run_scope": "fold_seed",
+  "feature_pipeline_equivalent": true,
+  "single_fold_debug": false,
+  "eligible_for_cv_aggregation": true,
+  "paper_main_result": false,
+  "allow_relocated_checkpoint": false,
+  "unsafe_allow_checkpoint_sha_mismatch": false,
+  "selection_method": "hierarchical",
+  "method_best_params": {
+    "raw_softmax": {
+      "method": "raw_softmax",
+      "prototype_temperature": null,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null
+    },
+    "calibrated_softmax": {
+      "method": "calibrated_softmax",
+      "prototype_temperature": null,
+      "softmax_temperature": 0.75,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null
+    },
+    "prototype": {
+      "method": "prototype",
+      "prototype_temperature": 0.05,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null
+    },
+    "hierarchical": {
+      "method": "hierarchical",
+      "prototype_temperature": 0.05,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": 0.5,
+      "fusion_kind": null
+    },
+    "fused": {
+      "method": "fused",
+      "prototype_temperature": 0.05,
+      "softmax_temperature": 0.75,
+      "softmax_weight": 0.75,
+      "hier_aux_prob_weight": 0.5,
+      "fusion_kind": "mixed"
+    }
+  },
+  "method_best_metrics": {
+    "raw_softmax": {
+      "method": "raw_softmax",
+      "prototype_temperature": null,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null,
+      "n": 120.0,
+      "top1_acc": 0.975,
+      "macro_f1": 0.9749930536260072,
+      "top2_acc": 1.0,
+      "ece": 0.021190624435742725,
+      "brier": 0.04592932388186455,
+      "nll": 0.08837587386369705
+    },
+    "calibrated_softmax": {
+      "method": "calibrated_softmax",
+      "prototype_temperature": null,
+      "softmax_temperature": 0.75,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null,
+      "n": 120.0,
+      "top1_acc": 0.975,
+      "macro_f1": 0.9749930536260072,
+      "top2_acc": 1.0,
+      "ece": 0.021046690642833748,
+      "brier": 0.04252059385180473,
+      "nll": 0.08594729006290436
+    },
+    "prototype": {
+      "method": "prototype",
+      "prototype_temperature": 0.05,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": null,
+      "fusion_kind": null,
+      "n": 120.0,
+      "top1_acc": 0.9833333333333333,
+      "macro_f1": 0.9833333333333334,
+      "top2_acc": 1.0,
+      "ece": 0.02376313755909597,
+      "brier": 0.04495404288172722,
+      "nll": 0.08769843727350235
+    },
+    "hierarchical": {
+      "method": "hierarchical",
+      "prototype_temperature": 0.05,
+      "softmax_temperature": null,
+      "softmax_weight": null,
+      "hier_aux_prob_weight": 0.5,
+      "fusion_kind": null,
+      "n": 120.0,
+      "top1_acc": 0.9666666666666667,
+      "macro_f1": 0.9666295884315906,
+      "top2_acc": 1.0,
+      "ece": 0.015121611952781625,
+      "brier": 0.0513630174100399,
+      "nll": 0.08922303467988968
+    },
+    "fused": {
+      "method": "fused",
+      "prototype_temperature": 0.05,
+      "softmax_temperature": 0.75,
+      "softmax_weight": 0.75,
+      "hier_aux_prob_weight": 0.5,
+      "fusion_kind": "mixed",
+      "n": 120.0,
+      "top1_acc": 0.975,
+      "macro_f1": 0.9749930536260072,
+      "top2_acc": 1.0,
+      "ece": 0.01733157883087789,
+      "brier": 0.04374754801392555,
+      "nll": 0.08535932749509811
+    }
+  },
+  "raw_softmax": {
+    "method": "raw_softmax",
+    "prototype_temperature": null,
+    "softmax_temperature": null,
+    "softmax_weight": null,
+    "hier_aux_prob_weight": null,
+    "fusion_kind": null
+  },
+  "calibrated_softmax": {
+    "method": "calibrated_softmax",
+    "prototype_temperature": null,
+    "softmax_temperature": 0.75,
+    "softmax_weight": null,
+    "hier_aux_prob_weight": null,
+    "fusion_kind": null
+  },
+  "prototype": {
+    "method": "prototype",
+    "prototype_temperature": 0.05,
+    "softmax_temperature": null,
+    "softmax_weight": null,
+    "hier_aux_prob_weight": null,
+    "fusion_kind": null
+  },
+  "hierarchical": {
+    "method": "hierarchical",
+    "prototype_temperature": 0.05,
+    "softmax_temperature": null,
+    "softmax_weight": null,
+    "hier_aux_prob_weight": 0.5,
+    "fusion_kind": null
+  },
+  "fused": {
+    "method": "fused",
+    "prototype_temperature": 0.05,
+    "softmax_temperature": 0.75,
+    "softmax_weight": 0.75,
+    "hier_aux_prob_weight": 0.5,
+    "fusion_kind": "mixed"
+  },
+  "fused_is_independent_mixed_fusion": true,
+  "fusion_result_note": "fused is a mixed Softmax/prototype result only when fusion_kind=mixed; alpha=0 is pure_prototype and alpha=1 is pure_softmax.",
+  "prototype_temperature": 0.05,
+  "temperature": 0.05,
+  "softmax_temperature": null,
+  "softmax_weight": null,
+  "hier_aux_prob_weight": 0.5,
+  "hier_aux_prob_weight_mode": "fixed",
+  "fusion_formula": "fused = alpha * softmax + (1 - alpha) * prototype",
+  "fusion_weight_name": "alpha / softmax_weight",
+  "fusion_weight_alpha_0": "pure prototype",
+  "fusion_weight_alpha_1": "pure softmax",
+  "hierarchy_penalty_formula": "penalized_confidence = raw_confidence if hierarchy_inconsistent is false; raw_confidence * hierarchy_confidence_penalty otherwise",
+  "hierarchy_inconsistent_definition": "main prototype prediction differs from map(auxiliary prototype prediction)",
+  "hierarchy_confidence_penalty": 1.0,
+  "target_coverage": 0.95,
+  "global_rejection_threshold": 0.8457677364349365,
+  "per_class_rejection_thresholds": {
+    "cough": 1.0,
+    "calm_grunt": 1.0,
+    "feeding": 0.6527675986289978,
+    "stress_vocal": 0.5749942660331726
+  },
+  "reject_label": "uncertain",
+  "unknown_detection_claim": false,
+  "test_used_for_calibration": false,
+  "best_validation_row": {
+    "method": "hierarchical",
+    "prototype_temperature": 0.05,
+    "softmax_temperature": null,
+    "softmax_weight": null,
+    "hier_aux_prob_weight": 0.5,
+    "fusion_kind": null,
+    "n": 120.0,
+    "top1_acc": 0.9666666666666667,
+    "macro_f1": 0.9666295884315906,
+    "top2_acc": 1.0,
+    "ece": 0.015121611952781625,
+    "brier": 0.0513630174100399,
+    "nll": 0.08922303467988968
+  },
+  "best_hierarchy_penalty_row": {
+    "hierarchy_confidence_penalty": 1.0,
+    "global_rejection_threshold": 0.8457677364349365,
+    "coverage": 0.95,
+    "selective_risk": 0.01754385964912286,
+    "selective_acc": 0.9824561403508771,
+    "n_accepted": 114.0,
+    "n_total": 120.0,
+    "n_hierarchy_inconsistent": 3.0
+  },
+  "leakage_audit_path": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed3407\\calibration\\leakage_audit.json",
+  "calibration_grid_path": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed3407\\calibration\\calibration_grid.csv",
+  "hierarchy_penalty_grid_path": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed3407\\calibration\\hierarchy_penalty_grid.csv",
+  "coverage_risk_path": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed3407\\calibration\\coverage_risk.csv"
+}

@@ -1,0 +1,23 @@
+{
+  "artifact_type": "prototype_phase_run_manifest",
+  "created_at_utc": "2026-06-24T16:27:13.203340+00:00",
+  "phase": "fold_seed_debug",
+  "fold": 0,
+  "seed": 42,
+  "outputs": {
+    "artifacts_dir": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold0_seed42\\artifacts",
+    "main_prototypes_npz": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold0_seed42\\artifacts\\main_prototypes.npz",
+    "aux_prototypes_npz": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold0_seed42\\artifacts\\aux_prototypes.npz",
+    "prototype_bundle_npz": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold0_seed42\\artifacts\\prototype_bundle.npz",
+    "prototype_metadata_json": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold0_seed42\\artifacts\\prototype_metadata.json",
+    "distance_statistics_json": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold0_seed42\\artifacts\\distance_statistics.json"
+  },
+  "no_test_tuning": true,
+  "unknown_detection_claim": false,
+  "run_scope": "fold_seed",
+  "feature_pipeline_equivalent": true,
+  "single_fold_debug": false,
+  "eligible_for_cv_aggregation": true,
+  "paper_main_result": false,
+  "feature_backend": "training_exact"
+}

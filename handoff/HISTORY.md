@@ -54,3 +54,42 @@
   confusion-aggregation cases.
 - Scope: no full CV, no fold/seed expansion, and no model, feature,
   calibration, prediction, or evaluation core logic changes.
+
+## 2026-06-24 - Lambda 0.5 exact prototype 5x3 screening
+
+- Status: completed
+- Branch: `prototype-cv5-screening-w05`
+- Base integration: PR #1 was squash-merged into `current-mctafd-ablation`
+  with merge commit `9ee233c04ef377a6acbaeaf233da7137f2add2d4`.
+- Task: Ran the approved exact hierarchical acoustic prototype screening
+  experiment for folds `0,1,2,3,4` and seeds `42,2024,3407`.
+- Preflight: 15 checkpoints, 15 summaries, 15 reference `test_pred.csv` files,
+  and all fold train/val/test manifests were present. Summaries passed
+  `hier_aux_weight=0.5`, `dur_s=2.0`, `feature_mode=logmel`, seed, and label
+  order checks. Checkpoints were loadable state_dict files.
+- Screening status: 15/15 fold-seed runs completed. Each run performed exact
+  Softmax reproduction, train-only prototype build, validation-only calibration,
+  frozen test prediction, evaluation, leakage audit, and qualification gate.
+- Aggregate provenance: `run_scope=aggregate`, `screening_result=true`,
+  `final_25_run_result=false`, `paper_candidate_result=true`,
+  `paper_main_result=false`, `n_runs=15`.
+- Method Macro-F1 mean/std: raw Softmax `0.950244/0.013218`, calibrated
+  Softmax `0.950244/0.013218`, prototype `0.952333/0.012754`,
+  hierarchical `0.955499/0.010793`, fused `0.954289/0.009766`.
+- Paired statistics: hierarchical - raw Softmax mean delta `0.005256`,
+  bootstrap CI95 `[0.000026, 0.012109]`, Wilcoxon p `0.055808`,
+  wins/ties/losses `9/4/2`; hierarchical - prototype mean delta `0.003166`,
+  CI95 `[-0.000003, 0.006741]`, Wilcoxon p `0.176296`,
+  wins/ties/losses `5/8/2`.
+- Feeding/stress confusion: hierarchical reduced stress-to-feeding errors from
+  `55` under raw Softmax to `43`; feeding-to-stress was `69` versus raw
+  Softmax `70`.
+- Leakage and qualification: all 15 runs used `training_exact`, `frozen_test`,
+  manifest SHA verification, leakage audit ok, and
+  `eligible_for_cv_aggregation=true`; no unsafe checkpoint SHA mismatch was
+  used.
+- Paper usability: usable as screening evidence and a paper candidate aggregate,
+  not as final paper-main result. Do not claim statistical significance because
+  Wilcoxon p is `0.055808`.
+- Scope guard: no lambda 1.0 comparison, no 25-run final CV, and no
+  unknown/open-set experiment was started.

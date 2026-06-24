@@ -1,0 +1,191 @@
+{
+  "artifact_type": "hier_acoustic_prototype_bundle",
+  "prototype_created_at_utc": "2026-06-24T16:30:23.046518+00:00",
+  "created_at_utc": "2026-06-24T16:30:23.046518+00:00",
+  "fold": 2,
+  "seed": 2024,
+  "inferred_fold_seed": {
+    "fold": 2,
+    "seed": 2024
+  },
+  "checkpoint": "C:\\py\\pigsound\\pig-sound-classification\\checkpoints\\cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed2024.pt",
+  "checkpoint_path": "C:\\py\\pigsound\\pig-sound-classification\\checkpoints\\cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed2024.pt",
+  "checkpoint_sha256": "211bae54de73d224f848ecf1a1f893d7730bfbcf9c55ffdef34b7c3094a7790a",
+  "checkpoint_summary": "C:\\py\\pigsound\\pig-sound-classification\\reports\\cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed2024\\summary.json",
+  "checkpoint_summary_path": "C:\\py\\pigsound\\pig-sound-classification\\reports\\cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed2024\\summary.json",
+  "checkpoint_summary_sha256": "e5565d26e0ad57a266ee559a9fe5adce1f61c0162b951496014d7fa9c48ba2bb",
+  "train_manifest": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\train.csv",
+  "val_manifest": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\val.csv",
+  "test_manifest": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\test.csv",
+  "manifest_sha256": {
+    "train": "328e52cf51ea8e6536e9b5626b2352feb7fa7c4b9be456b79fb3f02f31239799",
+    "val": "b51380b178754a4ef46492397a36e68e5ef57fc00d153c10184c4f23085af550",
+    "test": "1b35301d7b94fef8f330a8c0de19b32ceaa96a63eb7b8491fd97e9a34ddba4da"
+  },
+  "project_relative_paths": {
+    "checkpoint": "checkpoints/cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed2024.pt",
+    "checkpoint_summary": "reports/cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed2024/summary.json",
+    "train_manifest": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/train.csv",
+    "val_manifest": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/val.csv",
+    "test_manifest": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/test.csv"
+  },
+  "paths": {
+    "checkpoint": {
+      "project_relative": "checkpoints/cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed2024.pt",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\checkpoints\\cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed2024.pt",
+      "sha256": "211bae54de73d224f848ecf1a1f893d7730bfbcf9c55ffdef34b7c3094a7790a"
+    },
+    "checkpoint_summary": {
+      "project_relative": "reports/cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed2024/summary.json",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\reports\\cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed2024\\summary.json",
+      "sha256": "e5565d26e0ad57a266ee559a9fe5adce1f61c0162b951496014d7fa9c48ba2bb"
+    },
+    "train_manifest": {
+      "project_relative": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/train.csv",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\train.csv",
+      "sha256": "328e52cf51ea8e6536e9b5626b2352feb7fa7c4b9be456b79fb3f02f31239799"
+    },
+    "val_manifest": {
+      "project_relative": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/val.csv",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\val.csv",
+      "sha256": "b51380b178754a4ef46492397a36e68e5ef57fc00d153c10184c4f23085af550"
+    },
+    "test_manifest": {
+      "project_relative": "paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold2/test.csv",
+      "original_absolute": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\test.csv",
+      "sha256": "1b35301d7b94fef8f330a8c0de19b32ceaa96a63eb7b8491fd97e9a34ddba4da"
+    }
+  },
+  "input_hashes": {
+    "checkpoint": {
+      "path": "C:\\py\\pigsound\\pig-sound-classification\\checkpoints\\cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed2024.pt",
+      "sha256": "211bae54de73d224f848ecf1a1f893d7730bfbcf9c55ffdef34b7c3094a7790a"
+    },
+    "checkpoint_summary": {
+      "path": "C:\\py\\pigsound\\pig-sound-classification\\reports\\cv5_expanded_cap3x_fold2_logmel_dur2_hier_w05_seed2024\\summary.json",
+      "sha256": "e5565d26e0ad57a266ee559a9fe5adce1f61c0162b951496014d7fa9c48ba2bb"
+    },
+    "train_manifest": {
+      "path": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\train.csv",
+      "sha256": "328e52cf51ea8e6536e9b5626b2352feb7fa7c4b9be456b79fb3f02f31239799"
+    },
+    "val_manifest": {
+      "path": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\val.csv",
+      "sha256": "b51380b178754a4ef46492397a36e68e5ef57fc00d153c10184c4f23085af550"
+    },
+    "test_manifest": {
+      "path": "C:\\py\\pigsound\\pig-sound-classification\\paper_results\\manifests\\manifests_pigvocal_4class_expanded_train_cv5_cap3x\\fold2\\test.csv",
+      "sha256": "1b35301d7b94fef8f330a8c0de19b32ceaa96a63eb7b8491fd97e9a34ddba4da"
+    }
+  },
+  "model_config": {
+    "main_labels": [
+      "cough",
+      "calm_grunt",
+      "feeding",
+      "stress_vocal"
+    ],
+    "aux_labels": [
+      "dry_cough",
+      "abdominal_cough",
+      "calm_grunt",
+      "feeding",
+      "frightened_stress",
+      "anxious_stress"
+    ],
+    "feature_mode": "logmel",
+    "use_se": true,
+    "seed": 2024,
+    "sr": 32000,
+    "dur_s": 2.0,
+    "n_mels": 64,
+    "n_mfcc": 20,
+    "fmin": 50.0,
+    "fmax": 8000.0,
+    "n_fft": 1024,
+    "hop_length": 320,
+    "win_length": 800,
+    "rnn_type": "gru",
+    "pooling_type": "mean",
+    "hier_aux_weight": 0.5
+  },
+  "feature_backend": "training_exact",
+  "run_scope": "fold_seed",
+  "feature_pipeline_equivalent": true,
+  "single_fold_debug": false,
+  "eligible_for_cv_aggregation": true,
+  "paper_main_result": false,
+  "feature_params": {
+    "feature_backend": "training_exact",
+    "feature_mode": "logmel",
+    "sr": 32000,
+    "dur_s": 2.0,
+    "n_mels": 64,
+    "n_mfcc": 20,
+    "n_fft": 1024,
+    "hop_length": 320,
+    "win_length": 800,
+    "fmin": 50.0,
+    "fmax": 8000.0,
+    "window": "hann",
+    "center": true,
+    "pad_mode": "constant",
+    "power": 2.0,
+    "mel_htk": false,
+    "mel_norm": "slaney",
+    "power_to_db_ref": 1.0,
+    "power_to_db_top_db": 80.0,
+    "waveform_mono_conversion": "soundfile always_2d=False; if ndarray ndim==2, average channels",
+    "resampling": "scipy.signal.resample_poly when source_sr != target sr",
+    "center_crop": "middle crop to int(sr * dur_s)",
+    "zero_padding": "symmetric constant zero padding to int(sr * dur_s)",
+    "norm_map": "per-sample z-score with eps=1e-6",
+    "source_functions": [
+      "train_mctafd_crnn_ablation.load_audio_soundfile",
+      "train_mctafd_crnn_ablation.make_feature",
+      "train_mctafd_crnn_ablation.norm_map",
+      "train_hier_longcontext_crnn.HierPigVocalDataset"
+    ]
+  },
+  "feature_config_hash": "ab208fa867ade80c585059fdaca0523d5fa82c279bbce240b75a07165cb45b94",
+  "dur_s": 2.0,
+  "hier_aux_weight": 0.5,
+  "main_labels": [
+    "cough",
+    "calm_grunt",
+    "feeding",
+    "stress_vocal"
+  ],
+  "aux_labels": [
+    "dry_cough",
+    "abdominal_cough",
+    "calm_grunt",
+    "feeding",
+    "frightened_stress",
+    "anxious_stress"
+  ],
+  "train_rows_after_filtering": 1174,
+  "embedding_dim": 256,
+  "embedding_normalization": "L2 before prototype averaging",
+  "prototype_normalization": "L2 after class mean",
+  "prototype_source_split": "train",
+  "calibration_source_split": "validation",
+  "evaluation_source_split": "test",
+  "main_counts": {
+    "cough": 414,
+    "calm_grunt": 208,
+    "feeding": 138,
+    "stress_vocal": 414
+  },
+  "aux_counts": {
+    "dry_cough": 135,
+    "abdominal_cough": 279,
+    "calm_grunt": 208,
+    "feeding": 138,
+    "frightened_stress": 246,
+    "anxious_stress": 168
+  },
+  "leakage_audit_path": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed2024\\artifacts\\leakage_audit.json",
+  "distance_statistics_path": "C:\\py\\pigsound\\pig-sound-classification\\reports\\prototype_cv5_exact_w05_fold2_seed2024\\artifacts\\distance_statistics.json",
+  "unknown_detection_claim": false
+}
