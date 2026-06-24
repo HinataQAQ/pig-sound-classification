@@ -1,0 +1,115 @@
+﻿{
+  "created_at_utc": "2026-06-22T13:37:28.096529+00:00",
+  "sys_executable": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe",
+  "sys_version": "3.10.20 | packaged by Anaconda, Inc. | (main, Mar 11 2026, 17:42:35) [MSC v.1942 64 bit (AMD64)]",
+  "sys_path": [
+    "<PROJECT_ROOT>\\tools",
+    "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python310.zip",
+    "C:\\py\\anaconda3\\envs\\pigsound-gpu\\DLLs",
+    "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib",
+    "C:\\py\\anaconda3\\envs\\pigsound-gpu",
+    "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages"
+  ],
+  "site_ENABLE_USER_SITE": false,
+  "site_user_site": "<USER_SITE>",
+  "conda_prefix": "C:\\py\\anaconda3",
+  "PYTHONNOUSERSITE": "1",
+  "NUMBA_CACHE_DIR": "<PROJECT_ROOT>\\.numba_cache",
+  "packages": {
+    "torch": {
+      "module": "torch",
+      "ok": true,
+      "seconds": 0.9320969000691548,
+      "version": "2.11.0+cu128",
+      "file": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\torch\\__init__.py"
+    },
+    "numpy": {
+      "module": "numpy",
+      "ok": true,
+      "seconds": 1.4199991710484028e-05,
+      "version": "2.2.6",
+      "file": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\numpy\\__init__.py"
+    },
+    "scipy": {
+      "module": "scipy",
+      "ok": true,
+      "seconds": 0.0034460999304428697,
+      "version": "1.15.3",
+      "file": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\scipy\\__init__.py"
+    },
+    "librosa": {
+      "module": "librosa",
+      "ok": true,
+      "seconds": 0.0011695000575855374,
+      "version": "0.11.0",
+      "file": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\librosa\\__init__.py"
+    },
+    "numba": {
+      "module": "numba",
+      "ok": true,
+      "seconds": 0.11889709997922182,
+      "version": "0.64.0",
+      "file": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\numba\\__init__.py"
+    },
+    "soundfile": {
+      "module": "soundfile",
+      "ok": true,
+      "seconds": 0.002612499985843897,
+      "version": "0.13.1",
+      "file": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\soundfile.py"
+    }
+  },
+  "librosa_from_user_site": false,
+  "librosa_from_conda_env": true,
+  "import_reports": [
+    {
+      "module": "torch",
+      "ok": true,
+      "seconds": 0.9320969000691548,
+      "version": "2.11.0+cu128",
+      "file": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\torch\\__init__.py"
+    },
+    {
+      "module": "numpy",
+      "ok": true,
+      "seconds": 1.4199991710484028e-05,
+      "version": "2.2.6",
+      "file": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\numpy\\__init__.py"
+    },
+    {
+      "module": "scipy",
+      "ok": true,
+      "seconds": 0.0034460999304428697,
+      "version": "1.15.3",
+      "file": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\scipy\\__init__.py"
+    },
+    {
+      "module": "librosa",
+      "ok": true,
+      "seconds": 0.0011695000575855374,
+      "version": "0.11.0",
+      "file": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\librosa\\__init__.py"
+    },
+    {
+      "module": "numba",
+      "ok": true,
+      "seconds": 0.11889709997922182,
+      "version": "0.64.0",
+      "file": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\numba\\__init__.py"
+    },
+    {
+      "module": "soundfile",
+      "ok": true,
+      "seconds": 0.002612499985843897,
+      "version": "0.13.1",
+      "file": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\lib\\site-packages\\soundfile.py"
+    },
+    {
+      "module": "train_hier_longcontext_crnn",
+      "ok": true,
+      "seconds": 0.3329525999724865,
+      "version": null,
+      "file": "<PROJECT_ROOT>\\tools\\train_hier_longcontext_crnn.py"
+    }
+  ]
+}
