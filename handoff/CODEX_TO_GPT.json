@@ -1,212 +1,346 @@
 {
   "status": "completed",
-  "task": "lambda_0_5_exact_prototype_cv5_screening",
-  "branch": "prototype-cv5-screening-w05",
-  "base_branch": "current-mctafd-ablation",
-  "pr_1_squash_merge_commit": "9ee233c04ef377a6acbaeaf233da7137f2add2d4",
+  "task": "lambda_0_5_exact_prototype_cv5_final_25_run",
+  "branch": "prototype-cv5-final-w05",
+  "base_screening_branch": "prototype-cv5-screening-w05",
+  "base_screening_commit": "e930fe1cc3bae9e20e17e7f2766a12231b221fe7",
+  "merged_prototype_pipeline_commit": "9ee233c04ef377a6acbaeaf233da7137f2add2d4",
+  "final_commit_sha": "pending_at_handoff_write; see pushed branch HEAD/final Codex response",
   "scope": {
     "lambda": 0.5,
-    "folds": [0, 1, 2, 3, 4],
-    "seeds": [42, 2024, 3407],
-    "n_runs": 15,
+    "folds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "seeds": [
+      42,
+      123,
+      777,
+      2024,
+      3407
+    ],
+    "new_seeds_run_this_round": [
+      123,
+      777
+    ],
+    "new_runs": 10,
+    "total_runs": 25,
     "feature_backend": "training_exact",
-    "full_25_run_cv_started": false,
-    "lambda_1_ablation_started": false,
-    "unknown_or_open_set_started": false
-  },
-  "preflight": {
-    "checkpoints_found": 15,
-    "summaries_found": 15,
-    "reference_test_pred_found": 15,
-    "train_val_test_manifests_found": true,
-    "summaries_hier_aux_weight_0_5": true,
-    "summaries_dur_s_2_0": true,
-    "summaries_feature_mode_logmel": true,
-    "label_order_checked": true,
-    "checkpoint_loadable_count": 15,
-    "checkpoint_note": "Checkpoints are pure state_dict files without hyperparameter metadata; lambda was guarded by matching summary.json and w05 checkpoint family."
+    "selection_method": "hierarchical",
+    "target_coverage": 0.95,
+    "lambda_1_started": false,
+    "noise_experiment_started": false,
+    "unknown_or_open_set_started": false,
+    "existing_15_rerun": false
   },
   "aggregate_provenance": {
     "run_scope": "aggregate",
-    "screening_result": true,
-    "final_25_run_result": false,
+    "screening_result": false,
+    "final_25_run_result": true,
     "paper_candidate_result": true,
-    "paper_main_result": false,
-    "n_runs": 15,
-    "lambda": 0.5,
-    "provenance_json": "reports/prototype_cv5_exact_w05_screening_provenance.json"
+    "paper_main_result": true,
+    "n_runs": 25,
+    "folds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "seeds": [
+      42,
+      123,
+      777,
+      2024,
+      3407
+    ],
+    "lambda": 0.5
   },
   "method_summary": {
     "raw_softmax": {
-      "n": 15,
-      "mean_macro_f1": 0.9502436893230706,
-      "std_macro_f1": 0.013217625824735258,
-      "mean_top1_acc": 0.9503968253968254,
-      "mean_top2_acc": 1.0,
-      "mean_ece": 0.030944658295502747,
-      "mean_brier": 0.07691362897555033,
-      "mean_nll": 0.12818853954474133
+      "n": 25,
+      "mean_macro_f1": 0.95105,
+      "std_macro_f1": 0.012393,
+      "min_macro_f1": 0.92172,
+      "max_macro_f1": 0.976177,
+      "mean_ece": 0.030497,
+      "mean_brier": 0.075434,
+      "mean_nll": 0.126036
     },
     "calibrated_softmax": {
-      "n": 15,
-      "mean_macro_f1": 0.9502436893230706,
-      "std_macro_f1": 0.013217625824735258,
-      "mean_top1_acc": 0.9503968253968254,
-      "mean_top2_acc": 1.0,
-      "mean_ece": 0.027277884928006976,
-      "mean_brier": 0.07603206684192022,
-      "mean_nll": 0.12829057325919468
+      "n": 25,
+      "mean_macro_f1": 0.95105,
+      "std_macro_f1": 0.012393,
+      "min_macro_f1": 0.92172,
+      "max_macro_f1": 0.976177,
+      "mean_ece": 0.027336,
+      "mean_brier": 0.075121,
+      "mean_nll": 0.125565
     },
     "prototype": {
-      "n": 15,
-      "mean_macro_f1": 0.9523328322649266,
-      "std_macro_f1": 0.01275378419840185,
-      "mean_top1_acc": 0.9523809523809523,
-      "mean_top2_acc": 1.0,
-      "mean_ece": 0.02553311716469508,
-      "mean_brier": 0.07022934357325236,
-      "mean_nll": 0.11769404311974843
+      "n": 25,
+      "mean_macro_f1": 0.951852,
+      "std_macro_f1": 0.013104,
+      "min_macro_f1": 0.922608,
+      "max_macro_f1": 0.976177,
+      "mean_ece": 0.026173,
+      "mean_brier": 0.070642,
+      "mean_nll": 0.117056
     },
     "hierarchical": {
-      "n": 15,
-      "mean_macro_f1": 0.9554992014547394,
-      "std_macro_f1": 0.010792536013919921,
-      "mean_top1_acc": 0.9555555555555555,
-      "mean_top2_acc": 1.0,
-      "mean_ece": 0.029312897461747353,
-      "mean_brier": 0.07141145716110865,
-      "mean_nll": 0.12826984276374181
+      "n": 25,
+      "mean_macro_f1": 0.953986,
+      "std_macro_f1": 0.012004,
+      "min_macro_f1": 0.934291,
+      "max_macro_f1": 0.976177,
+      "mean_ece": 0.030626,
+      "mean_brier": 0.072452,
+      "mean_nll": 0.127334
     },
     "fused": {
-      "n": 15,
-      "mean_macro_f1": 0.954289240307066,
-      "std_macro_f1": 0.009765697188451602,
-      "mean_top1_acc": 0.9543650793650792,
-      "mean_top2_acc": 1.0,
-      "mean_ece": 0.02733572447110736,
-      "mean_brier": 0.07209263170758883,
-      "mean_nll": 0.12191209048032761
+      "n": 25,
+      "mean_macro_f1": 0.953486,
+      "std_macro_f1": 0.010343,
+      "min_macro_f1": 0.934291,
+      "max_macro_f1": 0.970234,
+      "mean_ece": 0.026629,
+      "mean_brier": 0.072423,
+      "mean_nll": 0.121151
     }
   },
   "paired_statistics": {
     "hierarchical_minus_raw_softmax": {
-      "n": 15,
-      "mean_delta": 0.005255512131668831,
-      "std_delta": 0.012492535067652912,
-      "bootstrap_ci95_low": 0.000026326045249565283,
-      "bootstrap_ci95_high": 0.012109266155346505,
-      "wilcoxon_p": 0.055808463254266596,
-      "wins": 9,
-      "ties": 4,
-      "losses": 2
+      "n": 25,
+      "mean_delta": 0.002937,
+      "std_delta": 0.010336,
+      "bootstrap_ci95_low": -0.000478,
+      "bootstrap_ci95_high": 0.007294,
+      "wilcoxon_p": 0.058253,
+      "wins": 13,
+      "ties": 8,
+      "losses": 4
     },
     "prototype_minus_raw_softmax": {
-      "n": 15,
-      "mean_delta": 0.0020891429418560406,
-      "std_delta": 0.009631173444870064,
-      "bootstrap_ci95_low": -0.0019786789429595743,
-      "bootstrap_ci95_high": 0.0073595513792950725,
-      "wilcoxon_p": 0.3428288397234035,
-      "wins": 6,
-      "ties": 6,
-      "losses": 3
+      "n": 25,
+      "mean_delta": 0.000803,
+      "std_delta": 0.008611,
+      "bootstrap_ci95_low": -0.00231,
+      "bootstrap_ci95_high": 0.004431,
+      "wilcoxon_p": 0.571243,
+      "wins": 10,
+      "ties": 7,
+      "losses": 8
     },
     "hierarchical_minus_prototype": {
-      "n": 15,
-      "mean_delta": 0.00316636918981279,
-      "std_delta": 0.007059669971987167,
-      "bootstrap_ci95_low": -0.0000027012682458342023,
-      "bootstrap_ci95_high": 0.006741016651492866,
-      "wilcoxon_p": 0.17629637444051116,
-      "wins": 5,
-      "ties": 8,
-      "losses": 2
+      "n": 25,
+      "mean_delta": 0.002134,
+      "std_delta": 0.00727,
+      "bootstrap_ci95_low": -0.000499,
+      "bootstrap_ci95_high": 0.004996,
+      "wilcoxon_p": 0.22133,
+      "wins": 8,
+      "ties": 12,
+      "losses": 5
     }
   },
-  "feeding_stress_confusion": {
+  "by_fold_delta": [
+    {
+      "fold": 0,
+      "hierarchical_minus_raw": -0.001169,
+      "hierarchical_minus_prototype": 2e-06,
+      "h_vs_raw_wins_ties_losses": "2/2/1",
+      "h_vs_prototype_wins_ties_losses": "1/3/1"
+    },
+    {
+      "fold": 1,
+      "hierarchical_minus_raw": 0.013335,
+      "hierarchical_minus_prototype": 0.009479,
+      "h_vs_raw_wins_ties_losses": "3/2/0",
+      "h_vs_prototype_wins_ties_losses": "4/0/1"
+    },
+    {
+      "fold": 2,
+      "hierarchical_minus_raw": 0.001204,
+      "hierarchical_minus_prototype": 0.001189,
+      "h_vs_raw_wins_ties_losses": "2/3/0",
+      "h_vs_prototype_wins_ties_losses": "1/4/0"
+    },
+    {
+      "fold": 3,
+      "hierarchical_minus_raw": 0.000107,
+      "hierarchical_minus_prototype": -0.001187,
+      "h_vs_raw_wins_ties_losses": "4/0/1",
+      "h_vs_prototype_wins_ties_losses": "1/2/2"
+    },
+    {
+      "fold": 4,
+      "hierarchical_minus_raw": 0.001205,
+      "hierarchical_minus_prototype": 0.001185,
+      "h_vs_raw_wins_ties_losses": "2/1/2",
+      "h_vs_prototype_wins_ties_losses": "1/3/1"
+    }
+  ],
+  "confusion_summary": {
     "raw_softmax": {
-      "macro_f1_from_cm": 0.9503897944720056,
-      "feeding_f1": 0.899598393574297,
-      "stress_f1": 0.9019607843137255,
-      "feeding_recall": 0.8888888888888888,
-      "stress_recall": 0.9126984126984127,
-      "feeding_to_stress": 70,
-      "stress_to_feeding": 55
+      "macro_f1_from_cm": 0.951188,
+      "feeding_f1": 0.901679,
+      "stress_f1": 0.903073,
+      "feeding_recall": 0.895238,
+      "stress_recall": 0.909524,
+      "feeding_to_stress": 110,
+      "stress_to_feeding": 95
     },
     "prototype": {
-      "macro_f1_from_cm": 0.9523766328011611,
-      "feeding_f1": 0.903846153846154,
-      "stress_f1": 0.9056603773584906,
-      "feeding_recall": 0.8952380952380953,
-      "stress_recall": 0.9142857142857143,
-      "feeding_to_stress": 66,
-      "stress_to_feeding": 54
+      "macro_f1_from_cm": 0.9519,
+      "feeding_f1": 0.902885,
+      "stress_f1": 0.904717,
+      "feeding_recall": 0.894286,
+      "stress_recall": 0.913333,
+      "feeding_to_stress": 111,
+      "stress_to_feeding": 91
     },
     "hierarchical": {
-      "macro_f1_from_cm": 0.9555366230518916,
-      "feeding_f1": 0.9092382495948136,
-      "stress_f1": 0.9129082426127527,
-      "feeding_recall": 0.8904761904761904,
-      "stress_recall": 0.9317460317460318,
-      "feeding_to_stress": 69,
-      "stress_to_feeding": 43
+      "macro_f1_from_cm": 0.95403,
+      "feeding_f1": 0.906265,
+      "stress_f1": 0.909855,
+      "feeding_recall": 0.888571,
+      "stress_recall": 0.927619,
+      "feeding_to_stress": 117,
+      "stress_to_feeding": 76
     }
   },
-  "calibration_parameter_distribution": {
-    "calibrated_softmax_temperature": {"1.0": 4, "0.5": 3, "0.75": 8},
-    "prototype_temperature": {"0.07": 7, "0.1": 3, "0.03": 2, "0.05": 3},
-    "hierarchical_prototype_temperature": {"0.07": 6, "0.1": 2, "0.03": 2, "0.05": 5},
-    "hier_aux_prob_weight": {"0.5": 15},
-    "fused_alpha_softmax_weight": {"0.25": 1, "1.0": 8, "0.0": 2, "0.5": 1, "0.75": 3},
-    "fusion_kind": {"mixed": 5, "pure_softmax": 8, "pure_prototype": 2},
-    "hierarchy_confidence_penalty": {"1.0": 14, "0.85": 1}
-  },
-  "coverage_selective_risk": {
-    "accept_global": {
-      "mean_coverage": 0.928968,
-      "std_coverage": 0.045802,
-      "mean_selective_risk": 0.022369,
-      "std_selective_risk": 0.010111
+  "selective_risk_summary": {
+    "hierarchical_accept_global": {
+      "mean_coverage": 0.935952,
+      "std_coverage": 0.041464,
+      "mean_selective_risk": 0.024118,
+      "std_selective_risk": 0.01086,
+      "min_selective_risk": 0.006757,
+      "max_selective_risk": 0.048193
     },
-    "accept_per_class": {
-      "mean_coverage": 0.936905,
-      "std_coverage": 0.038954,
-      "mean_selective_risk": 0.030587,
-      "std_selective_risk": 0.011742
+    "hierarchical_accept_per_class": {
+      "mean_coverage": 0.939286,
+      "std_coverage": 0.036002,
+      "mean_selective_risk": 0.031446,
+      "std_selective_risk": 0.011742,
+      "min_selective_risk": 0.006849,
+      "max_selective_risk": 0.049383
     }
   },
-  "reproduction_and_qualification": {
-    "softmax_reproduction_passed_runs": 15,
-    "prediction_match_count_per_run": "168/168 for all 15 runs",
-    "feature_backend_training_exact_runs": 15,
-    "input_role_frozen_test_runs": 15,
-    "manifest_sha_verified_runs": 15,
-    "leakage_audit_ok_runs": 15,
-    "eligible_for_cv_aggregation_runs": 15,
-    "unsafe_checkpoint_sha_mismatch_used": false
+  "calibration_distribution": {
+    "softmax_temperature": {
+      "0.5": 4,
+      "0.75": 12,
+      "1.0": 9
+    },
+    "main_prototype_temperature": {
+      "0.03": 2,
+      "0.05": 4,
+      "0.07": 14,
+      "0.1": 5
+    },
+    "hierarchical_prototype_temperature": {
+      "0.03": 2,
+      "0.05": 9,
+      "0.07": 9,
+      "0.1": 4,
+      "0.2": 1
+    },
+    "hierarchy_penalty": {
+      "0.85": 1,
+      "1.0": 24
+    },
+    "fusion_alpha": {
+      "0.0": 3,
+      "0.25": 1,
+      "0.5": 1,
+      "0.75": 6,
+      "1.0": 14
+    },
+    "fusion_kind": {
+      "mixed": 8,
+      "pure_prototype": 3,
+      "pure_softmax": 14
+    },
+    "global_rejection_threshold_stats": {
+      "mean": 0.768498,
+      "std": 0.108303,
+      "min": 0.585346,
+      "max": 0.968976
+    },
+    "feeding_threshold_stats": {
+      "mean": 0.675239,
+      "std": 0.118631,
+      "min": 0.520709,
+      "max": 0.936589
+    },
+    "stress_vocal_threshold_stats": {
+      "mean": 0.71158,
+      "std": 0.110854,
+      "min": 0.548824,
+      "max": 0.967911
+    }
   },
-  "verification": {
-    "help_scripts_passed": 6,
-    "py_compile_passed": true,
-    "unit_tests_passed": true,
-    "unit_tests_count": 47,
-    "preflight_passed": true,
-    "aggregate_summary_passed": true
+  "outputs": {
+    "aggregate": [
+      "reports/prototype_cv5_exact_w05_final_runs.csv",
+      "reports/prototype_cv5_exact_w05_final_summary.csv",
+      "reports/prototype_cv5_exact_w05_final_paired_stats.csv",
+      "reports/prototype_cv5_exact_w05_final_confusion_summary.csv",
+      "reports/prototype_cv5_exact_w05_final_provenance.json"
+    ],
+    "additional_final_analyses": [
+      "reports/prototype_cv5_exact_w05_final_by_fold.csv",
+      "reports/prototype_cv5_exact_w05_final_calibration_distribution.csv",
+      "reports/prototype_cv5_exact_w05_final_selective_risk_summary.csv"
+    ],
+    "local_logs_not_committed": [
+      "reports/prototype_cv5_exact_w05_final_run10_stdout.log",
+      "reports/prototype_cv5_exact_w05_final_run10_stderr.log",
+      "reports/prototype_cv5_exact_w05_final_run10_retry1_stdout.log",
+      "reports/prototype_cv5_exact_w05_final_run10_retry1_stderr.log"
+    ]
   },
-  "outputs": [
-    "reports/prototype_cv5_exact_w05_screening_runs.csv",
-    "reports/prototype_cv5_exact_w05_screening_summary.csv",
-    "reports/prototype_cv5_exact_w05_screening_paired_stats.csv",
-    "reports/prototype_cv5_exact_w05_screening_confusion_summary.csv",
-    "reports/prototype_cv5_exact_w05_screening_provenance.json",
-    "reports/prototype_cv5_exact_w05_fold{fold}_seed{seed}/"
-  ],
+  "leakage_and_qualification": {
+    "softmax_reproduction_passed": "25/25",
+    "reference_path_match": "25/25",
+    "reference_y_true_match": "25/25",
+    "reference_y_pred_match": "25/25",
+    "train_val_test_path_overlap": 0,
+    "train_val_test_source_id_overlap": 0,
+    "train_val_test_md5_overlap": 0,
+    "manifest_sha_verified": "25/25",
+    "leakage_audit_ok": "25/25",
+    "eligible_for_cv_aggregation": "25/25",
+    "unsafe_allow_checkpoint_sha_mismatch": false,
+    "test_used_for_calibration_or_parameter_selection": false
+  },
+  "runtime": {
+    "python": "C:/py/anaconda3/envs/pigsound-gpu/python.exe",
+    "device_setting": "auto (screening-compatible default)",
+    "cuda_available_after_run": true,
+    "cuda_device_name": "NVIDIA GeForce RTX 5070 Ti",
+    "cpu_fallback_used": false,
+    "feature_backend_switched": false
+  },
   "paper_usability": {
-    "paper_usable_as_screening_evidence": true,
     "paper_candidate_result": true,
-    "paper_main_result": false,
-    "statistical_significance_claim_allowed": false,
-    "note": "Hierarchical mean Macro-F1 is higher than raw Softmax and the paired mean delta is positive, but Wilcoxon p=0.055808, so do not claim statistical significance."
+    "paper_main_result": true,
+    "final_25_run_result": true,
+    "interpretation": "Hierarchical exact prototype has a positive mean Macro-F1 delta over raw Softmax, but Wilcoxon p=0.058253; do not claim statistical significance."
   },
-  "recommended_next_step": "Ask for explicit approval before running final 5 folds x 5 seeds lambda 0.5 exact prototype aggregate. Do not run lambda 1.0 yet."
+  "blockers": [],
+  "notes": [
+    "A first background wrapper attempt invoked bare python.exe because of a PowerShell argument variable bug; it stopped before any experiment tool ran and created no fold0/seed123 output directory. Logs were preserved locally. The corrected retry completed all 10 runs.",
+    "Per-run NPZ artifacts, embeddings/caches, full test_predictions, checkpoints, and audio were not staged for Git."
+  ],
+  "questions_for_gpt": [
+    "How should the paper phrase the final 25-run positive but nonsignificant hierarchical-prototype gain over raw Softmax?",
+    "Should the final paper emphasize prototype interpretability and feeding/stress boundary behavior rather than statistical superiority?",
+    "Which aggregate tables should be copied into paper_results after scientific review?"
+  ],
+  "recommended_next_step": "Scientific review only. Do not start lambda=1.0, noise robustness, unknown/open-set, or paper writing without a new APPROVED:true handoff."
 }

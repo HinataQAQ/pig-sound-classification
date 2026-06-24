@@ -93,3 +93,19 @@
   Wilcoxon p is `0.055808`.
 - Scope guard: no lambda 1.0 comparison, no 25-run final CV, and no
   unknown/open-set experiment was started.
+
+
+## 2026-06-25 - Lambda 0.5 exact prototype 5x5 final aggregate
+
+- Status: completed
+- Branch: `prototype-cv5-final-w05`
+- Task: Added the approved missing exact prototype runs for seeds `123` and `777` across folds `0,1,2,3,4`, then aggregated all 25 lambda 0.5 fold-seed runs.
+- Scope: `feature_backend=training_exact`, `selection_method=hierarchical`, `target_coverage=0.95`; no lambda 1.0, noise robustness, unknown/open-set, or paper writing was started.
+- Final aggregate provenance: `run_scope=aggregate`, `screening_result=false`, `final_25_run_result=true`, `paper_candidate_result=true`, `paper_main_result=true`, `n_runs=25`.
+- Method Macro-F1 mean/std: raw Softmax `0.951050/0.012393`, calibrated Softmax `0.951050/0.012393`, prototype `0.951852/0.013104`, hierarchical `0.953986/0.012004`, fused `0.953486/0.010343`.
+- Paired statistics: hierarchical - raw Softmax mean delta `0.002937`, CI95 `[-0.000478, 0.007294]`, Wilcoxon p `0.058253`, wins/ties/losses `13/8/4`; hierarchical - prototype mean delta `0.002134`, CI95 `[-0.000499, 0.004996]`, Wilcoxon p `0.221330`, wins/ties/losses `8/12/5`.
+- Fold deltas: four of five folds had positive mean hierarchical - raw Softmax; fold0 was slightly negative.
+- Feeding/stress confusion: hierarchical feeding->stress `117`, stress->feeding `76`; raw Softmax feeding->stress `110`, stress->feeding `95`.
+- Leakage and qualification: 25/25 runs passed exact Softmax reproduction, reference path/y_true/y_pred matching, train/val/test path/source_id/MD5 disjointness, manifest SHA verification, leakage audit, and CV aggregation eligibility. No unsafe checkpoint SHA mismatch was used.
+- Outputs: final aggregate CSV/provenance files plus by-fold, calibration-distribution, and selective-risk summaries under `reports/prototype_cv5_exact_w05_final_*`.
+- Paper usability: final paper-main candidate aggregate, but the hierarchical gain over raw Softmax remains nonsignificant; do not claim significance.
