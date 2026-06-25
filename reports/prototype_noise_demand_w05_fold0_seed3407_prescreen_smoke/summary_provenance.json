@@ -1,0 +1,6 @@
+{
+  "run_scope": "fold_seed_smoke",
+  "screening_result": false,
+  "paper_main_result": false,
+  "n_fold_seed_runs": 1
+}

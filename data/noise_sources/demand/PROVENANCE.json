@@ -8,6 +8,10 @@
   "displayed_license_metadata": {
     "id": "cc-by-4.0"
   },
+  "description_license": "CC-BY-SA-3.0",
+  "zenodo_rights_license": "cc-by-4.0",
+  "license_status": "conflicting_metadata",
+  "redistribution_policy": "do_not_redistribute_in_repository",
   "license_note": "Zenodo metadata currently reports CC-BY-4.0, while DEMAND.pdf text states Creative Commons Attribution-ShareAlike 3.0 Unported. Record both and cite explicitly.",
   "citation": [
     {
@@ -55,5 +59,6 @@
       "archive_md5_local": "ffbcdebb7e1c39d3d5b7920b0594e20b",
       "archive_sha256_local": "6e4d400d76f151b1387b143d10854ce526e3f107465244f8791c811286066e98"
     }
-  ]
+  ],
+  "noise_source_manifest_sha256": "d7da9b7ff7fd07f8859bf86d607b6a295c3d7b5df4ac433057e0086dc985afc6"
 }

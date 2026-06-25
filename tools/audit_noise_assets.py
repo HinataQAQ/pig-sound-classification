@@ -137,7 +137,10 @@ def build_demand_manifest(
                 "archive_name": archive_name,
                 "archive_md5": archive["archive_md5_local"],
                 "archive_sha256": archive["archive_sha256_local"],
-                "license_id": license_meta.get("id", ""),
+                "description_license": "CC-BY-SA-3.0",
+                "zenodo_rights_license": license_meta.get("id", ""),
+                "license_status": "conflicting_metadata",
+                "redistribution_policy": "do_not_redistribute_in_repository",
                 "allowed_for_publication": True,
                 "allowed_for_redistribution": True,
                 "treat_channels_as_independent": False,
@@ -152,6 +155,10 @@ def build_demand_manifest(
         "version": metadata.get("version"),
         "download_date_utc": datetime.now(timezone.utc).date().isoformat(),
         "displayed_license_metadata": license_meta,
+        "description_license": "CC-BY-SA-3.0",
+        "zenodo_rights_license": license_meta.get("id", ""),
+        "license_status": "conflicting_metadata",
+        "redistribution_policy": "do_not_redistribute_in_repository",
         "license_note": (
             "Zenodo metadata currently reports CC-BY-4.0, while DEMAND.pdf text states "
             "Creative Commons Attribution-ShareAlike 3.0 Unported. Record both and cite explicitly."
@@ -191,6 +198,7 @@ def main() -> None:
     manifest_path = demand_root / "NOISE_SOURCE_MANIFEST.csv"
     provenance_path = demand_root / "PROVENANCE.json"
     manifest.to_csv(manifest_path, index=False, encoding="utf-8-sig")
+    provenance["noise_source_manifest_sha256"] = file_sha256(manifest_path)
     provenance_path.write_text(json.dumps(provenance, indent=2, ensure_ascii=False), encoding="utf-8")
     if args.write_local_template:
         write_local_template(Path("data/noise_sources/local_reviewed/PROVENANCE_TEMPLATE.csv"))

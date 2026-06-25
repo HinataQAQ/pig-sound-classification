@@ -21,11 +21,13 @@ manifest.
 
 ## License Note
 
-The local provenance records both license observations:
+The local provenance records both license observations and must not collapse them
+into one unambiguous license:
 
-- Zenodo metadata currently displays `cc-by-4.0`.
-- The DEMAND PDF text states Creative Commons Attribution-ShareAlike 3.0
-  Unported.
+- `description_license=CC-BY-SA-3.0`
+- `zenodo_rights_license=CC-BY-4.0`
+- `license_status=conflicting_metadata`
+- `redistribution_policy=do_not_redistribute_in_repository`
 
 Paper text should cite DEMAND and explicitly state which license metadata was
 observed from Zenodo and from the DEMAND PDF. If strict redistribution language
@@ -78,6 +80,9 @@ The DEMAND metadata generated for this stage is:
 
 - `data/noise_sources/demand/NOISE_SOURCE_MANIFEST.csv`
 - `data/noise_sources/demand/PROVENANCE.json`
+
+`PROVENANCE.json` records the SHA256 of `NOISE_SOURCE_MANIFEST.csv`. The noisy
+evaluator verifies this before running.
 
 Downloaded ZIP files, extracted WAV files, cache files, and derived audio are not
 committed.

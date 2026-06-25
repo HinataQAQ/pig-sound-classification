@@ -32,6 +32,18 @@ The noisy evaluation reuses the clean artifacts:
 
 No noisy validation recalibration is allowed. Test results are evaluation only.
 
+Method-specific rejection thresholds are derived from clean validation
+predictions only. For `raw_softmax`, `prototype`, and `hierarchical`, the
+evaluator records:
+
+- global threshold at target coverage 0.95
+- per-class thresholds
+- source validation predictions SHA256
+- target coverage
+- threshold selection formula
+
+No noisy validation or noisy test predictions may select these thresholds.
+
 All noise robustness outputs must record:
 
 - `simulated_noise=true`
@@ -74,17 +86,21 @@ The fused result is supplementary.
 ## Deterministic Noise Selection
 
 Noise offset selection uses SHA256, not Python's process-randomized `hash`.
+The active protocol key version is `demand_noise_offset_v2`.
 
 The key includes:
 
 - fold
-- seed
 - normalized clean path
 - clean MD5
-- noise environment
+- DEMAND environment recording ID
 - noise file SHA256
-- target SNR
 - global noise seed
+- noise repeat
+
+The key deliberately excludes model seed and active-event SNR. For a fixed clean
+sample, DEMAND environment, and repeat, all model seeds and SNR values reuse the
+same noise segment; only the gain changes across SNR.
 
 ## Per-Sample Provenance
 
@@ -100,12 +116,17 @@ Each generated condition records:
 - `selected_channel`
 - `noise_offset`
 - `noise_seed`
-- `target_snr_db`
+- `noise_draw_id`
+- `noise_repeat`
+- `offset_key_version`
+- `snr_reference=active_valid_region`
+- `target_active_snr_db`
 - `clean_active_rms`
 - `noise_active_rms_before_gain`
 - `gain`
 - `achieved_active_snr_db`
 - `achieved_full_window_snr_db`
+- `valid_duration_ratio`
 - `peak_before_scale`
 - `final_global_scale`
 - `clipping_detected`
@@ -121,8 +142,12 @@ The planned screening grid is:
 - 10 dB
 - 0 dB
 
-The first debug run uses only 20 dB and 10 dB. It must not run -5 dB and must not
-start the full 15-run screening set.
+SNR values refer to active-event SNR over the clean valid non-padding region. Use
+phrases such as `0 dB active-event SNR`, not `0 dB clip SNR`.
+
+The first pre-screening smoke run uses fold0/seed3407 over the three selected
+DEMAND environments at 20, 10, and 0 dB. It must not start the full 15-run
+screening set.
 
 ## Reporting
 
@@ -136,7 +161,13 @@ condition:
 - Brier score
 - NLL
 - coverage and selective risk
+- method-specific frozen-threshold coverage and selective risk
+- AURC
+- risk at coverage 0.80, 0.90, and 0.95
 - degradation versus clean Macro-F1
+- complete confusion matrix
+- precision, recall, and F1 for all four main classes
+- active/full-window SNR statistics by true class
 
 Paper language must call these results simulated noise robustness. They are not
 real-farm external validation.

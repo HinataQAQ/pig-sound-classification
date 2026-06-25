@@ -146,3 +146,49 @@
   Downloaded ZIP/WAV/PDF/cache/audio assets were not committed.
 - Paper usability: pipeline/debug evidence only. Recommend 5 folds x 3 seeds
   DEMAND screening after explicit review approval.
+
+## 2026-06-25 - DEMAND prescreen protocol fixes and 1x1 full-grid smoke
+
+- Status: completed
+- Branch: `codex/demand-noise-prescreen-fix`
+- Approval state: full 15-run screening remained `APPROVED: false`; no 15-run
+  screening was started.
+- Task: Fixed prescreen blockers for DEMAND simulated noise robustness, including
+  seed/SNR-independent noise offsets, method-specific clean-validation
+  thresholds, strengthened SHA/provenance gates, selected-channel consistency,
+  active-event SNR reporting, full per-class/confusion outputs, and hardened
+  aggregate screening protocol checks.
+- Smoke run: fold0/seed3407, lambda 0.5, `DWASHING`, `TBUS`, `STRAFFIC`, active
+  SNR `20/10/0` dB, `noise_repeat=0`, zero-shot frozen.
+- Clean equivalence: passed with 168/168 path, y_true, and raw Softmax y_pred
+  matches; Macro-F1 exactly reproduced at `0.946360153256705`.
+- Provenance gates: checkpoint, prototype bundle, calibration JSON, test
+  manifest, noise manifest, DEMAND provenance JSON, selected noise file SHA,
+  noise-vs-pig MD5 disjointness, and selected channel all verified true.
+- Same offset proof: `same_offset_across_snr_verified=true` over 504
+  clean/environment/repeat draw groups; unit tests verify same offset across SNR
+  and model seed, with different environment/repeat changing the offset.
+- Method-specific clean-validation thresholds: raw Softmax global `0.862944`,
+  prototype `0.827906`, hierarchical `0.853217`.
+- Smoke Macro-F1: clean raw/prototype/hierarchical
+  `0.946360/0.946360/0.952273`; DWASHING 20
+  `0.656321/0.665814/0.661102`; DWASHING 10
+  `0.604815/0.614662/0.620090`; DWASHING 0
+  `0.594665/0.605114/0.600000`; TBUS 20
+  `0.614045/0.614045/0.619464`; TBUS 10
+  `0.599470/0.604409/0.604815`; TBUS 0
+  `0.563761/0.576143/0.564466`; STRAFFIC 20
+  `0.594616/0.604815/0.599940`; STRAFFIC 10
+  `0.533141/0.553182/0.540000`; STRAFFIC 0
+  `0.377213/0.363202/0.355094`.
+- Per-class warning: cough F1 was `0.0` for all methods across all three 0 dB
+  active-event SNR conditions, so 0 dB should be framed as severe stress testing
+  rather than expected deployment performance.
+- SNR audit: max active-region SNR error `4.918568325962269e-07` dB; DWASHING
+  cough 20 dB active mean `20.000000` while full-window mean was `12.920643`
+  because cough valid-duration ratio averaged `0.234185`.
+- Outputs: updated DEMAND manifest/provenance, noise protocol docs, smoke
+  metrics/confusion/SNR/provenance CSV/JSON, and hardened smoke/aggregate
+  summaries under `reports/prototype_noise_demand_w05_fold0_seed3407_prescreen_smoke`.
+- Recommendation: protocol is ready for review before a fixed 15-run DEMAND
+  screening, but do not start it without explicit `APPROVED: true`.

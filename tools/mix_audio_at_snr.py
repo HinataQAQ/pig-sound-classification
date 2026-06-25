@@ -12,6 +12,8 @@ import numpy as np
 import soundfile as sf
 from scipy.signal import resample_poly
 
+OFFSET_KEY_VERSION = "demand_noise_offset_v2"
+
 
 def _as_bool(value: object) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes", "y"}
@@ -22,6 +24,45 @@ def deterministic_seed(parts: Sequence[object]) -> int:
     key = "\x1f".join(str(x) for x in parts)
     digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
     return int(digest[:16], 16) & ((1 << 63) - 1)
+
+
+def noise_offset_key(
+    *,
+    fold: int,
+    model_seed: int | None,
+    target_active_snr_db: float | None,
+    clean_path: str,
+    clean_md5: str,
+    environment_recording_id: str,
+    noise_sha256: str,
+    global_noise_seed: int,
+    noise_repeat: int,
+) -> dict[str, object]:
+    """Build the protocol v2 noise draw key.
+
+    ``model_seed`` and ``target_active_snr_db`` are accepted for audit context,
+    but deliberately excluded from the key so the same clean sample and DEMAND
+    environment uses the same noise segment across model seeds and SNRs.
+    """
+    key_parts = [
+        f"offset_key_version={OFFSET_KEY_VERSION}",
+        f"fold={int(fold)}",
+        f"clean_path={str(clean_path)}",
+        f"clean_md5={str(clean_md5).strip().lower()}",
+        f"environment_recording_id={str(environment_recording_id).strip().upper()}",
+        f"noise_sha256={str(noise_sha256).strip().lower()}",
+        f"global_noise_seed={int(global_noise_seed)}",
+        f"noise_repeat={int(noise_repeat)}",
+    ]
+    key_text = "\x1f".join(key_parts)
+    return {
+        "offset_key_version": OFFSET_KEY_VERSION,
+        "noise_draw_id": hashlib.sha256(key_text.encode("utf-8")).hexdigest(),
+        "noise_repeat": int(noise_repeat),
+        "key_parts": key_parts,
+        "ignored_model_seed": None if model_seed is None else int(model_seed),
+        "ignored_target_active_snr_db": None if target_active_snr_db is None else float(target_active_snr_db),
+    }
 
 
 def file_sha256(path: str | Path, chunk_size: int = 1024 * 1024) -> str:
@@ -174,6 +215,9 @@ def mix_clean_with_noise_at_snr(
     return mixed.astype(np.float32), {
         "original_valid_samples": int(valid_samples),
         "valid_start": int(valid_start),
+        "valid_duration_ratio": float(valid_samples / clean.size),
+        "snr_reference": "active_valid_region",
+        "target_active_snr_db": float(target_snr_db),
         "target_snr_db": float(target_snr_db),
         "clean_active_rms": float(clean_active_rms),
         "noise_active_rms_before_gain": float(noise_active_rms),
@@ -225,7 +269,7 @@ def main() -> None:
     segment, offset_record = select_noise_segment(
         noise,
         clean.size,
-        [args.clean_audio, args.noise_audio, args.snr_db, *args.key],
+        [args.clean_audio, args.noise_audio, *args.key],
         return_record=True,
     )
     mixed, mix_record = mix_clean_with_noise_at_snr(
