@@ -1,0 +1,13 @@
+﻿experiment,noise_environment,snr_db,comparison,n,mean_delta,std_delta,bootstrap_ci95_low,bootstrap_ci95_high,wilcoxon_p,wins,ties,losses
+clean_prototype,,,hierarchical - raw_softmax,25,0.002937,0.010336,-0.000478,0.007294,0.058253,13,8,4
+clean_prototype,,,prototype - raw_softmax,25,0.000803,0.008611,-0.00231,0.004431,0.571243,10,7,8
+clean_prototype,,,hierarchical - prototype,25,0.002134,0.00727,-0.000499,0.004996,0.22133,8,12,5
+simulated_noise,ALL_NOISY,GROUP,prototype - raw_softmax,25,0.005755,0.012301,0.001606,0.010894,0.010511,18,0,7
+simulated_noise,ALL_NOISY,GROUP,hierarchical - raw_softmax,25,0.00271,0.01074,-0.000999,0.007085,0.312333,13,0,12
+simulated_noise,ALL_NOISY,GROUP,hierarchical - prototype,25,-0.003045,0.003836,-0.004581,-0.001639,0.000376,5,0,20
+simulated_noise,MODERATE_NOISE,GROUP,prototype - raw_softmax,25,0.006129,0.010831,0.002442,0.010697,0.001673,19,1,5
+simulated_noise,MODERATE_NOISE,GROUP,hierarchical - raw_softmax,25,0.00495,0.010635,0.001224,0.009409,0.010511,19,0,6
+simulated_noise,MODERATE_NOISE,GROUP,hierarchical - prototype,25,-0.001179,0.004114,-0.002806,0.000431,0.190814,10,0,15
+simulated_noise,EXTREME_STRESS,GROUP,prototype - raw_softmax,25,0.005007,0.017759,-0.001264,0.012147,0.560171,11,0,14
+simulated_noise,EXTREME_STRESS,GROUP,hierarchical - raw_softmax,25,-0.00177,0.014106,-0.007079,0.003706,0.380984,11,0,14
+simulated_noise,EXTREME_STRESS,GROUP,hierarchical - prototype,25,-0.006777,0.00769,-0.009784,-0.003952,0.000162,6,0,19

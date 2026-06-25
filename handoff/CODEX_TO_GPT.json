@@ -1,178 +1,142 @@
 {
   "status": "completed",
-  "task": "demand_noise_final_w05",
+  "task": "sci_draft_v1_augrc_correction_and_paper_package",
   "approval": {
     "current_user_approved": true,
-    "gpt_to_codex_updated_to_approved_true": true
+    "gpt_to_codex_approved_true": true
   },
-  "branch": "codex/demand-noise-final-w05",
-  "base_branch": "codex/demand-noise-screening-w05",
-  "base_commit_sha": "45af0dc4ecb40182461f923d5206baead580af1d",
-  "final_commit_sha": "pending_at_handoff_write; see pushed branch HEAD/final Codex response",
+  "branch": "paper/sci-draft-v1",
+  "base_commit_sha": "c6de8d1541643da3d21d62032c4544f5d39cffae",
+  "final_commit_sha": "see_final_codex_response_after_commit",
   "scope": {
-    "lambda": 0.5,
-    "folds": [0, 1, 2, 3, 4],
-    "seeds": [42, 123, 777, 2024, 3407],
-    "newly_run_seeds": [123, 777],
-    "reused_screening_seeds": [42, 2024, 3407],
-    "n_fold_seed_runs": 25,
-    "feature_backend": "training_exact",
-    "noise_source": "DEMAND",
-    "noise_environments": ["DWASHING", "TBUS", "STRAFFIC"],
-    "target_active_snr_db": [20.0, 10.0, 0.0],
-    "global_noise_seed": 3407,
-    "noise_repeat": 0,
-    "selected_channel": 1,
-    "offset_key_version": "demand_noise_offset_v2",
-    "noise_protocol": "zero_shot_frozen",
-    "real_farm_external_validation": false,
-    "lambda_1_started": false,
-    "noise_aware_recalibration_started": false,
-    "noise_augmentation_training_started": false,
-    "denoising_training_started": false,
-    "local_reviewed_noise_started": false,
-    "open_set_started": false,
-    "new_noise_environment_started": false,
-    "new_snr_started": false,
-    "new_noise_repeat_started": false
+    "new_model_experiments_started": false,
+    "model_training_started": false,
+    "model_inference_started": false,
+    "checkpoints_changed": false,
+    "prototypes_changed": false,
+    "calibration_changed": false,
+    "snr_changed": false,
+    "noise_draw_changed": false,
+    "statistical_protocol_changed": false,
+    "augrc_corrected": true,
+    "selective_metrics_regenerated_from_existing_predictions": true,
+    "paper_package_created": true
   },
-  "code_changes": {
-    "run_stage_final_added": true,
-    "single_final_run_paper_main_result": false,
-    "fixed_screening_protocol_5x3": true,
-    "fixed_final_protocol_5x5": true,
-    "strict_protocol_specific_paired_n": true,
-    "five_seed_cross_seed_draw_audit": true,
-    "augrc_added": true,
-    "historical_missing_augrc_backfilled_from_aurc": true,
-    "final_directory_outputs": true
+  "augrc_correction": {
+    "old_incorrect_definition": "cumsum(losses) / accepted_count, duplicating selective risk/AURC under 0/1 loss",
+    "corrected_definition": "generalized_risk(k)=sum(losses among accepted samples)/total_sample_count, integrated over coverage",
+    "stored_scale": "0..1 unscaled project units",
+    "source": "official fd-shifts RiskCoverageStats generalized risk implementation",
+    "unit_tests_added": [
+      "deterministic AUGRC example where AURC and AUGRC differ",
+      "summary recomputation from prediction CSV instead of JSON/AURC backfill"
+    ]
   },
-  "verification": {
-    "help_commands_passed": [
-      "tools/audit_noise_assets.py --help",
-      "tools/eval_prototype_noise_robustness.py --help",
-      "tools/summarize_prototype_noise_robustness.py --help"
-    ],
-    "py_compile": true,
-    "noise_unittest_count": 39,
-    "prototype_core_unittest_count": 47,
-    "total_unittest_count": 86,
-    "git_diff_check": true,
-    "aggregate_provenance_gate": true,
-    "cross_seed_draw_gate": true
+  "corrected_all_noisy_selective_metrics": {
+    "raw_softmax": {
+      "aurc": 0.177458,
+      "augrc": 0.123881,
+      "frozen_threshold_coverage": 0.92,
+      "frozen_threshold_selective_risk": 0.302386
+    },
+    "prototype": {
+      "aurc": 0.210937,
+      "augrc": 0.139362,
+      "frozen_threshold_coverage": 0.92119,
+      "frozen_threshold_selective_risk": 0.298765
+    },
+    "hierarchical": {
+      "aurc": 0.212211,
+      "augrc": 0.140298,
+      "frozen_threshold_coverage": 0.921852,
+      "frozen_threshold_selective_risk": 0.303299
+    },
+    "fused": {
+      "aurc": 0.184808,
+      "augrc": 0.127355,
+      "frozen_threshold_coverage": 0.919418,
+      "frozen_threshold_selective_risk": 0.301143
+    }
   },
-  "aggregate_provenance": {
-    "run_scope": "aggregate",
-    "screening_result": false,
-    "final_25_run_result": true,
-    "paper_candidate_result": true,
-    "paper_main_result": true,
-    "simulated_noise_main_result": true,
-    "n_fold_seed_runs": 25,
-    "simulated_noise": true,
-    "real_farm_external_validation": false,
-    "cross_seed_noise_draw_audit_ok": true,
-    "cross_seed_noise_draw_audit_groups": 2520,
-    "cross_seed_set": "42|123|777|2024|3407",
-    "source_run_stages": ["final", "screening"]
-  },
-  "macro_f1_summary": {
+  "macro_f1_unchanged": {
+    "ALL_NOISY": {
+      "raw_softmax": 0.617281,
+      "prototype": 0.623036,
+      "hierarchical": 0.619991,
+      "fused": 0.620066
+    },
     "MODERATE_NOISE": {
-      "raw_softmax": {"mean": 0.647225, "std": 0.025426},
-      "prototype": {"mean": 0.653354, "std": 0.02332},
-      "hierarchical": {"mean": 0.652175, "std": 0.025686},
-      "fused": {"mean": 0.649915, "std": 0.024672}
+      "raw_softmax": 0.647225,
+      "prototype": 0.653354,
+      "hierarchical": 0.652175,
+      "fused": 0.649915
     },
     "EXTREME_STRESS": {
-      "raw_softmax": {"mean": 0.557393, "std": 0.029311},
-      "prototype": {"mean": 0.5624, "std": 0.028306},
-      "hierarchical": {"mean": 0.555623, "std": 0.028425},
-      "fused": {"mean": 0.560369, "std": 0.027277}
-    },
-    "ALL_NOISY": {
-      "raw_softmax": {"mean": 0.617281, "std": 0.022973},
-      "prototype": {"mean": 0.623036, "std": 0.021252},
-      "hierarchical": {"mean": 0.619991, "std": 0.022378},
-      "fused": {"mean": 0.620066, "std": 0.021477}
+      "raw_softmax": 0.557393,
+      "prototype": 0.5624,
+      "hierarchical": 0.555623,
+      "fused": 0.560369
     }
   },
-  "all_noisy_paired_statistics": {
-    "prototype_minus_raw_softmax": {
-      "n": 25,
-      "mean_delta": 0.005755,
-      "bootstrap_ci95": [0.001606, 0.010894],
-      "wilcoxon_p": 0.010511,
-      "wins_ties_losses": "18/0/7"
-    },
-    "hierarchical_minus_raw_softmax": {
-      "n": 25,
-      "mean_delta": 0.00271,
-      "bootstrap_ci95": [-0.000999, 0.007085],
-      "wilcoxon_p": 0.312333,
-      "wins_ties_losses": "13/0/12"
-    },
-    "hierarchical_minus_prototype": {
-      "n": 25,
-      "mean_delta": -0.003045,
-      "bootstrap_ci95": [-0.004581, -0.001639],
-      "wilcoxon_p": 0.000376,
-      "wins_ties_losses": "5/0/20"
-    }
+  "paper_package": {
+    "root": "paper",
+    "manuscripts": [
+      "paper/manuscript/paper_cn_draft.md",
+      "paper/manuscript/paper_en_draft.md"
+    ],
+    "references": "paper/references/references.bib",
+    "reference_count": 6,
+    "tables": [
+      "paper/tables/table1_dataset_and_leakage_free_protocol.csv",
+      "paper/tables/table2_clean_baseline_and_architecture_ablations.csv",
+      "paper/tables/table3_duration_comparison.csv",
+      "paper/tables/table4_hierarchical_aux_weight_ablation.csv",
+      "paper/tables/table5_clean_softmax_main_prototype_hierarchical_prototype.csv",
+      "paper/tables/table6_simulated_noise_robustness_by_stratum.csv",
+      "paper/tables/table7_paired_statistics.csv",
+      "paper/tables/table8_per_class_noise_results_and_confusion_directions.csv",
+      "paper/tables/table9_selective_prediction_metrics_corrected_augrc.csv"
+    ],
+    "figures": [
+      "paper/figures/figure1_overall_method_architecture.svg",
+      "paper/figures/figure2_duration_macro_f1.svg",
+      "paper/figures/figure3_prototype_structure.svg",
+      "paper/figures/figure4_macro_f1_vs_snr.svg",
+      "paper/figures/figure5_noise_degradation_by_environment.svg",
+      "paper/figures/figure6_feeding_stress_confusion.svg",
+      "paper/figures/figure7_cough_collapse.svg",
+      "paper/figures/figure8_risk_coverage_curves.svg"
+    ]
   },
-  "all_noisy_class_f1_from_confusion": {
-    "raw_softmax": {"cough": 0.086657, "calm_grunt": 0.988748, "feeding": 0.83227, "stress_vocal": 0.600279},
-    "prototype": {"cough": 0.097424, "calm_grunt": 0.979829, "feeding": 0.84156, "stress_vocal": 0.607251},
-    "hierarchical": {"cough": 0.095699, "calm_grunt": 0.981712, "feeding": 0.831944, "stress_vocal": 0.60711},
-    "fused": {"cough": 0.088961, "calm_grunt": 0.987355, "feeding": 0.838345, "stress_vocal": 0.602811}
-  },
-  "all_noisy_errors": {
-    "raw_softmax": {"feeding_to_stress": 2168, "stress_to_feeding": 616, "cough_to_calm_grunt": 86, "cough_to_feeding": 1, "cough_to_stress_vocal": 8935},
-    "prototype": {"feeding_to_stress": 2006, "stress_to_feeding": 606, "cough_to_calm_grunt": 217, "cough_to_feeding": 1, "cough_to_stress_vocal": 8748},
-    "hierarchical": {"feeding_to_stress": 2240, "stress_to_feeding": 495, "cough_to_calm_grunt": 194, "cough_to_feeding": 1, "cough_to_stress_vocal": 8780},
-    "fused": {"feeding_to_stress": 2075, "stress_to_feeding": 613, "cough_to_calm_grunt": 107, "cough_to_feeding": 1, "cough_to_stress_vocal": 8902}
-  },
-  "all_noisy_uncertainty": {
-    "raw_softmax": {"aurc": 0.177458, "augrc": 0.177458, "risk_at_80_90_95": [0.304296, 0.304035, 0.308], "frozen_coverage": 0.92, "frozen_selective_risk": 0.302386},
-    "prototype": {"aurc": 0.210937, "augrc": 0.210937, "risk_at_80_90_95": [0.305679, 0.299737, 0.303611], "frozen_coverage": 0.92119, "frozen_selective_risk": 0.298765},
-    "hierarchical": {"aurc": 0.212212, "augrc": 0.212212, "risk_at_80_90_95": [0.309465, 0.303626, 0.307], "frozen_coverage": 0.921852, "frozen_selective_risk": 0.303299},
-    "fused": {"aurc": 0.184808, "augrc": 0.184808, "risk_at_80_90_95": [0.304395, 0.302193, 0.305556], "frozen_coverage": 0.919418, "frozen_selective_risk": 0.301143}
-  },
-  "calibration_distribution": {
-    "calibrated_softmax_temperature": {"min": 0.5, "max": 1.0, "mean": 0.8},
-    "prototype_temperature": {"min": 0.03, "max": 0.1, "mean": 0.0696},
-    "hierarchical_temperature": {"min": 0.03, "max": 0.2, "mean": 0.0696},
-    "hier_aux_prob_weight": {"min": 0.5, "max": 0.5, "mean": 0.5},
-    "fusion_alpha": {"min": 0.0, "max": 1.0, "mean": 0.77},
-    "fusion_kind_counts": {"pure_softmax": 14, "mixed": 8, "pure_prototype": 3}
-  },
-  "outputs": {
-    "aggregate_dir": "reports/prototype_noise_demand_w05_final",
-    "summary": "reports/prototype_noise_demand_w05_final/final_summary.csv",
-    "paired_stats": "reports/prototype_noise_demand_w05_final/final_paired_stats.csv",
-    "confusion_summary": "reports/prototype_noise_demand_w05_final/final_confusion_summary.csv",
-    "per_class_summary": "reports/prototype_noise_demand_w05_final/final_per_class_summary.csv",
-    "selective_summary": "reports/prototype_noise_demand_w05_final/final_selective_summary.csv",
-    "aurc_augrc_summary": "reports/prototype_noise_demand_w05_final/final_aurc_augrc_summary.csv",
-    "per_fold_deltas": "reports/prototype_noise_demand_w05_final/final_per_fold_deltas.csv",
-    "cluster_bootstrap": "reports/prototype_noise_demand_w05_final/final_cluster_bootstrap.csv",
-    "cross_seed_draw_audit": "reports/prototype_noise_demand_w05_final/final_cross_seed_draw_audit.csv",
-    "provenance": "reports/prototype_noise_demand_w05_final/final_provenance.json"
+  "commands": [
+    "git switch -c paper/sci-draft-v1",
+    "python tools/summarize_prototype_noise_robustness.py --metrics_json <25 existing noise_metrics.json> --protocol final --out_dir reports/prototype_noise_demand_w05_final --file_prefix final --recompute_selective_from_predictions",
+    "python tools/create_paper_package.py",
+    "python tools/summarize_prototype_noise_robustness.py --help",
+    "python -m py_compile tools/eval_prototype_noise_robustness.py tools/summarize_prototype_noise_robustness.py tools/create_paper_package.py tests/test_noise_robustness_pipeline.py",
+    "python -m unittest tests.test_noise_robustness_pipeline -v",
+    "git diff --check"
+  ],
+  "data_boundaries": {
+    "train_val_test_roles_changed": false,
+    "test_set_tuning": false,
+    "full_prediction_csv_copied_to_paper": false,
+    "audio_committed": false,
+    "demand_archive_committed": false,
+    "checkpoints_committed": false,
+    "embeddings_or_npz_committed": false,
+    "cache_committed": false
   },
   "paper_usability": {
-    "paper_usable_as_simulated_noise_main_result": true,
     "paper_main_result": true,
-    "real_farm_external_validation": false,
-    "note": "Simulated DEMAND noise final aggregate only; not a real-farm external validation."
+    "paper_main_result_scope": "existing complete 5 folds x 5 seeds simulated DEMAND aggregate only",
+    "simulated_noise_only": true,
+    "real_farm_external_validation": false
   },
-  "failures": [],
-  "warnings": [
-    "Existing pandas DataFrame fragmentation warnings from prototype_model_adapter.py during prediction output construction.",
-    "git diff --check passed with line-ending warnings only."
+  "questions_for_gpt_pro": [
+    "Whether to add a dedicated cough-failure analysis subsection before submission.",
+    "Whether the target SCI applied journal requires a fuller related-work section.",
+    "Whether the conservative bibliography should be expanded after manual reference verification."
   ],
-  "gpt_pro_questions": [
-    "Should prototype-only be the primary robustness finding, with hierarchical prototype as secondary?",
-    "Should cough failure analysis be added before submission?",
-    "Should the result be framed strictly as simulated-noise robustness with real-farm validation as future work?"
-  ],
-  "recommended_next_step": "Stop. Decide between paper-facing DEMAND final tables/figures and targeted cough failure-mode analysis."
+  "recommended_next_step": "Stop and review the paper draft; do not start new experiments without explicit APPROVED:true."
 }

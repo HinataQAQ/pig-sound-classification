@@ -337,3 +337,47 @@
 - Stop point: do not start lambda 1.0, noisy recalibration, augmentation,
   denoising, local reviewed noise, open-set, new environments, new SNRs, or new
   repeats without new explicit approval.
+
+## 2026-06-25 - SCI draft v1 paper package and corrected AUGRC
+
+- Status: completed
+- Branch: `paper/sci-draft-v1`
+- Base: `codex/demand-noise-final-w05` at
+  `c6de8d1541643da3d21d62032c4544f5d39cffae`
+- Approval state: user explicitly provided `APPROVED: true`.
+- Scope: experiment phase frozen. No new model training, inference,
+  checkpoint, prototype, calibration, SNR, noise draw, or statistical protocol
+  change was started.
+- AUGRC correction: replaced the incorrect `cumsum(losses) / accepted_count`
+  implementation with generalized risk
+  `sum(loss_accepted) / total_sample_count`, integrated over coverage. The
+  project stores unscaled 0..1 AUGRC values.
+- Selective metrics: regenerated final selective summaries from existing
+  frozen-test `noise_predictions.csv` files using
+  `--recompute_selective_from_predictions`; no model inference was rerun.
+- Corrected ALL_NOISY AURC/AUGRC:
+  - raw_softmax: `0.177458 / 0.123881`
+  - prototype: `0.210937 / 0.139362`
+  - hierarchical: `0.212211 / 0.140298`
+  - fused: `0.184808 / 0.127355`
+- Macro-F1 unchanged:
+  - ALL_NOISY raw/prototype/hierarchical/fused:
+    `0.617281`, `0.623036`, `0.619991`, `0.620066`
+  - MODERATE_NOISE raw/prototype/hierarchical/fused:
+    `0.647225`, `0.653354`, `0.652175`, `0.649915`
+  - EXTREME_STRESS raw/prototype/hierarchical/fused:
+    `0.557393`, `0.562400`, `0.555623`, `0.560369`
+- Paper package created under `paper/`:
+  - bilingual manuscript drafts,
+  - 9 main tables,
+  - 8 main figures as SVG/PDF/300-dpi PNG,
+  - appendix summaries,
+  - references with 6 conservative verified entries,
+  - reproducibility commands and claims/evidence notes.
+- Paper guardrails: simulated DEMAND noise only; no real-farm external
+  validation; no claim that hierarchical prototype is most robust; no claim of
+  reliable cough recognition at 0 dB.
+- Verification: AUGRC regression tests and summary recomputation tests added;
+  full verification results are recorded in the final Codex response.
+- Stop point: review the generated paper package. Do not start new experiments
+  without a new explicit `APPROVED: true`.

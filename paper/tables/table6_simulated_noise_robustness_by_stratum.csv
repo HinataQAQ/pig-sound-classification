@@ -1,0 +1,13 @@
+﻿noise_environment,condition_family,method,n,mean_macro_f1,std_macro_f1,mean_top1_acc,mean_top2_acc,mean_ece,mean_brier,mean_nll
+ALL_NOISY,all_noisy,fused,25,0.6201,0.0215,0.6869,0.7716,0.2786,0.5832,2.6351
+ALL_NOISY,all_noisy,hierarchical,25,0.62,0.0224,0.686,0.7662,0.2792,0.5872,4.3274
+ALL_NOISY,all_noisy,prototype,25,0.623,0.0213,0.6891,0.7655,0.2746,0.5807,4.1337
+ALL_NOISY,all_noisy,raw_softmax,25,0.6173,0.023,0.6843,0.773,0.2635,0.574,1.8466
+MODERATE_NOISE,moderate_noise,fused,25,0.6499,0.0247,0.7108,0.7882,0.2585,0.5423,2.4215
+MODERATE_NOISE,moderate_noise,hierarchical,25,0.6522,0.0257,0.7113,0.7804,0.258,0.5442,4.12
+MODERATE_NOISE,moderate_noise,prototype,25,0.6534,0.0233,0.7129,0.7795,0.2539,0.5396,3.9345
+MODERATE_NOISE,moderate_noise,raw_softmax,25,0.6472,0.0254,0.7081,0.7908,0.2434,0.5347,1.6972
+EXTREME_STRESS,extreme simulated-noise stress condition,fused,25,0.5604,0.0273,0.639,0.7385,0.3188,0.665,3.0622
+EXTREME_STRESS,extreme simulated-noise stress condition,hierarchical,25,0.5556,0.0284,0.6353,0.7378,0.3217,0.6734,4.7421
+EXTREME_STRESS,extreme simulated-noise stress condition,prototype,25,0.5624,0.0283,0.6416,0.7375,0.3161,0.6628,4.5321
+EXTREME_STRESS,extreme simulated-noise stress condition,raw_softmax,25,0.5574,0.0293,0.6367,0.7373,0.3037,0.6528,2.1454

@@ -180,10 +180,12 @@ condition:
 - coverage and selective risk
 - method-specific frozen-threshold coverage and selective risk
 - AURC
-- AUGRC, computed as the area under generalized risk-coverage after sorting
-  samples by descending confidence. In the current classification report the
-  generalized loss is the 0/1 error, so AUGRC is numerically comparable to AURC;
-  the field is kept explicit for future non-binary loss definitions.
+- AUGRC, computed from the generalized risk-coverage curve used by the official
+  fd-shifts `RiskCoverageStats` implementation. For accepted prefix size `k` among `n`
+  samples, AURC uses `sum(loss_accepted) / k`, while generalized risk uses
+  `sum(loss_accepted) / n`. In this repository AUGRC is stored in unscaled
+  0..1 area units, so it must not be copied from AURC even when the loss is
+  the binary 0/1 classification error.
 - risk at coverage 0.80, 0.90, and 0.95
 - degradation versus clean Macro-F1
 - complete confusion matrix

@@ -1,0 +1,13 @@
+﻿noise_environment,snr_db,condition_family,method,n,mean_frozen_threshold_coverage,mean_frozen_threshold_selective_risk,mean_risk_at_coverage_0_80_x,mean_risk_at_coverage_0_90_x,mean_risk_at_coverage_0_95_x,mean_aurc,mean_augrc,mean_risk_at_coverage_0_80_y,mean_risk_at_coverage_0_90_y,mean_risk_at_coverage_0_95_y
+ALL_NOISY,GROUP,all_noisy,fused,25,0.9194,0.3011,0.3044,0.3022,0.3056,0.1848,0.1274,0.3044,0.3022,0.3056
+ALL_NOISY,GROUP,all_noisy,hierarchical,25,0.9219,0.3033,0.3095,0.3036,0.307,0.2122,0.1403,0.3095,0.3036,0.307
+ALL_NOISY,GROUP,all_noisy,prototype,25,0.9212,0.2988,0.3057,0.2997,0.3036,0.2109,0.1394,0.3057,0.2997,0.3036
+ALL_NOISY,GROUP,all_noisy,raw_softmax,25,0.92,0.3024,0.3043,0.304,0.308,0.1775,0.1239,0.3043,0.304,0.308
+MODERATE_NOISE,GROUP,moderate_noise,fused,25,0.9228,0.2807,0.2885,0.2809,0.2826,0.1732,0.1198,0.2885,0.2809,0.2826
+MODERATE_NOISE,GROUP,moderate_noise,hierarchical,25,0.9258,0.2808,0.2933,0.2805,0.2826,0.2066,0.1354,0.2933,0.2805,0.2826
+MODERATE_NOISE,GROUP,moderate_noise,prototype,25,0.9255,0.2776,0.2902,0.2776,0.2805,0.2047,0.1343,0.2902,0.2776,0.2805
+MODERATE_NOISE,GROUP,moderate_noise,raw_softmax,25,0.9238,0.2821,0.2872,0.2826,0.2852,0.1635,0.1153,0.2872,0.2826,0.2852
+EXTREME_STRESS,GROUP,extreme simulated-noise stress condition,fused,25,0.9126,0.3421,0.3362,0.3447,0.3514,0.208,0.1424,0.3362,0.3447,0.3514
+EXTREME_STRESS,GROUP,extreme simulated-noise stress condition,hierarchical,25,0.914,0.3483,0.3417,0.3499,0.3558,0.2235,0.1501,0.3417,0.3499,0.3558
+EXTREME_STRESS,GROUP,extreme simulated-noise stress condition,prototype,25,0.9126,0.341,0.3366,0.3439,0.3499,0.2234,0.1496,0.3366,0.3439,0.3499
+EXTREME_STRESS,GROUP,extreme simulated-noise stress condition,raw_softmax,25,0.9125,0.3429,0.3385,0.3469,0.3535,0.2054,0.141,0.3385,0.3469,0.3535

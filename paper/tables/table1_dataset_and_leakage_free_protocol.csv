@@ -1,0 +1,8 @@
+﻿item,value
+Clean classes,cough; calm_grunt; feeding; stress_vocal
+Auxiliary subtypes,dry_cough; abdominal_cough; calm_grunt; feeding; frightened_stress; anxious_stress
+Clean backbone protocol,cap3x expansion; 2-second Log-Mel; CRNN; 5 folds x 5 seeds
+Prototype protocol,train-only prototypes; validation-only calibration; frozen test evaluation; no cross-fold or cross-seed mixing
+Noise protocol,DEMAND DWASHING/TBUS/STRAFFIC; active-event SNR 20/10/0 dB; global_noise_seed=3407; noise_repeat=0
+Leakage controls,path/source_id/MD5 disjointness; manifest SHA checks; checkpoint/prototype/calibration SHA provenance
+External validation,Not performed; all noise results are simulated-noise robustness only

@@ -168,6 +168,26 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
             ]
         )
 
+    def _toy_noise_predictions(self) -> pd.DataFrame:
+        rows = []
+        conditions = [("clean", "clean", "clean")]
+        conditions.extend((env, snr, f"{env}_{snr:g}dB") for env in ("DWASHING", "TBUS", "STRAFFIC") for snr in (20.0, 10.0, 0.0))
+        for env, snr, condition in conditions:
+            for idx, (y_true, conf) in enumerate(zip([0, 1, 0, 1], [0.9, 0.8, 0.7, 0.6])):
+                row = {
+                    "condition": condition,
+                    "noise_environment": env,
+                    "snr_db": snr,
+                    "target_active_snr_db": snr,
+                    "sample_index": idx,
+                    "y_true_id": y_true,
+                }
+                for method in ("raw_softmax", "prototype", "hierarchical", "fused"):
+                    row[f"{method}_pred_id"] = 0
+                    row[f"{method}_confidence"] = conf
+                rows.append(row)
+        return pd.DataFrame(rows)
+
     def test_deterministic_seed_is_stable_across_processes(self):
         parts = ["fold0", "seed3407", "data/a.wav", "abc", "DWASHING", "noise-sha", "20", "20260625"]
         here = deterministic_seed(parts)
@@ -435,8 +455,9 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
 
         augrc = generalized_risk_coverage_auc(losses, confidence)
 
-        expected = float(np.trapezoid(np.array([0.0, 0.5, 1.0 / 3.0, 0.5]), np.array([0.25, 0.5, 0.75, 1.0])))
+        expected = float(-np.trapezoid(np.array([0.5, 0.25, 0.25, 0.0, 0.0]), np.array([1.0, 0.75, 0.5, 0.25, 0.0])))
         self.assertAlmostEqual(augrc, expected)
+        self.assertNotAlmostEqual(augrc, float(np.trapezoid(np.array([0.0, 0.5, 1.0 / 3.0, 0.5]), np.array([0.25, 0.5, 0.75, 1.0]))))
 
     def test_validate_screening_protocol_rejects_condition_rows_as_runs(self):
         payloads = [
@@ -644,50 +665,59 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
         self.assertTrue((paired[paired["noise_environment"] == "ALL_NOISY"]["n"] == 25).all())
         self.assertTrue(cross_seed["ok"].all())
 
-    def test_summarize_backfills_missing_augrc_rows_from_aurc(self):
+    def test_summarize_recomputes_augrc_from_prediction_csv(self):
         with tempfile.TemporaryDirectory() as tmp:
-            metrics_paths = []
-            for payload in self._final_payloads():
-                provenance_path = Path(tmp) / f"fold{payload['fold']}_seed{payload['seed']}_provenance.csv"
-                rows = []
-                for env in ("DWASHING", "TBUS", "STRAFFIC"):
-                    rows.append(
-                        {
-                            "fold": payload["fold"],
-                            "seed": payload["seed"],
-                            "clean_md5": f"{payload['fold']:032x}",
-                            "noise_environment": env,
-                            "noise_repeat": 0,
-                            "offset_key_version": "demand_noise_offset_v2",
-                            "noise_draw_id": f"fold{payload['fold']}-{env}",
-                            "noise_offset": 123,
-                            "noise_sha256": "b" * 64,
-                            "selected_channel": 1,
-                            "global_noise_seed": 3407,
-                        }
-                    )
-                pd.DataFrame(rows).to_csv(provenance_path, index=False)
-                payload["outputs"] = {"noise_sample_provenance_csv": str(provenance_path)}
-                for metric in payload["metrics_by_condition"]:
-                    if metric["method"] == "raw_softmax" and metric["noise_environment"] != "clean":
-                        if payload["run_stage"] == "screening":
-                            metric["aurc"] = 0.1
-                            metric.pop("augrc", None)
-                        else:
-                            metric["aurc"] = 0.9
-                            metric["augrc"] = 0.9
-                metrics_path = Path(tmp) / f"fold{payload['fold']}_seed{payload['seed']}.json"
-                metrics_path.write_text(json.dumps(payload), encoding="utf-8")
-                metrics_paths.append(metrics_path)
+            payload = self._payload(run_stage="final")
+            provenance_path = Path(tmp) / "fold0_seed3407_provenance.csv"
+            pd.DataFrame(
+                [
+                    {
+                        "fold": payload["fold"],
+                        "seed": payload["seed"],
+                        "clean_md5": "0" * 32,
+                        "noise_environment": env,
+                        "noise_repeat": 0,
+                        "offset_key_version": "demand_noise_offset_v2",
+                        "noise_draw_id": f"fold0-{env}",
+                        "noise_offset": 123,
+                        "noise_sha256": "b" * 64,
+                        "selected_channel": 1,
+                        "global_noise_seed": 3407,
+                    }
+                    for env in ("DWASHING", "TBUS", "STRAFFIC")
+                ]
+            ).to_csv(provenance_path, index=False)
+            pred_path = Path(tmp) / "noise_predictions.csv"
+            self._toy_noise_predictions().to_csv(pred_path, index=False)
+            payload["outputs"] = {
+                "noise_sample_provenance_csv": str(provenance_path),
+                "noise_predictions_csv": str(pred_path),
+            }
+            payload["method_specific_clean_val_thresholds"] = {
+                method: {"global_threshold": 0.75, "per_class_thresholds": {"cough": 0.75, "feeding": 0.75}}
+                for method in ("raw_softmax", "prototype", "hierarchical", "fused")
+            }
+            for metric in payload["metrics_by_condition"]:
+                metric["aurc"] = 0.9
+                metric["augrc"] = 0.9
+            metrics_path = Path(tmp) / "fold0_seed3407.json"
+            metrics_path.write_text(json.dumps(payload), encoding="utf-8")
 
-            summary, *_ = summarize(metrics_paths, protocol="final")
+            summary, *_, protocol = summarize(
+                [metrics_path],
+                protocol="final",
+                allow_smoke=True,
+                recompute_selective_from_predictions=True,
+            )
 
         row = summary[
             (summary["noise_environment"] == "ALL_NOISY")
             & (summary["snr_db"].astype(str) == "GROUP")
             & (summary["method"] == "raw_softmax")
         ].iloc[0]
-        self.assertAlmostEqual(float(row["mean_augrc"]), (15 * 0.1 + 10 * 0.9) / 25.0)
+        self.assertAlmostEqual(float(row["mean_augrc"]), 0.1875)
+        self.assertNotAlmostEqual(float(row["mean_aurc"]), float(row["mean_augrc"]))
+        self.assertTrue(protocol["selective_metrics_recomputed_from_prediction_csv"])
 
     def test_clean_equivalence_gate_handles_suffixed_y_true_columns(self):
         with tempfile.TemporaryDirectory() as tmp:

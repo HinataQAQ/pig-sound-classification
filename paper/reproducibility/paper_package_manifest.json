@@ -1,0 +1,29 @@
+{
+  "paper_title_cn": "面向模拟环境噪声鲁棒猪声识别的时长感知层级表征与双原型推理方法",
+  "paper_title_en": "Duration-Aware Hierarchical Representation and Dual-Prototype Inference for Pig Vocalization Recognition under Simulated Environmental Noise",
+  "tables": [
+    "table1_dataset_and_leakage_free_protocol.csv",
+    "table2_clean_baseline_and_architecture_ablations.csv",
+    "table3_duration_comparison.csv",
+    "table4_hierarchical_aux_weight_ablation.csv",
+    "table5_clean_softmax_main_prototype_hierarchical_prototype.csv",
+    "table6_simulated_noise_robustness_by_stratum.csv",
+    "table7_paired_statistics.csv",
+    "table8_per_class_noise_results_and_confusion_directions.csv",
+    "table9_selective_prediction_metrics_corrected_augrc.csv"
+  ],
+  "figures": [
+    "figure1_overall_method_architecture.svg",
+    "figure2_duration_macro_f1.svg",
+    "figure3_prototype_structure.svg",
+    "figure4_macro_f1_vs_snr.svg",
+    "figure5_noise_degradation_by_environment.svg",
+    "figure6_feeding_stress_confusion.svg",
+    "figure7_cough_collapse.svg",
+    "figure8_risk_coverage_curves.svg"
+  ],
+  "reference_count": 6,
+  "real_farm_external_validation": false,
+  "simulated_noise_only": true,
+  "augrc_corrected": true
+}

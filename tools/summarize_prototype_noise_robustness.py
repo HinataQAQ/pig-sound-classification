@@ -498,11 +498,178 @@ def aurc_augrc_summary_from_summary(summary: pd.DataFrame) -> pd.DataFrame:
     return summary[[c for c in columns if c in summary.columns]].copy()
 
 
+def _metric_snr_key(value: Any) -> str:
+    text = str(value).strip().lower()
+    if text == "clean":
+        return "clean"
+    return f"{float(value):g}"
+
+
+def _metric_env_key(value: Any) -> str:
+    text = str(value).strip()
+    return "clean" if text.lower() == "clean" else text.upper()
+
+
+def _prediction_condition_mask(predictions: pd.DataFrame, env: Any, snr: Any) -> pd.Series:
+    env_key = _metric_env_key(env)
+    if "noise_environment" not in predictions.columns:
+        raise RuntimeError("noise_predictions.csv missing required column: noise_environment")
+    env_series = predictions["noise_environment"].map(_metric_env_key)
+    mask = env_series == env_key
+    if env_key == "clean":
+        return mask
+    snr_column = "target_active_snr_db" if "target_active_snr_db" in predictions.columns else "snr_db"
+    if snr_column not in predictions.columns:
+        raise RuntimeError("noise_predictions.csv missing required SNR column: target_active_snr_db or snr_db")
+    snr_series = pd.to_numeric(predictions[snr_column], errors="coerce")
+    return mask & np.isclose(snr_series.to_numpy(dtype=np.float64), float(snr), equal_nan=False)
+
+
+def _aurc_from_losses(losses: np.ndarray, confidence: np.ndarray) -> float:
+    losses = np.asarray(losses, dtype=np.float64)
+    confidence = np.asarray(confidence, dtype=np.float64)
+    if len(losses) == 0:
+        return 0.0
+    order = np.argsort(-confidence)
+    ordered_losses = losses[order]
+    coverage = np.arange(1, len(losses) + 1, dtype=np.float64) / float(len(losses))
+    selective_risk = np.cumsum(ordered_losses) / np.arange(1, len(losses) + 1, dtype=np.float64)
+    return float(np.trapezoid(selective_risk, coverage))
+
+
+def _generalized_risk_coverage_auc(losses: np.ndarray, confidence: np.ndarray) -> float:
+    losses = np.asarray(losses, dtype=np.float64)
+    confidence = np.asarray(confidence, dtype=np.float64)
+    if len(losses) == 0:
+        return 0.0
+    if len(losses) != len(confidence):
+        raise ValueError("losses and confidence must have the same length")
+    if not np.all(np.isfinite(losses)) or not np.all(np.isfinite(confidence)):
+        raise ValueError("losses and confidence must be finite")
+    n = float(len(losses))
+    order = np.argsort(confidence)
+    ordered_losses = losses[order]
+    ordered_confidence = confidence[order]
+    remaining_loss = float(np.sum(ordered_losses))
+    accepted_count = len(losses)
+    coverages = [1.0]
+    generalized_risks = [remaining_loss / n]
+    for idx, (loss, conf) in enumerate(zip(ordered_losses, ordered_confidence, strict=True)):
+        remaining_loss -= float(loss)
+        accepted_count -= 1
+        next_confidence = ordered_confidence[idx + 1] if idx + 1 < len(ordered_confidence) else None
+        if next_confidence is None or next_confidence != conf:
+            coverages.append(accepted_count / n)
+            generalized_risks.append(remaining_loss / n)
+    if coverages[-1] != 0.0:
+        coverages.append(0.0)
+        generalized_risks.append(0.0)
+    return float(-np.trapezoid(np.asarray(generalized_risks), np.asarray(coverages)))
+
+
+def _risk_at_coverages_from_losses(
+    losses: np.ndarray,
+    confidence: np.ndarray,
+    coverages: tuple[float, ...] = (0.80, 0.90, 0.95),
+) -> dict[str, float]:
+    losses = np.asarray(losses, dtype=np.float64)
+    confidence = np.asarray(confidence, dtype=np.float64)
+    if len(losses) == 0:
+        return {f"risk_at_coverage_{coverage:.2f}": 0.0 for coverage in coverages}
+    order = np.argsort(-confidence)
+    out: dict[str, float] = {}
+    for coverage in coverages:
+        k = max(1, min(len(losses), int(np.ceil(float(coverage) * len(losses)))))
+        out[f"risk_at_coverage_{coverage:.2f}"] = float(np.mean(losses[order[:k]]))
+    return out
+
+
+def _frozen_threshold_metrics(
+    *,
+    losses: np.ndarray,
+    confidence: np.ndarray,
+    threshold_info: dict[str, Any] | None,
+) -> dict[str, float | None]:
+    if not threshold_info:
+        return {
+            "frozen_global_threshold": None,
+            "frozen_threshold_coverage": None,
+            "frozen_threshold_selective_risk": None,
+        }
+    threshold = float(threshold_info["global_threshold"])
+    accepted = np.asarray(confidence, dtype=np.float64) >= threshold
+    coverage = float(np.mean(accepted)) if len(accepted) else 0.0
+    risk = float(np.mean(np.asarray(losses, dtype=np.float64)[accepted])) if accepted.any() else None
+    return {
+        "frozen_global_threshold": threshold,
+        "frozen_threshold_coverage": coverage,
+        "frozen_threshold_selective_risk": risk,
+    }
+
+
+def _recompute_selective_row_metrics(
+    predictions: pd.DataFrame,
+    *,
+    env: Any,
+    snr: Any,
+    method: str,
+    threshold_info: dict[str, Any] | None,
+) -> dict[str, float | None]:
+    y_true_col = "y_true_id"
+    pred_col = f"{method}_pred_id"
+    conf_col = f"{method}_confidence"
+    missing = [col for col in (y_true_col, pred_col, conf_col) if col not in predictions.columns]
+    if missing:
+        raise RuntimeError(f"noise_predictions.csv missing required columns for {method}: {missing}")
+    subset = predictions.loc[_prediction_condition_mask(predictions, env, snr)].copy()
+    if subset.empty:
+        raise RuntimeError(f"noise_predictions.csv has no rows for env={env} snr={snr} method={method}")
+    y_true = subset[y_true_col].to_numpy(dtype=np.int64)
+    y_pred = subset[pred_col].to_numpy(dtype=np.int64)
+    confidence = subset[conf_col].to_numpy(dtype=np.float64)
+    losses = (y_true != y_pred).astype(np.float64)
+    metrics: dict[str, float | None] = {
+        "aurc": _aurc_from_losses(losses, confidence),
+        "augrc": _generalized_risk_coverage_auc(losses, confidence),
+    }
+    metrics.update(_risk_at_coverages_from_losses(losses, confidence))
+    metrics.update(_frozen_threshold_metrics(losses=losses, confidence=confidence, threshold_info=threshold_info))
+    return metrics
+
+
+def recompute_selective_metrics_from_predictions(frame: pd.DataFrame, payloads: list[dict[str, Any]]) -> pd.DataFrame:
+    updated = frame.copy()
+    for payload in payloads:
+        outputs = payload.get("outputs", {})
+        predictions_path = outputs.get("noise_predictions_csv")
+        if not predictions_path:
+            raise RuntimeError(f"Run missing noise_predictions_csv output: fold={payload.get('fold')} seed={payload.get('seed')}")
+        predictions = pd.read_csv(predictions_path)
+        thresholds = payload.get("method_specific_clean_val_thresholds", {})
+        fold = payload.get("fold")
+        seed = payload.get("seed")
+        for idx, row in updated[(updated["fold"] == fold) & (updated["seed"] == seed)].iterrows():
+            method = str(row["method"])
+            if method not in METHODS:
+                continue
+            metrics = _recompute_selective_row_metrics(
+                predictions,
+                env=row["noise_environment"],
+                snr=row["snr_db"],
+                method=method,
+                threshold_info=thresholds.get(method),
+            )
+            for key, value in metrics.items():
+                updated.at[idx, key] = value
+    return updated
+
+
 def summarize(
     metrics_json: list[str | Path],
     *,
     allow_smoke: bool = False,
     protocol: str = "screening",
+    recompute_selective_from_predictions: bool = False,
 ) -> tuple[
     pd.DataFrame,
     pd.DataFrame,
@@ -560,10 +727,10 @@ def summarize(
     frame = pd.DataFrame(rows)
     if frame.empty:
         raise RuntimeError("No method metrics found in supplied noise metrics JSON files.")
+    if recompute_selective_from_predictions:
+        frame = recompute_selective_metrics_from_predictions(frame, payloads)
     if "augrc" not in frame.columns:
-        frame["augrc"] = frame.get("aurc", np.nan)
-    elif "aurc" in frame.columns:
-        frame["augrc"] = frame["augrc"].fillna(frame["aurc"])
+        frame["augrc"] = np.nan
     grouped = []
     for keys, group in frame.groupby(["noise_environment", "snr_db", "method"], dropna=False):
         env, snr, method = keys
@@ -649,6 +816,12 @@ def summarize(
             provenance_paths.append(path)
         cross_seed = build_cross_seed_draw_audit(provenance_paths, expected_seeds=expected_seeds)
         protocol_info["cross_seed_noise_draw_audit_ok"] = True
+    protocol_info["selective_metrics_recomputed_from_prediction_csv"] = bool(recompute_selective_from_predictions)
+    protocol_info["augrc_definition"] = (
+        "AUGRC integrates generalized risk over coverage; generalized risk is "
+        "sum(losses among accepted samples) / total_sample_count."
+    )
+    protocol_info["augrc_source"] = "Official fd-shifts RiskCoverageStats generalized risk definition, stored unscaled in 0..1 units."
     return (
         pd.DataFrame(grouped),
         pd.DataFrame(provenance),
@@ -670,6 +843,11 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--file_prefix", default="", help="Prefix for --out_dir output mode, e.g. final.")
     ap.add_argument("--protocol", choices=("screening", "final"), default="screening")
     ap.add_argument("--allow_smoke", action="store_true", help="Allow one fold-seed full-grid pre-screening smoke summary.")
+    ap.add_argument(
+        "--recompute_selective_from_predictions",
+        action="store_true",
+        help="Recompute AURC/AUGRC/risk-at-coverage from existing noise_predictions.csv instead of trusting JSON rows.",
+    )
     return ap.parse_args()
 
 
@@ -679,6 +857,7 @@ def main() -> None:
         args.metrics_json,
         allow_smoke=args.allow_smoke,
         protocol=args.protocol,
+        recompute_selective_from_predictions=args.recompute_selective_from_predictions,
     )
     per_class = per_class_summary_from_confusion(confusion)
     selective = selective_summary_from_summary(summary)

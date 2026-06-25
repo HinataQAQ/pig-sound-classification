@@ -220,18 +220,41 @@ def aurc_score(y_true: np.ndarray, y_pred: np.ndarray, confidence: np.ndarray) -
 
 
 def generalized_risk_coverage_auc(losses: np.ndarray, confidence: np.ndarray) -> float:
-    """Area under generalized risk-coverage using arbitrary per-sample losses."""
+    """Area under fd-shifts-style generalized risk-coverage.
+
+    Generalized risk divides the residual sum among accepted samples by the
+    total sample count, not by the accepted count. This keeps AUGRC distinct
+    from selective risk/AURC even for binary losses. The project stores the
+    unscaled 0..1 area; fd-shifts multiplies the same area by 1000 for display.
+    """
     losses = np.asarray(losses, dtype=np.float64)
     confidence = np.asarray(confidence, dtype=np.float64)
     if len(losses) == 0:
         return 0.0
     if len(losses) != len(confidence):
         raise ValueError("losses and confidence must have the same length")
-    order = np.argsort(-confidence)
+    if not np.all(np.isfinite(losses)) or not np.all(np.isfinite(confidence)):
+        raise ValueError("losses and confidence must be finite")
+
+    n = float(len(losses))
+    order = np.argsort(confidence)
     ordered_losses = losses[order]
-    coverage = np.arange(1, len(losses) + 1, dtype=np.float64) / float(len(losses))
-    generalized_risk = np.cumsum(ordered_losses) / np.arange(1, len(losses) + 1, dtype=np.float64)
-    return float(np.trapezoid(generalized_risk, coverage))
+    ordered_confidence = confidence[order]
+    remaining_loss = float(np.sum(ordered_losses))
+    accepted_count = len(losses)
+    coverages = [1.0]
+    generalized_risks = [remaining_loss / n]
+    for idx, (loss, conf) in enumerate(zip(ordered_losses, ordered_confidence, strict=True)):
+        remaining_loss -= float(loss)
+        accepted_count -= 1
+        next_confidence = ordered_confidence[idx + 1] if idx + 1 < len(ordered_confidence) else None
+        if next_confidence is None or next_confidence != conf:
+            coverages.append(accepted_count / n)
+            generalized_risks.append(remaining_loss / n)
+    if coverages[-1] != 0.0:
+        coverages.append(0.0)
+        generalized_risks.append(0.0)
+    return float(-np.trapezoid(np.asarray(generalized_risks), np.asarray(coverages)))
 
 
 def risk_at_coverages(

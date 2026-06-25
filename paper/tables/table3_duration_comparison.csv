@@ -1,0 +1,4 @@
+﻿duration,model,n,mean_macro_f1,std_macro_f1,min_macro_f1,max_macro_f1,paired_note
+2 s,logmel_dur2,25,0.9472,0.0168,0.9213,0.9821,"2 s - 1 s mean delta=0.0246, Wilcoxon p=0.000162"
+3 s,logmel_dur3,15,0.9434,0.0223,0.8912,0.9702,
+1 s,logmel,25,0.9226,0.0145,0.8919,0.9462,

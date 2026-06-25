@@ -1,0 +1,4 @@
+﻿model,n,mean_macro_f1,std_macro_f1,min_macro_f1,max_macro_f1,mean_aux_f1
+logmel_dur2_hier_w10,25,0.9515,0.016,0.9279,0.9881,0.8098
+logmel_dur2_hier_w05,25,0.951,0.0124,0.9217,0.9762,0.7824
+logmel_dur2_hier_w02,25,0.9505,0.0132,0.9143,0.9702,0.7867
