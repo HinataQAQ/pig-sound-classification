@@ -1,0 +1,142 @@
+# Prototype Noise Robustness Protocol
+
+This protocol evaluates the exact hierarchical acoustic prototype pipeline under
+simulated DEMAND noise without changing the clean model, prototypes, calibration,
+or rejection thresholds.
+
+## Scope
+
+Current debug scope:
+
+- fold: 0
+- seed: 3407
+- checkpoint family: hierarchical, lambda 0.5
+- feature backend: `training_exact`
+- noise source: DEMAND
+- debug environment: `DWASHING`
+- debug SNRs: 20 dB and 10 dB
+- protocol: zero-shot frozen
+
+The debug run is a single fold-seed result. It is not a paper main result and it
+does not start the 5 folds x 3 seeds screening protocol.
+
+## Frozen Zero-Shot Rule
+
+The noisy evaluation reuses the clean artifacts:
+
+- clean checkpoint
+- train-only clean prototypes
+- validation-only clean calibration
+- frozen rejection thresholds
+- frozen fusion parameters
+
+No noisy validation recalibration is allowed. Test results are evaluation only.
+
+All noise robustness outputs must record:
+
+- `simulated_noise=true`
+- `noise_protocol=zero_shot_frozen`
+- `real_farm_external_validation=false`
+- `feature_backend=training_exact`
+- `run_scope=fold_seed` for a single run
+- `paper_main_result=false` for a single run
+
+## Clean Equivalence Gate
+
+Before adding noise, the evaluator must reproduce the clean exact Softmax test
+result for the same fold-seed:
+
+- same sample count
+- normalized path alignment
+- `y_true` match
+- raw Softmax `y_pred` match
+- raw Softmax Macro-F1 absolute difference <= 1e-6
+
+If this gate fails, noisy evaluation must stop.
+
+## Mixing Definition
+
+For every test sample:
+
+1. Load the clean waveform with the same center crop / zero padding policy used
+   by the training feature path.
+2. Compute clean RMS over the original non-padding valid region only.
+3. Select a deterministic DEMAND noise segment.
+4. Scale noise to the target active-region SNR.
+5. Add scaled noise across the full 2-second waveform.
+6. Apply one global scale only if needed to avoid clipping.
+7. Extract the exact training Log-Mel feature from the mixed waveform.
+
+The same mixed waveform, feature, embedding, and model forward pass are reused
+for raw Softmax, main prototype, hierarchical prototype, and fused predictions.
+The fused result is supplementary.
+
+## Deterministic Noise Selection
+
+Noise offset selection uses SHA256, not Python's process-randomized `hash`.
+
+The key includes:
+
+- fold
+- seed
+- normalized clean path
+- clean MD5
+- noise environment
+- noise file SHA256
+- target SNR
+- global noise seed
+
+## Per-Sample Provenance
+
+Each generated condition records:
+
+- `clean_path`
+- `clean_md5`
+- `original_valid_samples`
+- `noise_dataset`
+- `noise_environment`
+- `noise_file`
+- `noise_sha256`
+- `selected_channel`
+- `noise_offset`
+- `noise_seed`
+- `target_snr_db`
+- `clean_active_rms`
+- `noise_active_rms_before_gain`
+- `gain`
+- `achieved_active_snr_db`
+- `achieved_full_window_snr_db`
+- `peak_before_scale`
+- `final_global_scale`
+- `clipping_detected`
+
+Samples fail if the clean or noise active-region RMS is below epsilon.
+
+## Primary SNR Grid
+
+The planned screening grid is:
+
+- clean
+- 20 dB
+- 10 dB
+- 0 dB
+
+The first debug run uses only 20 dB and 10 dB. It must not run -5 dB and must not
+start the full 15-run screening set.
+
+## Reporting
+
+Report raw Softmax, main prototype, hierarchical prototype, and fused metrics by
+condition:
+
+- Top-1 accuracy
+- Macro-F1
+- Top-2 accuracy
+- ECE
+- Brier score
+- NLL
+- coverage and selective risk
+- degradation versus clean Macro-F1
+
+Paper language must call these results simulated noise robustness. They are not
+real-farm external validation.

@@ -1,346 +1,180 @@
 {
   "status": "completed",
-  "task": "lambda_0_5_exact_prototype_cv5_final_25_run",
-  "branch": "prototype-cv5-final-w05",
-  "base_screening_branch": "prototype-cv5-screening-w05",
-  "base_screening_commit": "e930fe1cc3bae9e20e17e7f2766a12231b221fe7",
-  "merged_prototype_pipeline_commit": "9ee233c04ef377a6acbaeaf233da7137f2add2d4",
+  "task": "demand_noise_robustness_1x1_debug",
+  "approval": {
+    "latest_user_attachment_approved": true,
+    "note": "handoff/GPT_TO_CODEX.md still contained stale APPROVED:false and should be reconciled before the next stage."
+  },
+  "branch": "codex/demand-noise-debug",
+  "base_commit": "3f4693975ed22a2dec8eb343c3207b2c31269f01",
   "final_commit_sha": "pending_at_handoff_write; see pushed branch HEAD/final Codex response",
   "scope": {
+    "noise_source": "DEMAND",
+    "fold": 0,
+    "seed": 3407,
     "lambda": 0.5,
-    "folds": [
-      0,
-      1,
-      2,
-      3,
-      4
-    ],
-    "seeds": [
-      42,
-      123,
-      777,
-      2024,
-      3407
-    ],
-    "new_seeds_run_this_round": [
-      123,
-      777
-    ],
-    "new_runs": 10,
-    "total_runs": 25,
     "feature_backend": "training_exact",
-    "selection_method": "hierarchical",
-    "target_coverage": 0.95,
+    "noise_protocol": "zero_shot_frozen",
+    "noise_environments_debugged": [
+      "DWASHING"
+    ],
+    "snr_db_debugged": [
+      20.0,
+      10.0
+    ],
+    "full_15_run_screening_started": false,
     "lambda_1_started": false,
-    "noise_experiment_started": false,
-    "unknown_or_open_set_started": false,
-    "existing_15_rerun": false
+    "zero_db_started": false,
+    "real_farm_external_validation": false
   },
-  "aggregate_provenance": {
-    "run_scope": "aggregate",
+  "selected_demand_environments": {
+    "DWASHING": "steady indoor/mechanical, domestic washing machine",
+    "TBUS": "engine/transport machinery, public transit bus",
+    "STRAFFIC": "mixed environmental, busy traffic intersection"
+  },
+  "provenance": {
+    "dataset_name": "DEMAND",
+    "doi": "10.5281/zenodo.1227121",
+    "zenodo_record": 1227121,
+    "zenodo_record_url": "https://zenodo.org/records/1227121",
+    "download_date_utc": "2026-06-25",
+    "displayed_license_metadata": {
+      "id": "cc-by-4.0"
+    },
+    "license_note": "Zenodo metadata currently reports CC-BY-4.0, while DEMAND.pdf text states Creative Commons Attribution-ShareAlike 3.0 Unported.",
+    "selected_channel": 1,
+    "channel_policy": "Use ch01.wav for each selected DEMAND environment; synchronized channels are not treated as independent recordings."
+  },
+  "clean_equivalence": {
+    "ok": true,
+    "sample_count": 168,
+    "path_match_count": 168,
+    "y_true_match_count": 168,
+    "raw_softmax_y_pred_match_count": 168,
+    "reference_macro_f1": 0.946360153256705,
+    "reproduced_macro_f1": 0.946360153256705,
+    "macro_f1_abs_diff": 0.0,
+    "macro_f1_tolerance": 1e-6
+  },
+  "debug_metrics": {
+    "clean": {
+      "raw_softmax": {
+        "macro_f1": 0.946360153256705,
+        "top1_acc": 0.9464285714285714,
+        "top2_acc": 1.0,
+        "ece": 0.028921615509759826
+      },
+      "prototype": {
+        "macro_f1": 0.946360153256705,
+        "top1_acc": 0.9464285714285714,
+        "top2_acc": 1.0,
+        "ece": 0.035535612986201344
+      },
+      "hierarchical": {
+        "macro_f1": 0.9522727272727273,
+        "top1_acc": 0.9523809523809523,
+        "top2_acc": 1.0,
+        "ece": 0.034155312393392846
+      }
+    },
+    "DWASHING_20dB": {
+      "raw_softmax": {
+        "macro_f1": 0.6603174603174603,
+        "top1_acc": 0.7142857142857143,
+        "top2_acc": 0.8333333333333334,
+        "ece": 0.24691136163615046
+      },
+      "prototype": {
+        "macro_f1": 0.6932588075880759,
+        "top1_acc": 0.7321428571428571,
+        "top2_acc": 0.7976190476190477,
+        "ece": 0.2274956979921886
+      },
+      "hierarchical": {
+        "macro_f1": 0.6881914893617022,
+        "top1_acc": 0.7321428571428571,
+        "top2_acc": 0.8035714285714286,
+        "ece": 0.2345827211226736
+      }
+    },
+    "DWASHING_10dB": {
+      "raw_softmax": {
+        "macro_f1": 0.5994697564807542,
+        "top1_acc": 0.6666666666666666,
+        "top2_acc": 0.8095238095238095,
+        "ece": 0.28984590335970833
+      },
+      "prototype": {
+        "macro_f1": 0.61875,
+        "top1_acc": 0.6904761904761905,
+        "top2_acc": 0.7559523809523809,
+        "ece": 0.26642955839633947
+      },
+      "hierarchical": {
+        "macro_f1": 0.6194638694638694,
+        "top1_acc": 0.6904761904761905,
+        "top2_acc": 0.7559523809523809,
+        "ece": 0.264579149938765
+      }
+    }
+  },
+  "snr_audit": {
+    "snr_error_abs_max": 4.6514175444656303e-7,
+    "snr_error_mean": 2.567331231204778e-9,
+    "DWASHING_20dB_active_error_mean": -1.045848e-8,
+    "DWASHING_20dB_active_error_abs_max": 4.561202e-7,
+    "DWASHING_10dB_active_error_mean": 1.559315e-8,
+    "DWASHING_10dB_active_error_abs_max": 4.651418e-7
+  },
+  "qualification": {
+    "feature_pipeline_equivalent": true,
+    "input_role": "frozen_test",
+    "run_scope": "fold_seed",
+    "single_fold_debug": true,
+    "eligible_for_cv_aggregation": true,
+    "paper_candidate_result": false,
+    "paper_main_result": false,
     "screening_result": false,
-    "final_25_run_result": true,
-    "paper_candidate_result": true,
-    "paper_main_result": true,
-    "n_runs": 25,
-    "folds": [
-      0,
-      1,
-      2,
-      3,
-      4
+    "final_25_run_result": false,
+    "manifest_sha_verified": true,
+    "unsafe_allow_checkpoint_sha_mismatch": false,
+    "simulated_noise": true,
+    "noise_protocol": "zero_shot_frozen",
+    "real_farm_external_validation": false,
+    "test_parameter_selection": false
+  },
+  "leakage_audit": {
+    "ok": true,
+    "counts": {
+      "train": 1174,
+      "val": 120,
+      "test": 168
+    },
+    "columns_checked": [
+      "path",
+      "source_id",
+      "md5"
     ],
-    "seeds": [
-      42,
-      123,
-      777,
-      2024,
-      3407
-    ],
-    "lambda": 0.5
-  },
-  "method_summary": {
-    "raw_softmax": {
-      "n": 25,
-      "mean_macro_f1": 0.95105,
-      "std_macro_f1": 0.012393,
-      "min_macro_f1": 0.92172,
-      "max_macro_f1": 0.976177,
-      "mean_ece": 0.030497,
-      "mean_brier": 0.075434,
-      "mean_nll": 0.126036
-    },
-    "calibrated_softmax": {
-      "n": 25,
-      "mean_macro_f1": 0.95105,
-      "std_macro_f1": 0.012393,
-      "min_macro_f1": 0.92172,
-      "max_macro_f1": 0.976177,
-      "mean_ece": 0.027336,
-      "mean_brier": 0.075121,
-      "mean_nll": 0.125565
-    },
-    "prototype": {
-      "n": 25,
-      "mean_macro_f1": 0.951852,
-      "std_macro_f1": 0.013104,
-      "min_macro_f1": 0.922608,
-      "max_macro_f1": 0.976177,
-      "mean_ece": 0.026173,
-      "mean_brier": 0.070642,
-      "mean_nll": 0.117056
-    },
-    "hierarchical": {
-      "n": 25,
-      "mean_macro_f1": 0.953986,
-      "std_macro_f1": 0.012004,
-      "min_macro_f1": 0.934291,
-      "max_macro_f1": 0.976177,
-      "mean_ece": 0.030626,
-      "mean_brier": 0.072452,
-      "mean_nll": 0.127334
-    },
-    "fused": {
-      "n": 25,
-      "mean_macro_f1": 0.953486,
-      "std_macro_f1": 0.010343,
-      "min_macro_f1": 0.934291,
-      "max_macro_f1": 0.970234,
-      "mean_ece": 0.026629,
-      "mean_brier": 0.072423,
-      "mean_nll": 0.121151
-    }
-  },
-  "paired_statistics": {
-    "hierarchical_minus_raw_softmax": {
-      "n": 25,
-      "mean_delta": 0.002937,
-      "std_delta": 0.010336,
-      "bootstrap_ci95_low": -0.000478,
-      "bootstrap_ci95_high": 0.007294,
-      "wilcoxon_p": 0.058253,
-      "wins": 13,
-      "ties": 8,
-      "losses": 4
-    },
-    "prototype_minus_raw_softmax": {
-      "n": 25,
-      "mean_delta": 0.000803,
-      "std_delta": 0.008611,
-      "bootstrap_ci95_low": -0.00231,
-      "bootstrap_ci95_high": 0.004431,
-      "wilcoxon_p": 0.571243,
-      "wins": 10,
-      "ties": 7,
-      "losses": 8
-    },
-    "hierarchical_minus_prototype": {
-      "n": 25,
-      "mean_delta": 0.002134,
-      "std_delta": 0.00727,
-      "bootstrap_ci95_low": -0.000499,
-      "bootstrap_ci95_high": 0.004996,
-      "wilcoxon_p": 0.22133,
-      "wins": 8,
-      "ties": 12,
-      "losses": 5
-    }
-  },
-  "by_fold_delta": [
-    {
-      "fold": 0,
-      "hierarchical_minus_raw": -0.001169,
-      "hierarchical_minus_prototype": 2e-06,
-      "h_vs_raw_wins_ties_losses": "2/2/1",
-      "h_vs_prototype_wins_ties_losses": "1/3/1"
-    },
-    {
-      "fold": 1,
-      "hierarchical_minus_raw": 0.013335,
-      "hierarchical_minus_prototype": 0.009479,
-      "h_vs_raw_wins_ties_losses": "3/2/0",
-      "h_vs_prototype_wins_ties_losses": "4/0/1"
-    },
-    {
-      "fold": 2,
-      "hierarchical_minus_raw": 0.001204,
-      "hierarchical_minus_prototype": 0.001189,
-      "h_vs_raw_wins_ties_losses": "2/3/0",
-      "h_vs_prototype_wins_ties_losses": "1/4/0"
-    },
-    {
-      "fold": 3,
-      "hierarchical_minus_raw": 0.000107,
-      "hierarchical_minus_prototype": -0.001187,
-      "h_vs_raw_wins_ties_losses": "4/0/1",
-      "h_vs_prototype_wins_ties_losses": "1/2/2"
-    },
-    {
-      "fold": 4,
-      "hierarchical_minus_raw": 0.001205,
-      "hierarchical_minus_prototype": 0.001185,
-      "h_vs_raw_wins_ties_losses": "2/1/2",
-      "h_vs_prototype_wins_ties_losses": "1/3/1"
-    }
-  ],
-  "confusion_summary": {
-    "raw_softmax": {
-      "macro_f1_from_cm": 0.951188,
-      "feeding_f1": 0.901679,
-      "stress_f1": 0.903073,
-      "feeding_recall": 0.895238,
-      "stress_recall": 0.909524,
-      "feeding_to_stress": 110,
-      "stress_to_feeding": 95
-    },
-    "prototype": {
-      "macro_f1_from_cm": 0.9519,
-      "feeding_f1": 0.902885,
-      "stress_f1": 0.904717,
-      "feeding_recall": 0.894286,
-      "stress_recall": 0.913333,
-      "feeding_to_stress": 111,
-      "stress_to_feeding": 91
-    },
-    "hierarchical": {
-      "macro_f1_from_cm": 0.95403,
-      "feeding_f1": 0.906265,
-      "stress_f1": 0.909855,
-      "feeding_recall": 0.888571,
-      "stress_recall": 0.927619,
-      "feeding_to_stress": 117,
-      "stress_to_feeding": 76
-    }
-  },
-  "selective_risk_summary": {
-    "hierarchical_accept_global": {
-      "mean_coverage": 0.935952,
-      "std_coverage": 0.041464,
-      "mean_selective_risk": 0.024118,
-      "std_selective_risk": 0.01086,
-      "min_selective_risk": 0.006757,
-      "max_selective_risk": 0.048193
-    },
-    "hierarchical_accept_per_class": {
-      "mean_coverage": 0.939286,
-      "std_coverage": 0.036002,
-      "mean_selective_risk": 0.031446,
-      "std_selective_risk": 0.011742,
-      "min_selective_risk": 0.006849,
-      "max_selective_risk": 0.049383
-    }
-  },
-  "calibration_distribution": {
-    "softmax_temperature": {
-      "0.5": 4,
-      "0.75": 12,
-      "1.0": 9
-    },
-    "main_prototype_temperature": {
-      "0.03": 2,
-      "0.05": 4,
-      "0.07": 14,
-      "0.1": 5
-    },
-    "hierarchical_prototype_temperature": {
-      "0.03": 2,
-      "0.05": 9,
-      "0.07": 9,
-      "0.1": 4,
-      "0.2": 1
-    },
-    "hierarchy_penalty": {
-      "0.85": 1,
-      "1.0": 24
-    },
-    "fusion_alpha": {
-      "0.0": 3,
-      "0.25": 1,
-      "0.5": 1,
-      "0.75": 6,
-      "1.0": 14
-    },
-    "fusion_kind": {
-      "mixed": 8,
-      "pure_prototype": 3,
-      "pure_softmax": 14
-    },
-    "global_rejection_threshold_stats": {
-      "mean": 0.768498,
-      "std": 0.108303,
-      "min": 0.585346,
-      "max": 0.968976
-    },
-    "feeding_threshold_stats": {
-      "mean": 0.675239,
-      "std": 0.118631,
-      "min": 0.520709,
-      "max": 0.936589
-    },
-    "stress_vocal_threshold_stats": {
-      "mean": 0.71158,
-      "std": 0.110854,
-      "min": 0.548824,
-      "max": 0.967911
-    }
+    "overlaps": []
   },
   "outputs": {
-    "aggregate": [
-      "reports/prototype_cv5_exact_w05_final_runs.csv",
-      "reports/prototype_cv5_exact_w05_final_summary.csv",
-      "reports/prototype_cv5_exact_w05_final_paired_stats.csv",
-      "reports/prototype_cv5_exact_w05_final_confusion_summary.csv",
-      "reports/prototype_cv5_exact_w05_final_provenance.json"
-    ],
-    "additional_final_analyses": [
-      "reports/prototype_cv5_exact_w05_final_by_fold.csv",
-      "reports/prototype_cv5_exact_w05_final_calibration_distribution.csv",
-      "reports/prototype_cv5_exact_w05_final_selective_risk_summary.csv"
-    ],
-    "local_logs_not_committed": [
-      "reports/prototype_cv5_exact_w05_final_run10_stdout.log",
-      "reports/prototype_cv5_exact_w05_final_run10_stderr.log",
-      "reports/prototype_cv5_exact_w05_final_run10_retry1_stdout.log",
-      "reports/prototype_cv5_exact_w05_final_run10_retry1_stderr.log"
+    "noise_manifest": "data/noise_sources/demand/NOISE_SOURCE_MANIFEST.csv",
+    "demand_provenance": "data/noise_sources/demand/PROVENANCE.json",
+    "local_reviewed_template": "data/noise_sources/local_reviewed/PROVENANCE_TEMPLATE.csv",
+    "debug_dir": "reports/prototype_noise_demand_w05_fold0_seed3407_debug",
+    "noise_metrics": "reports/prototype_noise_demand_w05_fold0_seed3407_debug/noise_metrics.json",
+    "metrics_by_condition": "reports/prototype_noise_demand_w05_fold0_seed3407_debug/metrics_by_condition.csv",
+    "noise_sample_provenance": "reports/prototype_noise_demand_w05_fold0_seed3407_debug/noise_sample_provenance.csv",
+    "docs": [
+      "docs/NOISE_SOURCE_DECISION.md",
+      "docs/NOISE_ROBUSTNESS_PROTOCOL.md"
     ]
   },
-  "leakage_and_qualification": {
-    "softmax_reproduction_passed": "25/25",
-    "reference_path_match": "25/25",
-    "reference_y_true_match": "25/25",
-    "reference_y_pred_match": "25/25",
-    "train_val_test_path_overlap": 0,
-    "train_val_test_source_id_overlap": 0,
-    "train_val_test_md5_overlap": 0,
-    "manifest_sha_verified": "25/25",
-    "leakage_audit_ok": "25/25",
-    "eligible_for_cv_aggregation": "25/25",
-    "unsafe_allow_checkpoint_sha_mismatch": false,
-    "test_used_for_calibration_or_parameter_selection": false
-  },
-  "runtime": {
-    "python": "C:/py/anaconda3/envs/pigsound-gpu/python.exe",
-    "device_setting": "auto (screening-compatible default)",
-    "cuda_available_after_run": true,
-    "cuda_device_name": "NVIDIA GeForce RTX 5070 Ti",
-    "cpu_fallback_used": false,
-    "feature_backend_switched": false
-  },
   "paper_usability": {
-    "paper_candidate_result": true,
-    "paper_main_result": true,
-    "final_25_run_result": true,
-    "interpretation": "Hierarchical exact prototype has a positive mean Macro-F1 delta over raw Softmax, but Wilcoxon p=0.058253; do not claim statistical significance."
+    "usable_as_pipeline_debug": true,
+    "paper_main_result": false,
+    "real_farm_external_validation": false,
+    "recommendation": "Proceed to 5 folds x 3 seeds DEMAND screening only after explicit review approval."
   },
-  "blockers": [],
-  "notes": [
-    "A first background wrapper attempt invoked bare python.exe because of a PowerShell argument variable bug; it stopped before any experiment tool ran and created no fold0/seed123 output directory. Logs were preserved locally. The corrected retry completed all 10 runs.",
-    "Per-run NPZ artifacts, embeddings/caches, full test_predictions, checkpoints, and audio were not staged for Git."
-  ],
-  "questions_for_gpt": [
-    "How should the paper phrase the final 25-run positive but nonsignificant hierarchical-prototype gain over raw Softmax?",
-    "Should the final paper emphasize prototype interpretability and feeding/stress boundary behavior rather than statistical superiority?",
-    "Which aggregate tables should be copied into paper_results after scientific review?"
-  ],
-  "recommended_next_step": "Scientific review only. Do not start lambda=1.0, noise robustness, unknown/open-set, or paper writing without a new APPROVED:true handoff."
+  "blockers": []
 }

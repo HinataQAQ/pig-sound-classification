@@ -109,3 +109,40 @@
 - Leakage and qualification: 25/25 runs passed exact Softmax reproduction, reference path/y_true/y_pred matching, train/val/test path/source_id/MD5 disjointness, manifest SHA verification, leakage audit, and CV aggregation eligibility. No unsafe checkpoint SHA mismatch was used.
 - Outputs: final aggregate CSV/provenance files plus by-fold, calibration-distribution, and selective-risk summaries under `reports/prototype_cv5_exact_w05_final_*`.
 - Paper usability: final paper-main candidate aggregate, but the hierarchical gain over raw Softmax remains nonsignificant; do not claim significance.
+
+## 2026-06-25 - DEMAND simulated noise robustness 1x1 debug
+
+- Status: completed
+- Branch: `codex/demand-noise-debug`
+- Task: Prepared DEMAND noise provenance, implemented deterministic SNR mixing and
+  frozen exact prototype noise robustness evaluation, then ran the approved
+  fold0/seed3407 lambda 0.5 debug on `DWASHING` at 20 dB and 10 dB.
+- Scope: DEMAND only; no MUSAN, ESC-50, UrbanSound8K, lambda 1.0, 0 dB,
+  15-run screening, or real-farm external validation was started.
+- Noise source decision: selected `DWASHING`, `TBUS`, and `STRAFFIC` for the
+  planned protocol; debug used only `DWASHING`. Fixed channel policy is
+  `ch01.wav` / `selected_channel=1`, and synchronized DEMAND channels are not
+  treated as independent recordings.
+- Provenance: DOI `10.5281/zenodo.1227121`; Zenodo metadata observed
+  `cc-by-4.0`; DEMAND PDF text observed Creative Commons
+  Attribution-ShareAlike 3.0 Unported. Both are recorded.
+- Clean equivalence: passed with 168/168 path matches, 168/168 `y_true` matches,
+  168/168 raw Softmax `y_pred` matches, and Macro-F1
+  `0.946360153256705` exactly reproduced.
+- Debug Macro-F1: clean raw/prototype/hierarchical
+  `0.946360/0.946360/0.952273`; DWASHING 20 dB
+  `0.660317/0.693259/0.688191`; DWASHING 10 dB
+  `0.599470/0.618750/0.619464`.
+- SNR audit: max active-region SNR absolute error
+  `4.6514175444656303e-07` dB; full-window SNR differs by design because clean
+  RMS uses the valid non-padding region.
+- Leakage and qualification: train/val/test path, source_id, and md5
+  disjointness passed; `feature_backend=training_exact`,
+  `noise_protocol=zero_shot_frozen`, `real_farm_external_validation=false`,
+  `run_scope=fold_seed`, `paper_main_result=false`.
+- Outputs: DEMAND manifest/provenance, local reviewed provenance template,
+  two noise protocol docs, new noise robustness scripts/tests, and structured
+  debug CSV/JSON under `reports/prototype_noise_demand_w05_fold0_seed3407_debug`.
+  Downloaded ZIP/WAV/PDF/cache/audio assets were not committed.
+- Paper usability: pipeline/debug evidence only. Recommend 5 folds x 3 seeds
+  DEMAND screening after explicit review approval.

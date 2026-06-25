@@ -1,200 +1,214 @@
-# Codex to GPT Handoff
-
-## Task
-
-Run the approved lambda 0.5 exact hierarchical acoustic prototype final CV completion: add the missing seeds `123` and `777` for folds `0,1,2,3,4`, then aggregate all 25 fold-seed metrics.
+# Codex to GPT Handoff - DEMAND Noise Robustness Debug
 
 ## Status
 
-Completed. Stop here. Do not start lambda 1.0, noise robustness, unknown/open-set evaluation, or paper writing from this handoff.
+Completed the approved DEMAND noise data preparation, noise robustness code, and
+one fold x one seed debug run.
 
-## Branch and commits
+Latest explicit approval came from the user attachment with `APPROVED: true`.
+`handoff/GPT_TO_CODEX.md` still contained a stale `APPROVED: false`; this should
+be reconciled before starting any next stage.
 
-- Branch: `prototype-cv5-final-w05`
-- Created from: `prototype-cv5-screening-w05`
-- Screening commit: `e930fe1cc3bae9e20e17e7f2766a12231b221fe7`
-- Merged prototype pipeline commit: `9ee233c04ef377a6acbaeaf233da7137f2add2d4`
-- Final commit SHA: pending at handoff write time; use pushed branch HEAD / Codex final response.
+## Branch
 
-## Scope
+- Branch: `codex/demand-noise-debug`
+- Base commit before this work: `3f4693975ed22a2dec8eb343c3207b2c31269f01`
+- Final commit SHA: pending at handoff write; see pushed branch HEAD/final Codex
+  response
 
-- lambda: `0.5`
-- folds: `0,1,2,3,4`
-- seeds: `42,123,777,2024,3407`
-- new runs this round: `10` (`123`, `777` for each fold)
-- total aggregate runs: `25`
-- feature backend: `training_exact`
-- selection method: `hierarchical`
-- target coverage: `0.95`
-- existing 15 runs rerun: no
-- lambda 1.0 / noise / unknown-open-set started: no
+## Scope Completed
+
+- DEMAND only as the public simulated noise source.
+- No MUSAN, ESC-50, or UrbanSound8K download.
+- No local reviewed farm noise promoted to paper-facing use.
+- No audio files, ZIP files, DEMAND PDF, cache files, checkpoints, NPZ bundles,
+  or embeddings committed.
+- Debug only: fold `0`, seed `3407`, lambda `0.5`, DEMAND `DWASHING`, SNR
+  `20` and `10` dB.
+- No 0 dB run.
+- No 5 folds x 3 seeds screening run.
+- No lambda 1.0 run.
+- No model, clean checkpoint, clean prototype, or clean calibration update.
+
+## Selected DEMAND Noise Sources
+
+Selected environment families for the planned protocol:
+
+- `DWASHING`: steady indoor/mechanical, domestic washing machine.
+- `TBUS`: engine/transport machinery, public transit bus.
+- `STRAFFIC`: mixed environmental, busy traffic intersection.
+
+Debug run used only `DWASHING`.
+
+Channel policy:
+
+- Fixed selected channel: `ch01.wav`
+- Manifest field: `selected_channel=1`
+- DEMAND synchronized channels are not treated as independent recordings.
+- Recording identity collapses to `DEMAND:<environment>`.
+
+License/provenance:
+
+- DOI: `10.5281/zenodo.1227121`
+- Zenodo record: `https://zenodo.org/records/1227121`
+- Zenodo metadata observed: `cc-by-4.0`
+- DEMAND PDF text observed: Creative Commons Attribution-ShareAlike 3.0
+  Unported
+- Both observations are recorded in `data/noise_sources/demand/PROVENANCE.json`.
 
 ## Commands
 
-Environment:
+Environment setup:
 
 ```powershell
-$py = "C:\py\anaconda3\envs\pigsound-gpu\python.exe"
-$env:PYTHONNOUSERSITE = "1"
-$env:NUMBA_CACHE_DIR = (Join-Path (Get-Location) ".numba_cache")
+conda activate pigsound-gpu
+cd C:\py\pigsound\pig-sound-classification
+$env:PYTHONNOUSERSITE="1"
+$env:NUMBA_CACHE_DIR=(Join-Path (Get-Location) ".numba_cache")
 ```
 
-For each new fold-seed, the executed sequence was:
+DEMAND provenance/materialization:
 
 ```powershell
-& $py tools\eval_hier_exact_softmax_reproduction.py --test_manifest <test.csv> --ckpt <w05 checkpoint> --summary_json <summary.json> --reference_pred_csv <reference test_pred.csv> --out_dir reports\prototype_cv5_exact_w05_fold{fold}_seed{seed} --fold <fold> --seed <seed> --expected_hier_aux_weight 0.5 --expected_macro_f1 <summary.test_macro_f1> --expected_test_rows 0 --batch_size 64 --num_workers 0 --numba_cache_dir .numba_cache
-& $py tools\build_hier_acoustic_prototypes.py --train_manifest <train.csv> --val_manifest <val.csv> --test_manifest <test.csv> --ckpt <w05 checkpoint> --summary_json <summary.json> --out_dir reports\prototype_cv5_exact_w05_fold{fold}_seed{seed} --fold <fold> --seed <seed> --expected_hier_aux_weight 0.5 --expected_dur_s 2.0 --expected_feature_mode logmel --feature_backend training_exact --batch_size 64 --num_workers 0
-& $py tools\calibrate_prototype_predictor.py --prototype_bundle reports\prototype_cv5_exact_w05_fold{fold}_seed{seed}\artifacts\prototype_bundle.npz --val_manifest <val.csv> --ckpt <w05 checkpoint> --out_dir reports\prototype_cv5_exact_w05_fold{fold}_seed{seed} --feature_backend auto --selection_method hierarchical --target_coverage 0.95 --prototype_temperature_grid 0.03,0.05,0.07,0.1,0.2,0.5,1.0 --softmax_temperature_grid 0.5,0.75,1.0,1.5,2.0 --fusion_weight_grid 0.0,0.25,0.5,0.75,1.0 --hierarchy_penalty_grid 0.5,0.7,0.85,1.0 --batch_size 64 --num_workers 0
-& $py tools\predict_hier_acoustic_prototype.py --prototype_bundle reports\prototype_cv5_exact_w05_fold{fold}_seed{seed}\artifacts\prototype_bundle.npz --calibration_json reports\prototype_cv5_exact_w05_fold{fold}_seed{seed}\calibration\calibration.json --test_manifest <test.csv> --ckpt <w05 checkpoint> --out_dir reports\prototype_cv5_exact_w05_fold{fold}_seed{seed} --feature_backend auto --batch_size 64 --num_workers 0
-& $py tools\eval_hier_acoustic_prototype.py --pred_csv reports\prototype_cv5_exact_w05_fold{fold}_seed{seed}\evaluation\test_predictions.csv --calibration_json reports\prototype_cv5_exact_w05_fold{fold}_seed{seed}\calibration\calibration.json --out_dir reports\prototype_cv5_exact_w05_fold{fold}_seed{seed}
+& C:\py\anaconda3\envs\pigsound-gpu\python.exe tools\audit_noise_assets.py --prepare_demand --out_dir data\noise_sources\demand
 ```
 
-Aggregate:
+Debug evaluation:
 
 ```powershell
-& $py tools\summarize_cv5_exact_prototype.py --metrics_json <25 metrics.json files> --expected_folds 0,1,2,3,4 --expected_seeds 42,123,777,2024,3407 --expected_lambda 0.5 --out_prefix reports\prototype_cv5_exact_w05
+& C:\py\anaconda3\envs\pigsound-gpu\python.exe tools\eval_prototype_noise_robustness.py `
+  --prototype_bundle reports\prototype_cv5_exact_w05_fold0_seed3407\artifacts\prototype_bundle.npz `
+  --calibration_json reports\prototype_cv5_exact_w05_fold0_seed3407\calibration\calibration.json `
+  --ckpt checkpoints\cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407.pt `
+  --test_manifest paper_results\manifests\manifests_pigvocal_4class_expanded_train_cv5_cap3x\fold0\test.csv `
+  --reference_pred_csv reports\cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407\test_pred.csv `
+  --noise_manifest data\noise_sources\demand\NOISE_SOURCE_MANIFEST.csv `
+  --noise_environments DWASHING `
+  --snr_db 20 10 `
+  --out_dir reports\prototype_noise_demand_w05_fold0_seed3407_debug `
+  --device auto `
+  --batch_size 32 `
+  --global_noise_seed 3407 `
+  --allow_overwrite
 ```
 
-## Aggregate provenance
+Summary:
 
-```json
-{
-  "run_scope": "aggregate",
-  "screening_result": false,
-  "final_25_run_result": true,
-  "paper_candidate_result": true,
-  "paper_main_result": true,
-  "n_runs": 25,
-  "folds": [
-    0,
-    1,
-    2,
-    3,
-    4
-  ],
-  "seeds": [
-    42,
-    123,
-    777,
-    2024,
-    3407
-  ],
-  "lambda": 0.5
-}
+```powershell
+& C:\py\anaconda3\envs\pigsound-gpu\python.exe tools\summarize_prototype_noise_robustness.py `
+  --metrics_json reports\prototype_noise_demand_w05_fold0_seed3407_debug\noise_metrics.json `
+  --out_prefix reports\prototype_noise_demand_w05_fold0_seed3407_debug\summary
 ```
 
-## Method summary
+## Clean Equivalence Gate
 
-| method | mean Macro-F1 | std Macro-F1 | mean ECE | mean Brier | mean NLL |
-|---|---:|---:|---:|---:|---:|
-| raw_softmax | 0.951050 | 0.012393 | 0.030497 | 0.075434 | 0.126036 |
-| calibrated_softmax | 0.951050 | 0.012393 | 0.027336 | 0.075121 | 0.125565 |
-| prototype | 0.951852 | 0.013104 | 0.026173 | 0.070642 | 0.117056 |
-| hierarchical | 0.953986 | 0.012004 | 0.030626 | 0.072452 | 0.127334 |
-| fused | 0.953486 | 0.010343 | 0.026629 | 0.072423 | 0.121151 |
+- Passed: yes
+- Sample count: `168`
+- Path alignment: `168/168`
+- `y_true` match: `168/168`
+- raw Softmax `y_pred` match: `168/168`
+- Reference Macro-F1: `0.946360153256705`
+- Reproduced Macro-F1: `0.946360153256705`
+- Absolute difference: `0.0`
+- Tolerance: `1e-6`
 
-## Paired statistics
+## Debug Metrics
 
-- hierarchical - raw_softmax: n=25, mean delta=0.002937, std=0.010336, CI95=[-0.000478, 0.007294], Wilcoxon p=0.058253, wins/ties/losses=13/8/4
-- hierarchical - prototype: n=25, mean delta=0.002134, std=0.007270, CI95=[-0.000499, 0.004996], Wilcoxon p=0.221330, wins/ties/losses=8/12/5
+| condition | method | Macro-F1 | Top-1 acc | Top-2 acc | ECE |
+|---|---|---:|---:|---:|---:|
+| clean | raw_softmax | 0.946360 | 0.946429 | 1.000000 | 0.028922 |
+| clean | prototype | 0.946360 | 0.946429 | 1.000000 | 0.035536 |
+| clean | hierarchical | 0.952273 | 0.952381 | 1.000000 | 0.034155 |
+| DWASHING_20dB | raw_softmax | 0.660317 | 0.714286 | 0.833333 | 0.246911 |
+| DWASHING_20dB | prototype | 0.693259 | 0.732143 | 0.797619 | 0.227496 |
+| DWASHING_20dB | hierarchical | 0.688191 | 0.732143 | 0.803571 | 0.234583 |
+| DWASHING_10dB | raw_softmax | 0.599470 | 0.666667 | 0.809524 | 0.289846 |
+| DWASHING_10dB | prototype | 0.618750 | 0.690476 | 0.755952 | 0.266430 |
+| DWASHING_10dB | hierarchical | 0.619464 | 0.690476 | 0.755952 | 0.264579 |
 
-Do not claim statistical significance for either comparison.
+Fused results equal raw Softmax in this debug because the clean calibration's
+selected fusion setting is pure Softmax for this fold-seed.
 
-## Fold-level deltas
+## Achieved SNR Audit
 
-| fold | hier - raw | hier - prototype | h/raw W/T/L | h/proto W/T/L |
-|---:|---:|---:|---:|---:|
-| 0 | -0.001169 | 0.000002 | 2/2/1 | 1/3/1 |
-| 1 | 0.013335 | 0.009479 | 3/2/0 | 4/0/1 |
-| 2 | 0.001204 | 0.001189 | 2/3/0 | 1/4/0 |
-| 3 | 0.000107 | -0.001187 | 4/0/1 | 1/2/2 |
-| 4 | 0.001205 | 0.001185 | 2/1/2 | 1/3/1 |
+- Max absolute active-region SNR error: `4.6514175444656303e-07` dB
+- Mean active-region SNR error: `2.567331231204778e-09` dB
+- DWASHING 20 dB: active error mean `-1.045848e-08`, max abs
+  `4.561202e-07`
+- DWASHING 10 dB: active error mean `1.559315e-08`, max abs
+  `4.651418e-07`
 
-Four of five folds have positive mean `hierarchical - raw_softmax`; fold0 is slightly negative on average.
+Full-window SNR differs by design because clean RMS is measured over the
+non-padding valid region while noise is added over the full 2-second waveform.
 
-## Feeding / stress boundary
+## Leakage and Qualification
 
-- raw Softmax: feeding F1 `0.901679`, stress F1 `0.903073`, feeding->stress `110`, stress->feeding `95`
-- prototype: feeding F1 `0.902885`, stress F1 `0.904717`, feeding->stress `111`, stress->feeding `91`
-- hierarchical: feeding F1 `0.906265`, stress F1 `0.909855`, feeding->stress `117`, stress->feeding `76`
-
-## Coverage / selective risk
-
-- accept_global: mean coverage `0.935952`, std coverage `0.041464`, mean selective risk `0.024118`, min/max selective risk `0.006757/0.048193`
-- accept_per_class: mean coverage `0.939286`, std coverage `0.036002`, mean selective risk `0.031446`, min/max selective risk `0.006849/0.049383`
-
-## Calibration distribution
-
-- softmax temperature: `{'0.5': 4, '0.75': 12, '1.0': 9}`
-- main prototype temperature: `{'0.03': 2, '0.05': 4, '0.07': 14, '0.1': 5}`
-- hierarchical prototype temperature: `{'0.03': 2, '0.05': 9, '0.07': 9, '0.1': 4, '0.2': 1}`
-- hierarchy penalty: `{'0.85': 1, '1.0': 24}`
-- fusion alpha: `{'0.0': 3, '0.25': 1, '0.5': 1, '0.75': 6, '1.0': 14}`
-- fusion_kind: `{'mixed': 8, 'pure_prototype': 3, 'pure_softmax': 14}`
-- global rejection threshold stats: `{'mean': 0.768498, 'std': 0.108303, 'min': 0.585346, 'max': 0.968976}`
-
-Full threshold distribution is in `reports/prototype_cv5_exact_w05_final_calibration_distribution.csv`.
-
-## Leakage and qualification
-
-- 25/25 exact Softmax reproduction runs passed.
-- 25/25 reference sample paths matched exactly.
-- 25/25 reference `y_true` matched exactly.
-- 25/25 reference `y_pred` matched exactly.
-- train/val/test path overlap: `0`.
-- train/val/test source_id overlap: `0`.
-- train/val/test MD5 overlap: `0`.
-- 25/25 used `feature_backend=training_exact`.
-- 25/25 used `input_role=frozen_test`.
-- 25/25 had `manifest_sha_verified=true`.
-- 25/25 had `leakage_audit_ok=true`.
-- 25/25 had `eligible_for_cv_aggregation=true`.
-- No unsafe checkpoint SHA mismatch flag was used.
-- No test-set calibration or parameter selection was performed.
+- train/val/test path/source_id/MD5 disjointness: passed
+- Leakage audit counts: train `1174`, val `120`, test `168`
+- Manifest SHA verification: passed
+- Feature backend: `training_exact`
+- Feature pipeline equivalent: `true`
+- Input role: `frozen_test`
+- Run scope: `fold_seed`
+- Single-fold debug: `true`
+- Eligible for later aggregation: `true`
+- Paper candidate result: `false`
+- Paper main result: `false`
+- Simulated noise: `true`
+- Noise protocol: `zero_shot_frozen`
+- Real farm external validation: `false`
+- Test parameter selection: `false`
 
 ## Outputs
 
-Aggregate files:
+Noise source metadata:
 
-- `reports/prototype_cv5_exact_w05_final_runs.csv`
-- `reports/prototype_cv5_exact_w05_final_summary.csv`
-- `reports/prototype_cv5_exact_w05_final_paired_stats.csv`
-- `reports/prototype_cv5_exact_w05_final_confusion_summary.csv`
-- `reports/prototype_cv5_exact_w05_final_provenance.json`
+- `data/noise_sources/demand/NOISE_SOURCE_MANIFEST.csv`
+- `data/noise_sources/demand/PROVENANCE.json`
+- `data/noise_sources/local_reviewed/PROVENANCE_TEMPLATE.csv`
 
-Additional final analyses:
+Debug structured outputs:
 
-- `reports/prototype_cv5_exact_w05_final_by_fold.csv`
-- `reports/prototype_cv5_exact_w05_final_calibration_distribution.csv`
-- `reports/prototype_cv5_exact_w05_final_selective_risk_summary.csv`
+- `reports/prototype_noise_demand_w05_fold0_seed3407_debug/clean_equivalence.json`
+- `reports/prototype_noise_demand_w05_fold0_seed3407_debug/leakage_audit.json`
+- `reports/prototype_noise_demand_w05_fold0_seed3407_debug/metrics_by_condition.csv`
+- `reports/prototype_noise_demand_w05_fold0_seed3407_debug/noise_metrics.json`
+- `reports/prototype_noise_demand_w05_fold0_seed3407_debug/noise_predictions.csv`
+- `reports/prototype_noise_demand_w05_fold0_seed3407_debug/noise_sample_provenance.csv`
+- `reports/prototype_noise_demand_w05_fold0_seed3407_debug/summary_summary.csv`
+- `reports/prototype_noise_demand_w05_fold0_seed3407_debug/summary_provenance.csv`
 
-Do not commit or publish checkpoints, audio, NPZ prototype bundles, embedding arrays, caches, full `test_predictions.csv`, or atlas image collections as paper artifacts.
+Docs:
 
-## Runtime and notes
+- `docs/NOISE_SOURCE_DECISION.md`
+- `docs/NOISE_ROBUSTNESS_PROTOCOL.md`
 
-- Device setting: `auto`, matching the screening-stage runner style.
-- CUDA was available after the run: `NVIDIA GeForce RTX 5070 Ti`.
-- CPU fallback used: no.
-- Feature backend switch: no.
-- Initial launcher note: one background wrapper attempt invoked bare Python before any experiment tool ran; no output directory was created. Logs were preserved locally as `reports/prototype_cv5_exact_w05_final_run10_stdout.log` and stderr companion. The corrected retry completed all 10 runs.
+## Verification
 
-## Paper usability
+Ran:
 
-- `paper_candidate_result=true`
-- `paper_main_result=true`
-- `final_25_run_result=true`
-- Main interpretation: hierarchical exact prototype has a positive mean Macro-F1 delta over raw Softmax, but Wilcoxon p is `0.058253`; do not describe this as statistically significant.
+- all new script `--help` commands
+- `python -m py_compile` for new scripts and test
+- `python -m unittest tests.test_noise_robustness_pipeline -v`
+- `python -m unittest tests.test_prototype_pipeline_core -v`
+- `git diff --check`
+
+See final Codex response for exact pass counts after commit.
+
+## Paper Usability
+
+This debug run is usable as pipeline/debug evidence only. It is not a paper main
+result and not external farm validation. The result suggests a meaningful noise
+stress test is now technically ready for 5 folds x 3 seeds screening, but the
+screening should only start after explicit review approval.
 
 ## Blockers
 
-None.
+None for the 1x1 DEMAND debug. Remaining judgment items:
 
-## Questions requiring scientific judgment
-
-1. How should the paper phrase the positive but nonsignificant hierarchical-prototype gain over raw Softmax?
-2. Should the final paper emphasize prototype interpretability and feeding/stress boundary behavior rather than statistical superiority?
-3. Which final aggregate tables should be copied into `paper_results/` after review?
-
-## Recommended next step
-
-Scientific review only. Do not start lambda 1.0, noise robustness, unknown/open-set work, or paper writing without a new `APPROVED: true` handoff.
+1. Confirm whether DEMAND license wording in the paper should cite both Zenodo
+   metadata and DEMAND PDF language.
+2. Confirm whether to run the planned 5 folds x 3 seeds screening over
+   `DWASHING`, `TBUS`, and `STRAFFIC` at clean/20/10/0 dB.
+3. Confirm whether local reviewed farm noises should remain internal until
+   provenance fields are complete.
