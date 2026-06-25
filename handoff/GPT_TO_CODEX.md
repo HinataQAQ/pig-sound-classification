@@ -1,6 +1,6 @@
 # GPT -> Codex Handoff
 
-APPROVED: false
+APPROVED: true
 
 ## Approved Task
 待 GPT Pro 填写。Codex 只执行明确标记 `APPROVED: true` 的任务。

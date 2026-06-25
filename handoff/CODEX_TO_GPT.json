@@ -1,166 +1,178 @@
 {
   "status": "completed",
-  "task": "demand_noise_screening_w05",
+  "task": "demand_noise_final_w05",
   "approval": {
-    "current_user_attachment_approved": true,
-    "stale_gpt_to_codex_file_still_says_approved_false": true,
-    "action_taken": "Followed the current explicit APPROVED:true attachment."
+    "current_user_approved": true,
+    "gpt_to_codex_updated_to_approved_true": true
   },
-  "branch": "codex/demand-noise-screening-w05",
-  "base_branch": "codex/demand-noise-prescreen-fix",
+  "branch": "codex/demand-noise-final-w05",
+  "base_branch": "codex/demand-noise-screening-w05",
+  "base_commit_sha": "45af0dc4ecb40182461f923d5206baead580af1d",
   "final_commit_sha": "pending_at_handoff_write; see pushed branch HEAD/final Codex response",
   "scope": {
     "lambda": 0.5,
     "folds": [0, 1, 2, 3, 4],
-    "seeds": [42, 2024, 3407],
-    "n_fold_seed_runs": 15,
+    "seeds": [42, 123, 777, 2024, 3407],
+    "newly_run_seeds": [123, 777],
+    "reused_screening_seeds": [42, 2024, 3407],
+    "n_fold_seed_runs": 25,
     "feature_backend": "training_exact",
     "noise_source": "DEMAND",
     "noise_environments": ["DWASHING", "TBUS", "STRAFFIC"],
     "target_active_snr_db": [20.0, 10.0, 0.0],
     "global_noise_seed": 3407,
     "noise_repeat": 0,
+    "selected_channel": 1,
     "offset_key_version": "demand_noise_offset_v2",
-    "run_stage": "screening",
     "noise_protocol": "zero_shot_frozen",
+    "real_farm_external_validation": false,
     "lambda_1_started": false,
     "noise_aware_recalibration_started": false,
     "noise_augmentation_training_started": false,
-    "local_unlicensed_noise_started": false,
-    "real_farm_external_validation_started": false
+    "denoising_training_started": false,
+    "local_reviewed_noise_started": false,
+    "open_set_started": false,
+    "new_noise_environment_started": false,
+    "new_snr_started": false,
+    "new_noise_repeat_started": false
   },
-  "pre_run_patch": {
-    "run_stage_arg_added": true,
-    "smoke_run_scope": "fold_seed_smoke",
-    "screening_run_scope": "fold_seed",
-    "screening_single_fold_debug": false,
-    "noise_metrics_records_global_noise_seed": true,
-    "noise_metrics_records_noise_repeat": true,
-    "noise_metrics_records_offset_key_version": true,
-    "noise_provenance_policy_verified_key": true,
-    "strict_per_run_exact_grid_validation": true,
-    "strict_paired_n_15": true,
-    "cross_seed_draw_audit": true,
-    "moderate_extreme_all_noisy_strata": true,
-    "fold_cluster_paired_stats": true
+  "code_changes": {
+    "run_stage_final_added": true,
+    "single_final_run_paper_main_result": false,
+    "fixed_screening_protocol_5x3": true,
+    "fixed_final_protocol_5x5": true,
+    "strict_protocol_specific_paired_n": true,
+    "five_seed_cross_seed_draw_audit": true,
+    "augrc_added": true,
+    "historical_missing_augrc_backfilled_from_aurc": true,
+    "final_directory_outputs": true
   },
   "verification": {
-    "noise_script_help": true,
+    "help_commands_passed": [
+      "tools/audit_noise_assets.py --help",
+      "tools/eval_prototype_noise_robustness.py --help",
+      "tools/summarize_prototype_noise_robustness.py --help"
+    ],
     "py_compile": true,
-    "noise_unittest_count": 29,
+    "noise_unittest_count": 39,
     "prototype_core_unittest_count": 47,
-    "total_unittest_count": 76,
-    "git_diff_check": true
+    "total_unittest_count": 86,
+    "git_diff_check": true,
+    "aggregate_provenance_gate": true,
+    "cross_seed_draw_gate": true
   },
   "aggregate_provenance": {
     "run_scope": "aggregate",
-    "screening_result": true,
-    "final_25_run_result": false,
+    "screening_result": false,
+    "final_25_run_result": true,
     "paper_candidate_result": true,
-    "paper_main_result": false,
-    "n_fold_seed_runs": 15,
+    "paper_main_result": true,
+    "simulated_noise_main_result": true,
+    "n_fold_seed_runs": 25,
     "simulated_noise": true,
     "real_farm_external_validation": false,
     "cross_seed_noise_draw_audit_ok": true,
-    "cross_seed_noise_draw_audit_groups": 2520
+    "cross_seed_noise_draw_audit_groups": 2520,
+    "cross_seed_set": "42|123|777|2024|3407",
+    "source_run_stages": ["final", "screening"]
   },
   "macro_f1_summary": {
     "MODERATE_NOISE": {
-      "raw_softmax": {"mean": 0.6454417303, "std": 0.0273060901},
-      "prototype": {"mean": 0.6540766356, "std": 0.024861506},
-      "hierarchical": {"mean": 0.6525566504, "std": 0.0270550837},
-      "fused": {"mean": 0.649657564, "std": 0.0258266758}
+      "raw_softmax": {"mean": 0.647225, "std": 0.025426},
+      "prototype": {"mean": 0.653354, "std": 0.02332},
+      "hierarchical": {"mean": 0.652175, "std": 0.025686},
+      "fused": {"mean": 0.649915, "std": 0.024672}
     },
     "EXTREME_STRESS": {
-      "raw_softmax": {"mean": 0.5569395758, "std": 0.0296534905},
-      "prototype": {"mean": 0.5658329095, "std": 0.0258030058},
-      "hierarchical": {"mean": 0.5571578429, "std": 0.026775769},
-      "fused": {"mean": 0.5614219218, "std": 0.0266788702}
+      "raw_softmax": {"mean": 0.557393, "std": 0.029311},
+      "prototype": {"mean": 0.5624, "std": 0.028306},
+      "hierarchical": {"mean": 0.555623, "std": 0.028425},
+      "fused": {"mean": 0.560369, "std": 0.027277}
     },
     "ALL_NOISY": {
-      "raw_softmax": {"mean": 0.6159410122, "std": 0.0250810097},
-      "prototype": {"mean": 0.6246620603, "std": 0.0227446589},
-      "hierarchical": {"mean": 0.6207570479, "std": 0.0234492572},
-      "fused": {"mean": 0.6202456833, "std": 0.0229817996}
+      "raw_softmax": {"mean": 0.617281, "std": 0.022973},
+      "prototype": {"mean": 0.623036, "std": 0.021252},
+      "hierarchical": {"mean": 0.619991, "std": 0.022378},
+      "fused": {"mean": 0.620066, "std": 0.021477}
     }
   },
-  "paired_statistics": {
-    "MODERATE_NOISE": {
-      "prototype_minus_raw_softmax": {"mean_delta": 0.0086349053, "wilcoxon_p": 0.0023294397, "wins_ties_losses": "13/1/1"},
-      "hierarchical_minus_raw_softmax": {"mean_delta": 0.0071149201, "wilcoxon_p": 0.0124511719, "wins_ties_losses": "12/0/3"},
-      "hierarchical_minus_prototype": {"mean_delta": -0.0015199852, "wilcoxon_p": 0.1514282227, "wins_ties_losses": "5/0/10"}
+  "all_noisy_paired_statistics": {
+    "prototype_minus_raw_softmax": {
+      "n": 25,
+      "mean_delta": 0.005755,
+      "bootstrap_ci95": [0.001606, 0.010894],
+      "wilcoxon_p": 0.010511,
+      "wins_ties_losses": "18/0/7"
     },
-    "EXTREME_STRESS": {
-      "prototype_minus_raw_softmax": {"mean_delta": 0.0088933337, "wilcoxon_p": 0.3027954102, "wins_ties_losses": "7/0/8"},
-      "hierarchical_minus_raw_softmax": {"mean_delta": 0.000218267, "wilcoxon_p": 0.5994873047, "wins_ties_losses": "6/0/9"},
-      "hierarchical_minus_prototype": {"mean_delta": -0.0086750667, "wilcoxon_p": 0.0015258789, "wins_ties_losses": "2/0/13"}
+    "hierarchical_minus_raw_softmax": {
+      "n": 25,
+      "mean_delta": 0.00271,
+      "bootstrap_ci95": [-0.000999, 0.007085],
+      "wilcoxon_p": 0.312333,
+      "wins_ties_losses": "13/0/12"
     },
-    "ALL_NOISY": {
-      "prototype_minus_raw_softmax": {"mean_delta": 0.0087210481, "wilcoxon_p": 0.0026245117, "wins_ties_losses": "13/0/2"},
-      "hierarchical_minus_raw_softmax": {"mean_delta": 0.0048160358, "wilcoxon_p": 0.229309082, "wins_ties_losses": "9/0/6"},
-      "hierarchical_minus_prototype": {"mean_delta": -0.0039050123, "wilcoxon_p": 0.0001220703, "wins_ties_losses": "1/0/14"}
+    "hierarchical_minus_prototype": {
+      "n": 25,
+      "mean_delta": -0.003045,
+      "bootstrap_ci95": [-0.004581, -0.001639],
+      "wilcoxon_p": 0.000376,
+      "wins_ties_losses": "5/0/20"
     }
   },
   "all_noisy_class_f1_from_confusion": {
-    "raw_softmax": {"cough": 0.0876897133, "calm_grunt": 0.9922942207, "feeding": 0.8259385666, "stress_vocal": 0.5981413686},
-    "prototype": {"cough": 0.0985915493, "calm_grunt": 0.9857391304, "feeding": 0.8433086752, "stress_vocal": 0.6065076914},
-    "hierarchical": {"cough": 0.0963572268, "calm_grunt": 0.9875424689, "feeding": 0.8317628583, "stress_vocal": 0.6058863329}
+    "raw_softmax": {"cough": 0.086657, "calm_grunt": 0.988748, "feeding": 0.83227, "stress_vocal": 0.600279},
+    "prototype": {"cough": 0.097424, "calm_grunt": 0.979829, "feeding": 0.84156, "stress_vocal": 0.607251},
+    "hierarchical": {"cough": 0.095699, "calm_grunt": 0.981712, "feeding": 0.831944, "stress_vocal": 0.60711},
+    "fused": {"cough": 0.088961, "calm_grunt": 0.987355, "feeding": 0.838345, "stress_vocal": 0.602811}
   },
   "all_noisy_errors": {
-    "raw_softmax": {"feeding_to_stress": 1381, "stress_to_feeding": 350, "cough_to_calm_grunt": 20, "cough_to_feeding": 0, "cough_to_stress_vocal": 5390},
-    "prototype": {"feeding_to_stress": 1211, "stress_to_feeding": 350, "cough_to_calm_grunt": 75, "cough_to_feeding": 0, "cough_to_stress_vocal": 5301},
-    "hierarchical": {"feeding_to_stress": 1371, "stress_to_feeding": 281, "cough_to_calm_grunt": 63, "cough_to_feeding": 0, "cough_to_stress_vocal": 5320}
+    "raw_softmax": {"feeding_to_stress": 2168, "stress_to_feeding": 616, "cough_to_calm_grunt": 86, "cough_to_feeding": 1, "cough_to_stress_vocal": 8935},
+    "prototype": {"feeding_to_stress": 2006, "stress_to_feeding": 606, "cough_to_calm_grunt": 217, "cough_to_feeding": 1, "cough_to_stress_vocal": 8748},
+    "hierarchical": {"feeding_to_stress": 2240, "stress_to_feeding": 495, "cough_to_calm_grunt": 194, "cough_to_feeding": 1, "cough_to_stress_vocal": 8780},
+    "fused": {"feeding_to_stress": 2075, "stress_to_feeding": 613, "cough_to_calm_grunt": 107, "cough_to_feeding": 1, "cough_to_stress_vocal": 8902}
   },
   "all_noisy_uncertainty": {
-    "raw_softmax": {
-      "mean_aurc": 0.1798268246,
-      "risk_at_coverage_0_80": 0.3056241427,
-      "risk_at_coverage_0_90": 0.3049220273,
-      "risk_at_coverage_0_95": 0.3095833333,
-      "frozen_threshold_coverage": 0.9171957672,
-      "frozen_threshold_selective_risk": 0.3046870421
-    },
-    "prototype": {
-      "mean_aurc": 0.2080293912,
-      "risk_at_coverage_0_80": 0.3051303155,
-      "risk_at_coverage_0_90": 0.2997563353,
-      "risk_at_coverage_0_95": 0.302962963,
-      "frozen_threshold_coverage": 0.9218694885,
-      "frozen_threshold_selective_risk": 0.2991857798
-    },
-    "hierarchical": {
-      "mean_aurc": 0.21026091,
-      "risk_at_coverage_0_80": 0.3094101509,
-      "risk_at_coverage_0_90": 0.3042397661,
-      "risk_at_coverage_0_95": 0.3069444444,
-      "frozen_threshold_coverage": 0.9179012346,
-      "frozen_threshold_selective_risk": 0.3040171397
-    }
+    "raw_softmax": {"aurc": 0.177458, "augrc": 0.177458, "risk_at_80_90_95": [0.304296, 0.304035, 0.308], "frozen_coverage": 0.92, "frozen_selective_risk": 0.302386},
+    "prototype": {"aurc": 0.210937, "augrc": 0.210937, "risk_at_80_90_95": [0.305679, 0.299737, 0.303611], "frozen_coverage": 0.92119, "frozen_selective_risk": 0.298765},
+    "hierarchical": {"aurc": 0.212212, "augrc": 0.212212, "risk_at_80_90_95": [0.309465, 0.303626, 0.307], "frozen_coverage": 0.921852, "frozen_selective_risk": 0.303299},
+    "fused": {"aurc": 0.184808, "augrc": 0.184808, "risk_at_80_90_95": [0.304395, 0.302193, 0.305556], "frozen_coverage": 0.919418, "frozen_selective_risk": 0.301143}
+  },
+  "calibration_distribution": {
+    "calibrated_softmax_temperature": {"min": 0.5, "max": 1.0, "mean": 0.8},
+    "prototype_temperature": {"min": 0.03, "max": 0.1, "mean": 0.0696},
+    "hierarchical_temperature": {"min": 0.03, "max": 0.2, "mean": 0.0696},
+    "hier_aux_prob_weight": {"min": 0.5, "max": 0.5, "mean": 0.5},
+    "fusion_alpha": {"min": 0.0, "max": 1.0, "mean": 0.77},
+    "fusion_kind_counts": {"pure_softmax": 14, "mixed": 8, "pure_prototype": 3}
   },
   "outputs": {
-    "condition_summary": "reports/prototype_noise_demand_w05_screening_summary.csv",
-    "paired_stats": "reports/prototype_noise_demand_w05_screening_paired_stats.csv",
-    "confusion_summary": "reports/prototype_noise_demand_w05_screening_confusion_summary.csv",
-    "per_fold_deltas": "reports/prototype_noise_demand_w05_screening_per_fold_deltas.csv",
-    "fold_cluster_paired_stats": "reports/prototype_noise_demand_w05_screening_fold_cluster_paired_stats.csv",
-    "cross_seed_draw_audit_csv": "reports/prototype_noise_demand_w05_screening_cross_seed_draw_audit.csv",
-    "cross_seed_draw_audit_json": "reports/prototype_noise_demand_w05_screening_cross_seed_draw_audit.json",
-    "aggregate_provenance": "reports/prototype_noise_demand_w05_screening_provenance.json"
+    "aggregate_dir": "reports/prototype_noise_demand_w05_final",
+    "summary": "reports/prototype_noise_demand_w05_final/final_summary.csv",
+    "paired_stats": "reports/prototype_noise_demand_w05_final/final_paired_stats.csv",
+    "confusion_summary": "reports/prototype_noise_demand_w05_final/final_confusion_summary.csv",
+    "per_class_summary": "reports/prototype_noise_demand_w05_final/final_per_class_summary.csv",
+    "selective_summary": "reports/prototype_noise_demand_w05_final/final_selective_summary.csv",
+    "aurc_augrc_summary": "reports/prototype_noise_demand_w05_final/final_aurc_augrc_summary.csv",
+    "per_fold_deltas": "reports/prototype_noise_demand_w05_final/final_per_fold_deltas.csv",
+    "cluster_bootstrap": "reports/prototype_noise_demand_w05_final/final_cluster_bootstrap.csv",
+    "cross_seed_draw_audit": "reports/prototype_noise_demand_w05_final/final_cross_seed_draw_audit.csv",
+    "provenance": "reports/prototype_noise_demand_w05_final/final_provenance.json"
   },
   "paper_usability": {
-    "paper_usable_as_screening_evidence": true,
-    "paper_main_result": false,
+    "paper_usable_as_simulated_noise_main_result": true,
+    "paper_main_result": true,
     "real_farm_external_validation": false,
-    "note": "Simulated DEMAND noise screening only. 0 dB is an extreme simulated-noise stress condition."
+    "note": "Simulated DEMAND noise final aggregate only; not a real-farm external validation."
   },
   "failures": [],
   "warnings": [
-    "Existing pandas DataFrame fragmentation warnings from prototype_model_adapter.py during prediction output construction."
+    "Existing pandas DataFrame fragmentation warnings from prototype_model_adapter.py during prediction output construction.",
+    "git diff --check passed with line-ending warnings only."
   ],
   "gpt_pro_questions": [
-    "Is the ALL_NOISY prototype gain over raw Softmax sufficient for an SCI 4 robustness section given cough weakness?",
-    "Should hierarchical prototype be reported as secondary/diagnostic under noise because prototype-only is stronger in this screening?",
-    "Should 0 dB be retained in main tables as severe stress testing or moved to an appendix?"
+    "Should prototype-only be the primary robustness finding, with hierarchical prototype as secondary?",
+    "Should cough failure analysis be added before submission?",
+    "Should the result be framed strictly as simulated-noise robustness with real-farm validation as future work?"
   ],
-  "recommended_next_step": "Stop. Decide whether to prepare paper-facing DEMAND tables/figures or first analyze cough failure modes."
+  "recommended_next_step": "Stop. Decide between paper-facing DEMAND final tables/figures and targeted cough failure-mode analysis."
 }

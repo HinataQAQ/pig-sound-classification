@@ -259,3 +259,81 @@
 - Stop point: do not start lambda 1.0, noise-aware recalibration, noise
   augmentation training, local unlicensed noise, or real-farm validation without
   a new explicit approval.
+
+## 2026-06-25 - DEMAND lambda 0.5 fixed 25-run final simulated-noise aggregate
+
+- Status: completed
+- Branch: `codex/demand-noise-final-w05`
+- Base: `codex/demand-noise-screening-w05` at
+  `45af0dc4ecb40182461f923d5206baead580af1d`
+- Approval state: user explicitly provided `APPROVED: true`; before execution,
+  `handoff/GPT_TO_CODEX.md` was updated to `APPROVED: true`.
+- Task: Added `run_stage=final`, ran only the missing seeds `123` and `777`
+  across folds `0,1,2,3,4`, and aggregated those 10 new runs with the existing
+  15 screening runs into the fixed 5 folds x 5 seeds DEMAND final result.
+- Scope: lambda `0.5`, `DWASHING/TBUS/STRAFFIC`, active-event SNR `20/10/0`,
+  `global_noise_seed=3407`, `noise_repeat=0`, `selected_channel=1`,
+  `feature_backend=training_exact`, zero-shot frozen. No lambda 1.0,
+  noise-aware recalibration, noise augmentation, denoising, local reviewed
+  noise, open-set, new SNR, new environment, or new repeat was started.
+- Preflight: all 10 new fold-seed combinations had checkpoint, prototype
+  bundle, calibration JSON, clean validation predictions, clean prediction
+  metadata, reference `test_pred.csv`, train/val/test manifests, matching
+  checkpoint/prototype/calibration SHA, test manifest SHA verification, DEMAND
+  manifest/provenance, three noise files with matching SHA, selected channel 1,
+  and noise/pig MD5 disjointness.
+- Completion: 10/10 new final runs completed; 25/25 aggregate completeness
+  verified.
+- Aggregate provenance: `run_scope=aggregate`, `screening_result=false`,
+  `final_25_run_result=true`, `paper_candidate_result=true`,
+  `paper_main_result=true`, `simulated_noise_main_result=true`,
+  `n_fold_seed_runs=25`, `simulated_noise=true`,
+  `real_farm_external_validation=false`,
+  `cross_seed_noise_draw_audit_ok=true`.
+- Cross-seed draw audit: 2520 groups, all OK; seed set
+  `42|123|777|2024|3407`.
+- Mean/std Macro-F1:
+  - MODERATE_NOISE raw/prototype/hierarchical/fused:
+    `0.647225/0.025426`, `0.653354/0.023320`,
+    `0.652175/0.025686`, `0.649915/0.024672`.
+  - EXTREME_STRESS raw/prototype/hierarchical/fused:
+    `0.557393/0.029311`, `0.562400/0.028306`,
+    `0.555623/0.028425`, `0.560369/0.027277`.
+  - ALL_NOISY raw/prototype/hierarchical/fused:
+    `0.617281/0.022973`, `0.623036/0.021252`,
+    `0.619991/0.022378`, `0.620066/0.021477`.
+- ALL_NOISY paired stats:
+  - prototype - raw: mean delta `0.005755`, CI95 `[0.001606, 0.010894]`,
+    Wilcoxon p `0.010511`, wins/ties/losses `18/0/7`.
+  - hierarchical - raw: mean delta `0.002710`, CI95
+    `[-0.000999, 0.007085]`, Wilcoxon p `0.312333`,
+    wins/ties/losses `13/0/12`.
+  - hierarchical - prototype: mean delta `-0.003045`, CI95
+    `[-0.004581, -0.001639]`, Wilcoxon p `0.000376`,
+    wins/ties/losses `5/0/20`.
+- ALL_NOISY class F1 from confusion:
+  - raw: cough `0.086657`, calm `0.988748`, feeding `0.832270`,
+    stress `0.600279`.
+  - prototype: cough `0.097424`, calm `0.979829`, feeding `0.841560`,
+    stress `0.607251`.
+  - hierarchical: cough `0.095699`, calm `0.981712`, feeding `0.831944`,
+    stress `0.607110`.
+  - fused: cough `0.088961`, calm `0.987355`, feeding `0.838345`,
+    stress `0.602811`.
+- Key interpretation: prototype-only is the strongest simulated DEMAND noise
+  method. Hierarchical prototype is above raw Softmax on ALL_NOISY but not
+  significant and remains below prototype-only. Cough remains the weakest class,
+  mostly failing into `stress_vocal`.
+- Verification: related `--help` commands passed, `py_compile` passed,
+  `tests.test_noise_robustness_pipeline` passed with 39 tests,
+  `tests.test_prototype_pipeline_core` passed with 47 tests,
+  `git diff --check` passed with line-ending warnings only, aggregate
+  provenance gate passed, and cross-seed draw gate passed.
+- Outputs: 10 new final run directories under
+  `reports/prototype_noise_demand_w05_fold{fold}_seed{seed}_final/` plus
+  aggregate CSV/JSON files under `reports/prototype_noise_demand_w05_final/`.
+- Paper usability: paper-main candidate simulated-noise aggregate; not real-farm
+  external validation.
+- Stop point: do not start lambda 1.0, noisy recalibration, augmentation,
+  denoising, local reviewed noise, open-set, new environments, new SNRs, or new
+  repeats without new explicit approval.

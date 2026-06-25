@@ -10,7 +10,9 @@ import pandas as pd
 
 
 EXPECTED_FOLDS = {0, 1, 2, 3, 4}
-EXPECTED_SEEDS = {42, 2024, 3407}
+EXPECTED_SCREENING_SEEDS = {42, 2024, 3407}
+EXPECTED_FINAL_SEEDS = {42, 123, 777, 2024, 3407}
+EXPECTED_SEEDS = EXPECTED_SCREENING_SEEDS
 EXPECTED_ENVIRONMENTS = {"DWASHING", "TBUS", "STRAFFIC"}
 EXPECTED_SNRS = {20.0, 10.0, 0.0}
 EXPECTED_LAMBDA = 0.5
@@ -92,17 +94,28 @@ def validate_single_run_exact_grid(payload: dict[str, Any]) -> None:
         )
 
 
-def validate_screening_protocol(payloads: list[dict[str, Any]], *, allow_smoke: bool = False) -> dict[str, Any]:
+def validate_noise_protocol(
+    payloads: list[dict[str, Any]],
+    *,
+    protocol: str = "screening",
+    allow_smoke: bool = False,
+) -> dict[str, Any]:
+    if protocol not in {"screening", "final"}:
+        raise ValueError(f"protocol must be screening or final, got {protocol!r}")
     if allow_smoke and len(payloads) == 1:
         validate_single_run_exact_grid(payloads[0])
         return {
             "run_scope": "fold_seed_smoke",
             "screening_result": False,
+            "final_25_run_result": False,
+            "paper_candidate_result": False,
             "paper_main_result": False,
             "n_fold_seed_runs": 1,
         }
-    if len(payloads) != 15:
-        raise ValueError(f"Legal screening requires exactly 15 fold-seed runs, got {len(payloads)}.")
+    expected_seeds = EXPECTED_SCREENING_SEEDS if protocol == "screening" else EXPECTED_FINAL_SEEDS
+    expected_runs = len(EXPECTED_FOLDS) * len(expected_seeds)
+    if len(payloads) != expected_runs:
+        raise ValueError(f"Legal {protocol} requires exactly {expected_runs} fold-seed runs, got {len(payloads)}.")
     pairs = [(int(p["fold"]), int(p["seed"])) for p in payloads]
     if len(set(pairs)) != len(pairs):
         raise ValueError("Duplicate fold-seed runs detected.")
@@ -112,9 +125,9 @@ def validate_screening_protocol(payloads: list[dict[str, Any]], *, allow_smoke: 
     envs = {str(env).upper() for p in payloads for env in p.get("noise_environments", [])}
     snrs = {float(snr) for p in payloads for snr in p.get("snr_db", [])}
     if folds != EXPECTED_FOLDS:
-        raise ValueError(f"Unexpected folds for legal screening: {sorted(folds)}")
-    if seeds != EXPECTED_SEEDS:
-        raise ValueError(f"Unexpected seeds for legal screening: {sorted(seeds)}")
+        raise ValueError(f"Unexpected folds for legal {protocol}: {sorted(folds)}")
+    if seeds != expected_seeds:
+        raise ValueError(f"Unexpected seeds for legal {protocol}: {sorted(seeds)}")
     if lambdas != {EXPECTED_LAMBDA}:
         raise ValueError(f"Unexpected or mixed lambda values: {sorted(lambdas)}")
     if envs != EXPECTED_ENVIRONMENTS:
@@ -123,19 +136,25 @@ def validate_screening_protocol(payloads: list[dict[str, Any]], *, allow_smoke: 
         raise ValueError(f"Unexpected active-event SNR grid: {sorted(snrs)}")
     for p in payloads:
         validate_single_run_exact_grid(p)
-        if p.get("run_stage") != "screening":
+        if protocol == "screening" and p.get("run_stage") != "screening":
             raise ValueError(f"Expected run_stage=screening for legal screening, got {p.get('run_stage')}")
+        if protocol == "final":
+            if p.get("run_stage") not in {"screening", "final"}:
+                raise ValueError(f"Expected run_stage=screening or final for legal final aggregate, got {p.get('run_stage')}")
+            if int(p["seed"]) in {123, 777} and p.get("run_stage") != "final":
+                raise ValueError(f"Expected run_stage=final for newly added final seed={p.get('seed')}")
         if not p.get("eligible_for_noise_aggregation", p.get("eligible_for_cv_aggregation", False)):
             raise ValueError(f"Run is not eligible for noise aggregation: fold={p.get('fold')} seed={p.get('seed')}")
     return {
         "run_scope": "aggregate",
-        "screening_result": True,
-        "final_25_run_result": False,
+        "screening_result": protocol == "screening",
+        "final_25_run_result": protocol == "final",
         "paper_candidate_result": True,
-        "paper_main_result": False,
-        "n_fold_seed_runs": 15,
+        "paper_main_result": protocol == "final",
+        "simulated_noise_main_result": protocol == "final",
+        "n_fold_seed_runs": expected_runs,
         "folds": sorted(EXPECTED_FOLDS),
-        "seeds": sorted(EXPECTED_SEEDS),
+        "seeds": sorted(expected_seeds),
         "noise_environments": sorted(EXPECTED_ENVIRONMENTS),
         "target_active_snr_db": sorted(EXPECTED_SNRS, reverse=True),
         "lambda": EXPECTED_LAMBDA,
@@ -144,7 +163,12 @@ def validate_screening_protocol(payloads: list[dict[str, Any]], *, allow_smoke: 
         "offset_key_version": EXPECTED_OFFSET_KEY_VERSION,
         "simulated_noise": True,
         "real_farm_external_validation": False,
+        "source_run_stages": sorted({str(p.get("run_stage")) for p in payloads}),
     }
+
+
+def validate_screening_protocol(payloads: list[dict[str, Any]], *, allow_smoke: bool = False) -> dict[str, Any]:
+    return validate_noise_protocol(payloads, protocol="screening", allow_smoke=allow_smoke)
 
 
 def bootstrap_ci(delta: np.ndarray, *, n_boot: int = 10000, seed: int = 3407) -> tuple[float, float]:
@@ -179,7 +203,7 @@ def paired_stats(delta: np.ndarray) -> dict[str, Any]:
     }
 
 
-def paired_stats_by_condition(frame: pd.DataFrame) -> pd.DataFrame:
+def paired_stats_by_condition(frame: pd.DataFrame, *, expected_n: int = 15) -> pd.DataFrame:
     noisy = frame[frame["noise_environment"].astype(str).str.lower() != "clean"].copy()
     rows: list[dict[str, Any]] = []
     for keys, group in noisy.groupby(["noise_environment", "snr_db"], dropna=False):
@@ -189,8 +213,8 @@ def paired_stats_by_condition(frame: pd.DataFrame) -> pd.DataFrame:
             if left not in pivot.columns or right not in pivot.columns:
                 raise RuntimeError(f"Missing method for paired comparison {left} - {right} at {env}/{snr}")
             deltas = pivot[left] - pivot[right]
-            if len(deltas) != 15 or deltas.isna().any():
-                raise RuntimeError(f"Strict paired n must be 15 for {left} - {right} at {env}/{snr}; got paired n={deltas.dropna().shape[0]}")
+            if len(deltas) != expected_n or deltas.isna().any():
+                raise RuntimeError(f"Strict paired n must be {expected_n} for {left} - {right} at {env}/{snr}; got paired n={deltas.dropna().shape[0]}")
             stats = paired_stats(deltas.to_numpy())
             rows.append(
                 {
@@ -208,8 +232,8 @@ def paired_stats_by_condition(frame: pd.DataFrame) -> pd.DataFrame:
             if left not in pivot.columns or right not in pivot.columns:
                 raise RuntimeError(f"Missing method for paired comparison {left} - {right} in {stratum}")
             deltas = pivot[left] - pivot[right]
-            if len(deltas) != 15 or deltas.isna().any():
-                raise RuntimeError(f"Strict paired n must be 15 for {left} - {right} in {stratum}; got paired n={deltas.dropna().shape[0]}")
+            if len(deltas) != expected_n or deltas.isna().any():
+                raise RuntimeError(f"Strict paired n must be {expected_n} for {left} - {right} in {stratum}; got paired n={deltas.dropna().shape[0]}")
             rows.append(
                 {
                     "noise_environment": stratum,
@@ -258,7 +282,12 @@ def fold_cluster_paired_stats(frame: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def build_cross_seed_draw_audit(provenance_csvs: list[str | Path]) -> pd.DataFrame:
+def build_cross_seed_draw_audit(
+    provenance_csvs: list[str | Path],
+    *,
+    expected_seeds: set[int] | None = None,
+) -> pd.DataFrame:
+    expected_seeds = expected_seeds or EXPECTED_SCREENING_SEEDS
     frames = []
     required = {
         "fold",
@@ -288,7 +317,7 @@ def build_cross_seed_draw_audit(provenance_csvs: list[str | Path]) -> pd.DataFra
             field: sorted(set(str(x) for x in group[field]))
             for field in ("noise_draw_id", "noise_offset", "noise_sha256", "selected_channel", "global_noise_seed")
         }
-        ok = seeds == sorted(EXPECTED_SEEDS) and all(len(values) == 1 for values in field_uniques.values())
+        ok = seeds == sorted(expected_seeds) and all(len(values) == 1 for values in field_uniques.values())
         row = {
             "fold": int(keys[0]),
             "clean_md5": keys[1],
@@ -415,10 +444,65 @@ def per_fold_mean_deltas(frame: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def per_class_summary_from_confusion(confusion: pd.DataFrame) -> pd.DataFrame:
+    rows: list[dict[str, Any]] = []
+    if confusion.empty:
+        return pd.DataFrame()
+    for _, row in confusion.iterrows():
+        labels = str(row.get("labels", "")).split("|")
+        for label in labels:
+            rows.append(
+                {
+                    "noise_environment": row.get("noise_environment"),
+                    "snr_db": row.get("snr_db"),
+                    "condition_family": row.get("condition_family"),
+                    "method": row.get("method"),
+                    "class": label,
+                    "precision": row.get(f"{label}_precision"),
+                    "recall": row.get(f"{label}_recall"),
+                    "f1": row.get(f"{label}_f1"),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def selective_summary_from_summary(summary: pd.DataFrame) -> pd.DataFrame:
+    columns = [
+        "noise_environment",
+        "snr_db",
+        "condition_family",
+        "method",
+        "n",
+        "mean_frozen_threshold_coverage",
+        "mean_frozen_threshold_selective_risk",
+        "mean_risk_at_coverage_0_80",
+        "mean_risk_at_coverage_0_90",
+        "mean_risk_at_coverage_0_95",
+    ]
+    return summary[[c for c in columns if c in summary.columns]].copy()
+
+
+def aurc_augrc_summary_from_summary(summary: pd.DataFrame) -> pd.DataFrame:
+    columns = [
+        "noise_environment",
+        "snr_db",
+        "condition_family",
+        "method",
+        "n",
+        "mean_aurc",
+        "mean_augrc",
+        "mean_risk_at_coverage_0_80",
+        "mean_risk_at_coverage_0_90",
+        "mean_risk_at_coverage_0_95",
+    ]
+    return summary[[c for c in columns if c in summary.columns]].copy()
+
+
 def summarize(
     metrics_json: list[str | Path],
     *,
     allow_smoke: bool = False,
+    protocol: str = "screening",
 ) -> tuple[
     pd.DataFrame,
     pd.DataFrame,
@@ -470,10 +554,16 @@ def summarize(
                 "paper_main_result": payload.get("paper_main_result"),
             }
         )
-    protocol = validate_screening_protocol(payloads, allow_smoke=allow_smoke)
+    protocol_info = validate_noise_protocol(payloads, protocol=protocol, allow_smoke=allow_smoke)
+    expected_n = int(protocol_info.get("n_fold_seed_runs", len(payloads)))
+    expected_seeds = set(int(x) for x in protocol_info.get("seeds", [])) or EXPECTED_SCREENING_SEEDS
     frame = pd.DataFrame(rows)
     if frame.empty:
         raise RuntimeError("No method metrics found in supplied noise metrics JSON files.")
+    if "augrc" not in frame.columns:
+        frame["augrc"] = frame.get("aurc", np.nan)
+    elif "aurc" in frame.columns:
+        frame["augrc"] = frame["augrc"].fillna(frame["aurc"])
     grouped = []
     for keys, group in frame.groupby(["noise_environment", "snr_db", "method"], dropna=False):
         env, snr, method = keys
@@ -491,6 +581,7 @@ def summarize(
                 "mean_brier": float(group["brier"].mean()),
                 "mean_nll": float(group["nll"].mean()),
                 "mean_aurc": float(group.get("aurc", pd.Series([np.nan] * len(group))).astype(float).mean()),
+                "mean_augrc": float(group.get("augrc", pd.Series([np.nan] * len(group))).astype(float).mean()),
                 "mean_risk_at_coverage_0_80": float(group.get("risk_at_coverage_0.80", pd.Series([np.nan] * len(group))).astype(float).mean()),
                 "mean_risk_at_coverage_0_90": float(group.get("risk_at_coverage_0.90", pd.Series([np.nan] * len(group))).astype(float).mean()),
                 "mean_risk_at_coverage_0_95": float(group.get("risk_at_coverage_0.95", pd.Series([np.nan] * len(group))).astype(float).mean()),
@@ -513,6 +604,7 @@ def summarize(
             brier=("brier", "mean"),
             nll=("nll", "mean"),
             aurc=("aurc", "mean"),
+            augrc=("augrc", "mean"),
             risk_at_coverage_0_80=("risk_at_coverage_0.80", "mean"),
             risk_at_coverage_0_90=("risk_at_coverage_0.90", "mean"),
             risk_at_coverage_0_95=("risk_at_coverage_0.95", "mean"),
@@ -535,6 +627,7 @@ def summarize(
                     "mean_brier": float(group["brier"].mean()),
                     "mean_nll": float(group["nll"].mean()),
                     "mean_aurc": float(group["aurc"].mean()),
+                    "mean_augrc": float(group["augrc"].mean()),
                     "mean_risk_at_coverage_0_80": float(group["risk_at_coverage_0_80"].mean()),
                     "mean_risk_at_coverage_0_90": float(group["risk_at_coverage_0_90"].mean()),
                     "mean_risk_at_coverage_0_95": float(group["risk_at_coverage_0_95"].mean()),
@@ -543,7 +636,7 @@ def summarize(
                     "mean_macro_f1_degradation_vs_clean": float("nan"),
                 }
             )
-    paired = paired_stats_by_condition(frame) if len(payloads) > 1 else pd.DataFrame()
+    paired = paired_stats_by_condition(frame, expected_n=expected_n) if len(payloads) > 1 else pd.DataFrame()
     fold_cluster = fold_cluster_paired_stats(frame) if len(payloads) > 1 else pd.DataFrame()
     cross_seed = pd.DataFrame()
     if len(payloads) > 1:
@@ -554,8 +647,8 @@ def summarize(
             if not path:
                 raise RuntimeError(f"Run missing noise_sample_provenance_csv output: fold={payload.get('fold')} seed={payload.get('seed')}")
             provenance_paths.append(path)
-        cross_seed = build_cross_seed_draw_audit(provenance_paths)
-        protocol["cross_seed_noise_draw_audit_ok"] = True
+        cross_seed = build_cross_seed_draw_audit(provenance_paths, expected_seeds=expected_seeds)
+        protocol_info["cross_seed_noise_draw_audit_ok"] = True
     return (
         pd.DataFrame(grouped),
         pd.DataFrame(provenance),
@@ -565,7 +658,7 @@ def summarize(
         per_fold_mean_deltas(frame),
         fold_cluster,
         cross_seed,
-        protocol,
+        protocol_info,
     )
 
 
@@ -573,29 +666,63 @@ def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(description="Summarize zero-shot frozen prototype noise robustness metrics.")
     ap.add_argument("--metrics_json", nargs="+", required=True)
     ap.add_argument("--out_prefix", default="reports/prototype_noise_demand_w05_debug")
+    ap.add_argument("--out_dir", default="", help="Optional directory output mode; writes <file_prefix>_*.csv/json files.")
+    ap.add_argument("--file_prefix", default="", help="Prefix for --out_dir output mode, e.g. final.")
+    ap.add_argument("--protocol", choices=("screening", "final"), default="screening")
     ap.add_argument("--allow_smoke", action="store_true", help="Allow one fold-seed full-grid pre-screening smoke summary.")
     return ap.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    summary, provenance, paired, confusion, slope, per_fold, fold_cluster, cross_seed, protocol = summarize(args.metrics_json, allow_smoke=args.allow_smoke)
-    prefix = Path(args.out_prefix)
-    prefix.parent.mkdir(parents=True, exist_ok=True)
-    summary_path = prefix.with_name(prefix.name + "_summary.csv")
-    provenance_path = prefix.with_name(prefix.name + "_provenance.csv")
-    paired_path = prefix.with_name(prefix.name + "_paired_stats.csv")
-    confusion_path = prefix.with_name(prefix.name + "_confusion_summary.csv")
-    slope_path = prefix.with_name(prefix.name + "_degradation_slope.csv")
-    per_fold_path = prefix.with_name(prefix.name + "_per_fold_deltas.csv")
-    fold_cluster_path = prefix.with_name(prefix.name + "_fold_cluster_paired_stats.csv")
-    cross_seed_path = prefix.with_name(prefix.name + "_cross_seed_draw_audit.csv")
-    cross_seed_json_path = prefix.with_name(prefix.name + "_cross_seed_draw_audit.json")
-    protocol_path = prefix.with_name(prefix.name + "_provenance.json")
+    summary, provenance, paired, confusion, slope, per_fold, fold_cluster, cross_seed, protocol = summarize(
+        args.metrics_json,
+        allow_smoke=args.allow_smoke,
+        protocol=args.protocol,
+    )
+    per_class = per_class_summary_from_confusion(confusion)
+    selective = selective_summary_from_summary(summary)
+    aurc_augrc = aurc_augrc_summary_from_summary(summary)
+    if args.out_dir:
+        out_dir = Path(args.out_dir)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        file_prefix = args.file_prefix or args.protocol
+        summary_path = out_dir / f"{file_prefix}_summary.csv"
+        provenance_path = out_dir / f"{file_prefix}_runs.csv"
+        paired_path = out_dir / f"{file_prefix}_paired_stats.csv"
+        confusion_path = out_dir / f"{file_prefix}_confusion_summary.csv"
+        per_class_path = out_dir / f"{file_prefix}_per_class_summary.csv"
+        selective_path = out_dir / f"{file_prefix}_selective_summary.csv"
+        aurc_augrc_path = out_dir / f"{file_prefix}_aurc_augrc_summary.csv"
+        slope_path = out_dir / f"{file_prefix}_degradation_slope.csv"
+        per_fold_path = out_dir / f"{file_prefix}_per_fold_deltas.csv"
+        fold_cluster_path = out_dir / f"{file_prefix}_cluster_bootstrap.csv"
+        cross_seed_path = out_dir / f"{file_prefix}_cross_seed_draw_audit.csv"
+        cross_seed_json_path = out_dir / f"{file_prefix}_cross_seed_draw_audit.json"
+        protocol_path = out_dir / f"{file_prefix}_provenance.json"
+    else:
+        prefix = Path(args.out_prefix)
+        prefix.parent.mkdir(parents=True, exist_ok=True)
+        summary_path = prefix.with_name(prefix.name + "_summary.csv")
+        provenance_path = prefix.with_name(prefix.name + "_provenance.csv")
+        paired_path = prefix.with_name(prefix.name + "_paired_stats.csv")
+        confusion_path = prefix.with_name(prefix.name + "_confusion_summary.csv")
+        per_class_path = prefix.with_name(prefix.name + "_per_class_summary.csv")
+        selective_path = prefix.with_name(prefix.name + "_selective_summary.csv")
+        aurc_augrc_path = prefix.with_name(prefix.name + "_aurc_augrc_summary.csv")
+        slope_path = prefix.with_name(prefix.name + "_degradation_slope.csv")
+        per_fold_path = prefix.with_name(prefix.name + "_per_fold_deltas.csv")
+        fold_cluster_path = prefix.with_name(prefix.name + "_fold_cluster_paired_stats.csv")
+        cross_seed_path = prefix.with_name(prefix.name + "_cross_seed_draw_audit.csv")
+        cross_seed_json_path = prefix.with_name(prefix.name + "_cross_seed_draw_audit.json")
+        protocol_path = prefix.with_name(prefix.name + "_provenance.json")
     summary.to_csv(summary_path, index=False, encoding="utf-8-sig")
     provenance.to_csv(provenance_path, index=False, encoding="utf-8-sig")
     paired.to_csv(paired_path, index=False, encoding="utf-8-sig")
     confusion.to_csv(confusion_path, index=False, encoding="utf-8-sig")
+    per_class.to_csv(per_class_path, index=False, encoding="utf-8-sig")
+    selective.to_csv(selective_path, index=False, encoding="utf-8-sig")
+    aurc_augrc.to_csv(aurc_augrc_path, index=False, encoding="utf-8-sig")
     slope.to_csv(slope_path, index=False, encoding="utf-8-sig")
     per_fold.to_csv(per_fold_path, index=False, encoding="utf-8-sig")
     fold_cluster.to_csv(fold_cluster_path, index=False, encoding="utf-8-sig")
@@ -620,6 +747,9 @@ def main() -> None:
     print(f"[OK] wrote {provenance_path}")
     print(f"[OK] wrote {paired_path}")
     print(f"[OK] wrote {confusion_path}")
+    print(f"[OK] wrote {per_class_path}")
+    print(f"[OK] wrote {selective_path}")
+    print(f"[OK] wrote {aurc_augrc_path}")
     print(f"[OK] wrote {slope_path}")
     print(f"[OK] wrote {per_fold_path}")
     print(f"[OK] wrote {fold_cluster_path}")

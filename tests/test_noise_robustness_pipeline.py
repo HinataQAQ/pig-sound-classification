@@ -28,6 +28,7 @@ from eval_prototype_noise_robustness import (  # noqa: E402
     aurc_score,
     clean_equivalence_gate,
     compute_method_rejection_thresholds,
+    generalized_risk_coverage_auc,
     noise_result_qualification,
     risk_at_coverages,
     verify_selected_channel,
@@ -36,6 +37,8 @@ from summarize_prototype_noise_robustness import (  # noqa: E402
     build_cross_seed_draw_audit,
     fold_cluster_paired_stats,
     paired_stats_by_condition,
+    summarize,
+    validate_noise_protocol,
     validate_screening_protocol,
     validate_single_run_exact_grid,
 )
@@ -61,6 +64,10 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
                     "brier": 0.02,
                     "nll": 0.03,
                     "aurc": 0.01,
+                    "augrc": 0.01,
+                    "risk_at_coverage_0.80": 0.05,
+                    "risk_at_coverage_0.90": 0.05,
+                    "risk_at_coverage_0.95": 0.05,
                     "frozen_threshold_coverage": 0.95,
                     "frozen_threshold_selective_risk": 0.05,
                     "feeding_to_stress": 1,
@@ -95,6 +102,10 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
                             "brier": 0.2,
                             "nll": 0.3,
                             "aurc": 0.2,
+                            "augrc": 0.2,
+                            "risk_at_coverage_0.80": 0.2,
+                            "risk_at_coverage_0.90": 0.2,
+                            "risk_at_coverage_0.95": 0.2,
                             "frozen_threshold_coverage": 0.9,
                             "frozen_threshold_selective_risk": 0.2,
                             "feeding_to_stress": 2,
@@ -139,6 +150,23 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
 
     def _screening_payloads(self):
         return [self._payload(fold=fold, seed=seed) for fold in range(5) for seed in (42, 2024, 3407)]
+
+    def _final_payloads(self):
+        payloads = []
+        for fold in range(5):
+            for seed in (42, 123, 777, 2024, 3407):
+                stage = "final" if seed in {123, 777} else "screening"
+                payloads.append(self._payload(fold=fold, seed=seed, run_stage=stage))
+        return payloads
+
+    def _frame_from_payloads(self, payloads):
+        return pd.DataFrame(
+            [
+                {**row, "fold": payload["fold"], "seed": payload["seed"], "lambda": payload["lambda"]}
+                for payload in payloads
+                for row in payload["metrics_by_condition"]
+            ]
+        )
 
     def test_deterministic_seed_is_stable_across_processes(self):
         parts = ["fold0", "seed3407", "data/a.wav", "abc", "DWASHING", "noise-sha", "20", "20260625"]
@@ -340,6 +368,21 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
         self.assertFalse(screening["single_fold_debug"])
         self.assertEqual(screening["run_scope"], "fold_seed")
 
+    def test_noise_qualification_accepts_final_stage_without_promoting_single_run(self):
+        final = noise_result_qualification(
+            feature_backend="training_exact",
+            clean_equivalence_ok=True,
+            leakage_audit_ok=True,
+            manifest_sha_verified=True,
+            unsafe_allow_checkpoint_sha_mismatch=False,
+            run_stage="final",
+        )
+
+        self.assertEqual(final["run_scope"], "fold_seed")
+        self.assertFalse(final["single_fold_debug"])
+        self.assertFalse(final["paper_main_result"])
+        self.assertTrue(final["eligible_for_noise_aggregation"])
+
     def test_verify_selected_channel_rejects_silent_cli_manifest_disagreement(self):
         row = {"selected_channel": 1}
 
@@ -386,6 +429,15 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
         self.assertEqual(set(risks), {"risk_at_coverage_0.50", "risk_at_coverage_0.75", "risk_at_coverage_1.00"})
         self.assertTrue(all(np.isfinite(v) for v in risks.values()))
 
+    def test_generalized_risk_coverage_auc_is_deterministic(self):
+        losses = np.array([0.0, 1.0, 0.0, 1.0])
+        confidence = np.array([0.9, 0.8, 0.7, 0.6])
+
+        augrc = generalized_risk_coverage_auc(losses, confidence)
+
+        expected = float(np.trapezoid(np.array([0.0, 0.5, 1.0 / 3.0, 0.5]), np.array([0.25, 0.5, 0.75, 1.0])))
+        self.assertAlmostEqual(augrc, expected)
+
     def test_validate_screening_protocol_rejects_condition_rows_as_runs(self):
         payloads = [
             {"fold": 0, "seed": 3407, "lambda": 0.5, "noise_environments": ["DWASHING"], "snr_db": [20, 10, 0]},
@@ -402,6 +454,36 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
         self.assertEqual(result["n_fold_seed_runs"], 15)
         self.assertFalse(result["paper_main_result"])
         self.assertTrue(result["screening_result"])
+
+    def test_validate_final_protocol_accepts_fixed_25_run_grid(self):
+        payloads = self._final_payloads()
+
+        result = validate_noise_protocol(payloads, protocol="final")
+
+        self.assertEqual(result["n_fold_seed_runs"], 25)
+        self.assertFalse(result["screening_result"])
+        self.assertTrue(result["final_25_run_result"])
+        self.assertTrue(result["paper_candidate_result"])
+        self.assertTrue(result["paper_main_result"])
+        self.assertTrue(result["simulated_noise_main_result"])
+        self.assertEqual(result["seeds"], [42, 123, 777, 2024, 3407])
+
+    def test_validate_final_protocol_rejects_5x3_as_incomplete_final(self):
+        with self.assertRaisesRegex(ValueError, "25 fold-seed runs"):
+            validate_noise_protocol(self._screening_payloads(), protocol="final")
+
+    def test_validate_final_protocol_rejects_4x5_grid(self):
+        payloads = [p for p in self._final_payloads() if p["fold"] != 4]
+
+        with self.assertRaisesRegex(ValueError, "25 fold-seed runs"):
+            validate_noise_protocol(payloads, protocol="final")
+
+    def test_validate_final_protocol_rejects_mixed_lambda(self):
+        payloads = self._final_payloads()
+        payloads[0]["lambda"] = 1.0
+
+        with self.assertRaisesRegex(ValueError, "lambda"):
+            validate_noise_protocol(payloads, protocol="final")
 
     def test_validate_single_run_exact_grid_rejects_missing_environment(self):
         payload = self._payload(noise_environments=["DWASHING", "TBUS"])
@@ -437,26 +519,14 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
 
     def test_paired_stats_fail_when_condition_n_is_not_15(self):
         payloads = self._screening_payloads()
-        frame = pd.DataFrame(
-            [
-                {**row, "fold": payload["fold"], "seed": payload["seed"], "lambda": payload["lambda"]}
-                for payload in payloads[:-1]
-                for row in payload["metrics_by_condition"]
-            ]
-        )
+        frame = self._frame_from_payloads(payloads[:-1])
 
         with self.assertRaisesRegex(RuntimeError, "paired n"):
             paired_stats_by_condition(frame)
 
     def test_moderate_and_extreme_grouping_are_reported(self):
         payloads = self._screening_payloads()
-        frame = pd.DataFrame(
-            [
-                {**row, "fold": payload["fold"], "seed": payload["seed"], "lambda": payload["lambda"]}
-                for payload in payloads
-                for row in payload["metrics_by_condition"]
-            ]
-        )
+        frame = self._frame_from_payloads(payloads)
 
         paired = paired_stats_by_condition(frame)
 
@@ -465,15 +535,16 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
         self.assertIn("ALL_NOISY", set(paired["noise_environment"]))
         self.assertTrue((paired[paired["noise_environment"] == "MODERATE_NOISE"]["n"] == 15).all())
 
+    def test_final_paired_stats_use_25_strict_pairs(self):
+        frame = self._frame_from_payloads(self._final_payloads())
+
+        paired = paired_stats_by_condition(frame, expected_n=25)
+
+        self.assertTrue((paired[paired["noise_environment"] == "ALL_NOISY"]["n"] == 25).all())
+
     def test_fold_cluster_bootstrap_is_reproducible(self):
         payloads = self._screening_payloads()
-        frame = pd.DataFrame(
-            [
-                {**row, "fold": payload["fold"], "seed": payload["seed"], "lambda": payload["lambda"]}
-                for payload in payloads
-                for row in payload["metrics_by_condition"]
-            ]
-        )
+        frame = self._frame_from_payloads(payloads)
 
         first = fold_cluster_paired_stats(frame)
         second = fold_cluster_paired_stats(frame)
@@ -507,6 +578,116 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
 
             with self.assertRaisesRegex(ValueError, "cross-seed"):
                 build_cross_seed_draw_audit(paths)
+
+    def test_cross_seed_draw_audit_accepts_five_seed_final_grid(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            paths = []
+            for seed in (42, 123, 777, 2024, 3407):
+                path = Path(tmp) / f"seed{seed}.csv"
+                pd.DataFrame(
+                    [
+                        {
+                            "fold": 0,
+                            "seed": seed,
+                            "clean_md5": "a" * 32,
+                            "noise_environment": "DWASHING",
+                            "noise_repeat": 0,
+                            "offset_key_version": "demand_noise_offset_v2",
+                            "noise_draw_id": "draw-a",
+                            "noise_offset": 123,
+                            "noise_sha256": "b" * 64,
+                            "selected_channel": 1,
+                            "global_noise_seed": 3407,
+                        }
+                    ]
+                ).to_csv(path, index=False)
+                paths.append(path)
+
+            audit = build_cross_seed_draw_audit(paths, expected_seeds={42, 123, 777, 2024, 3407})
+
+        self.assertTrue(audit["ok"].all())
+        self.assertEqual(audit.iloc[0]["seeds"], "42|123|777|2024|3407")
+
+    def test_summarize_final_protocol_reports_main_result_and_augrc(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            metrics_paths = []
+            for payload in self._final_payloads():
+                provenance_path = Path(tmp) / f"fold{payload['fold']}_seed{payload['seed']}_provenance.csv"
+                rows = []
+                for env in ("DWASHING", "TBUS", "STRAFFIC"):
+                    rows.append(
+                        {
+                            "fold": payload["fold"],
+                            "seed": payload["seed"],
+                            "clean_md5": f"{payload['fold']:032x}",
+                            "noise_environment": env,
+                            "noise_repeat": 0,
+                            "offset_key_version": "demand_noise_offset_v2",
+                            "noise_draw_id": f"fold{payload['fold']}-{env}",
+                            "noise_offset": 123,
+                            "noise_sha256": "b" * 64,
+                            "selected_channel": 1,
+                            "global_noise_seed": 3407,
+                        }
+                    )
+                pd.DataFrame(rows).to_csv(provenance_path, index=False)
+                payload["outputs"] = {"noise_sample_provenance_csv": str(provenance_path)}
+                metrics_path = Path(tmp) / f"fold{payload['fold']}_seed{payload['seed']}.json"
+                metrics_path.write_text(json.dumps(payload), encoding="utf-8")
+                metrics_paths.append(metrics_path)
+
+            summary, _, paired, _, _, _, _, cross_seed, protocol = summarize(metrics_paths, protocol="final")
+
+        self.assertTrue(protocol["paper_main_result"])
+        self.assertEqual(protocol["n_fold_seed_runs"], 25)
+        self.assertIn("mean_augrc", summary.columns)
+        self.assertTrue((paired[paired["noise_environment"] == "ALL_NOISY"]["n"] == 25).all())
+        self.assertTrue(cross_seed["ok"].all())
+
+    def test_summarize_backfills_missing_augrc_rows_from_aurc(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            metrics_paths = []
+            for payload in self._final_payloads():
+                provenance_path = Path(tmp) / f"fold{payload['fold']}_seed{payload['seed']}_provenance.csv"
+                rows = []
+                for env in ("DWASHING", "TBUS", "STRAFFIC"):
+                    rows.append(
+                        {
+                            "fold": payload["fold"],
+                            "seed": payload["seed"],
+                            "clean_md5": f"{payload['fold']:032x}",
+                            "noise_environment": env,
+                            "noise_repeat": 0,
+                            "offset_key_version": "demand_noise_offset_v2",
+                            "noise_draw_id": f"fold{payload['fold']}-{env}",
+                            "noise_offset": 123,
+                            "noise_sha256": "b" * 64,
+                            "selected_channel": 1,
+                            "global_noise_seed": 3407,
+                        }
+                    )
+                pd.DataFrame(rows).to_csv(provenance_path, index=False)
+                payload["outputs"] = {"noise_sample_provenance_csv": str(provenance_path)}
+                for metric in payload["metrics_by_condition"]:
+                    if metric["method"] == "raw_softmax" and metric["noise_environment"] != "clean":
+                        if payload["run_stage"] == "screening":
+                            metric["aurc"] = 0.1
+                            metric.pop("augrc", None)
+                        else:
+                            metric["aurc"] = 0.9
+                            metric["augrc"] = 0.9
+                metrics_path = Path(tmp) / f"fold{payload['fold']}_seed{payload['seed']}.json"
+                metrics_path.write_text(json.dumps(payload), encoding="utf-8")
+                metrics_paths.append(metrics_path)
+
+            summary, *_ = summarize(metrics_paths, protocol="final")
+
+        row = summary[
+            (summary["noise_environment"] == "ALL_NOISY")
+            & (summary["snr_db"].astype(str) == "GROUP")
+            & (summary["method"] == "raw_softmax")
+        ].iloc[0]
+        self.assertAlmostEqual(float(row["mean_augrc"]), (15 * 0.1 + 10 * 0.9) / 25.0)
 
     def test_clean_equivalence_gate_handles_suffixed_y_true_columns(self):
         with tempfile.TemporaryDirectory() as tmp:

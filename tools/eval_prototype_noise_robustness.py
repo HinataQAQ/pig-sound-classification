@@ -219,6 +219,21 @@ def aurc_score(y_true: np.ndarray, y_pred: np.ndarray, confidence: np.ndarray) -
     return float(np.trapezoid(risk, coverage))
 
 
+def generalized_risk_coverage_auc(losses: np.ndarray, confidence: np.ndarray) -> float:
+    """Area under generalized risk-coverage using arbitrary per-sample losses."""
+    losses = np.asarray(losses, dtype=np.float64)
+    confidence = np.asarray(confidence, dtype=np.float64)
+    if len(losses) == 0:
+        return 0.0
+    if len(losses) != len(confidence):
+        raise ValueError("losses and confidence must have the same length")
+    order = np.argsort(-confidence)
+    ordered_losses = losses[order]
+    coverage = np.arange(1, len(losses) + 1, dtype=np.float64) / float(len(losses))
+    generalized_risk = np.cumsum(ordered_losses) / np.arange(1, len(losses) + 1, dtype=np.float64)
+    return float(np.trapezoid(generalized_risk, coverage))
+
+
 def risk_at_coverages(
     y_true: np.ndarray,
     y_pred: np.ndarray,
@@ -416,8 +431,8 @@ def noise_result_qualification(
     provenance_gates_ok: bool = True,
     run_stage: str = "screening",
 ) -> dict[str, Any]:
-    if run_stage not in {"prescreen_smoke", "screening"}:
-        raise ValueError(f"run_stage must be prescreen_smoke or screening, got {run_stage!r}")
+    if run_stage not in {"prescreen_smoke", "screening", "final"}:
+        raise ValueError(f"run_stage must be prescreen_smoke, screening, or final, got {run_stage!r}")
     feature_pipeline_equivalent = feature_backend == "training_exact"
     eligible = bool(
         feature_pipeline_equivalent
@@ -485,6 +500,7 @@ def compute_condition_metrics(
             **cal,
             **threshold_fields,
             "aurc": aurc_score(y_true, pred, confidence),
+            "augrc": generalized_risk_coverage_auc((pred != y_true).astype(np.float64), confidence),
             **risk_at_coverages(y_true, pred, confidence),
             **class_fields,
         }
@@ -636,7 +652,7 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--batch_size", type=int, default=32)
     ap.add_argument("--global_noise_seed", type=int, default=3407)
     ap.add_argument("--noise_repeat", type=int, default=0)
-    ap.add_argument("--run_stage", choices=("prescreen_smoke", "screening"), default="screening")
+    ap.add_argument("--run_stage", choices=("prescreen_smoke", "screening", "final"), default="screening")
     ap.add_argument("--selected_channel", type=int, default=None, help="Optional guard; when set it must equal manifest selected_channel.")
     ap.add_argument("--target_coverage", type=float, default=0.95)
     ap.add_argument("--allow_overwrite", action="store_true")

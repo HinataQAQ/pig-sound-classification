@@ -23,6 +23,19 @@ The 5 folds x 3 seeds screening protocol is a paper-candidate simulated-noise
 screening result. It is not a 25-run final result, not a paper main result, and
 not real-farm external validation.
 
+The final simulated-noise protocol extends the same frozen protocol to exactly
+5 folds x 5 seeds:
+
+- folds: 0, 1, 2, 3, 4
+- seeds: 42, 123, 777, 2024, 3407
+- no new environments, SNRs, noise repeats, or recalibration
+
+Only the complete, unique, fully qualified 25-run aggregate may set
+`run_scope=aggregate`, `final_25_run_result=true`, `paper_candidate_result=true`,
+`paper_main_result=true`, and `simulated_noise_main_result=true`. Every single
+fold-seed run, including `run_stage=final`, remains `run_scope=fold_seed`,
+`single_fold_debug=false`, and `paper_main_result=false`.
+
 ## Frozen Zero-Shot Rule
 
 The noisy evaluation reuses the clean artifacts:
@@ -53,7 +66,7 @@ All noise robustness outputs must record:
 - `noise_protocol=zero_shot_frozen`
 - `real_farm_external_validation=false`
 - `feature_backend=training_exact`
-- `run_stage=prescreen_smoke` or `run_stage=screening`
+- `run_stage=prescreen_smoke`, `run_stage=screening`, or `run_stage=final`
 - `run_scope=fold_seed` for a single run
 - `paper_main_result=false` for a single run
 
@@ -167,6 +180,10 @@ condition:
 - coverage and selective risk
 - method-specific frozen-threshold coverage and selective risk
 - AURC
+- AUGRC, computed as the area under generalized risk-coverage after sorting
+  samples by descending confidence. In the current classification report the
+  generalized loss is the 0/1 error, so AUGRC is numerically comparable to AURC;
+  the field is kept explicit for future non-binary loss definitions.
 - risk at coverage 0.80, 0.90, and 0.95
 - degradation versus clean Macro-F1
 - complete confusion matrix

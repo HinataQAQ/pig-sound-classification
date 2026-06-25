@@ -1,0 +1,17 @@
+{
+  "checkpoint_sha_verified": true,
+  "prototype_bundle_sha_verified": true,
+  "calibration_sha_verified": true,
+  "test_manifest_sha_verified": true,
+  "noise_manifest_sha_verified": true,
+  "noise_provenance_policy_verified": true,
+  "selected_noise_file_sha_verified": true,
+  "noise_vs_pig_md5_disjoint": true,
+  "selected_channel_verified": true,
+  "checkpoint_sha256": "36007212e72e490075fe4ef557173bb666c81739106b13fd1e9363fb4bbc7155",
+  "prototype_bundle_sha256": "213ee753f9674bfa85e12e6021576d0d99c0d18989c7270ffdbb6aa9d1f3edf4",
+  "calibration_json_sha256": "f0f244f80304d803be55e4f2e316a2478b094dbf8d4ec060e8aa12d210c64fa5",
+  "noise_manifest_sha256": "d7da9b7ff7fd07f8859bf86d607b6a295c3d7b5df4ac433057e0086dc985afc6",
+  "noise_provenance_json_sha256": "ce5dde2d3388d0cfedd0d2f875c3c5851f3ce8f64cb5f0ce40fc3eb323f5e59e",
+  "ok": true
+}
