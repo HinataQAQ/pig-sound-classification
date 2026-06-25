@@ -176,9 +176,15 @@ ALL_NOISY errors:
 
 AURC / frozen threshold:
 
-- ALL_NOISY raw: AURC `0.179827`, frozen coverage/risk `0.917196 / 0.304687`
-- ALL_NOISY prototype: AURC `0.208029`, frozen coverage/risk `0.921869 / 0.299186`
-- ALL_NOISY hierarchical: AURC `0.210261`, frozen coverage/risk `0.917901 / 0.304017`
+- ALL_NOISY raw: AURC `0.179827`, risk@80/90/95
+  `0.305624 / 0.304922 / 0.309583`, frozen coverage/risk
+  `0.917196 / 0.304687`
+- ALL_NOISY prototype: AURC `0.208029`, risk@80/90/95
+  `0.305130 / 0.299756 / 0.302963`, frozen coverage/risk
+  `0.921869 / 0.299186`
+- ALL_NOISY hierarchical: AURC `0.210261`, risk@80/90/95
+  `0.309410 / 0.304240 / 0.306944`, frozen coverage/risk
+  `0.917901 / 0.304017`
 
 ## Data Boundaries
 

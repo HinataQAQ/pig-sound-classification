@@ -112,9 +112,30 @@
     "hierarchical": {"feeding_to_stress": 1371, "stress_to_feeding": 281, "cough_to_calm_grunt": 63, "cough_to_feeding": 0, "cough_to_stress_vocal": 5320}
   },
   "all_noisy_uncertainty": {
-    "raw_softmax": {"mean_aurc": 0.1798268246, "frozen_threshold_coverage": 0.9171957672, "frozen_threshold_selective_risk": 0.3046870421},
-    "prototype": {"mean_aurc": 0.2080293912, "frozen_threshold_coverage": 0.9218694885, "frozen_threshold_selective_risk": 0.2991857798},
-    "hierarchical": {"mean_aurc": 0.21026091, "frozen_threshold_coverage": 0.9179012346, "frozen_threshold_selective_risk": 0.3040171397}
+    "raw_softmax": {
+      "mean_aurc": 0.1798268246,
+      "risk_at_coverage_0_80": 0.3056241427,
+      "risk_at_coverage_0_90": 0.3049220273,
+      "risk_at_coverage_0_95": 0.3095833333,
+      "frozen_threshold_coverage": 0.9171957672,
+      "frozen_threshold_selective_risk": 0.3046870421
+    },
+    "prototype": {
+      "mean_aurc": 0.2080293912,
+      "risk_at_coverage_0_80": 0.3051303155,
+      "risk_at_coverage_0_90": 0.2997563353,
+      "risk_at_coverage_0_95": 0.302962963,
+      "frozen_threshold_coverage": 0.9218694885,
+      "frozen_threshold_selective_risk": 0.2991857798
+    },
+    "hierarchical": {
+      "mean_aurc": 0.21026091,
+      "risk_at_coverage_0_80": 0.3094101509,
+      "risk_at_coverage_0_90": 0.3042397661,
+      "risk_at_coverage_0_95": 0.3069444444,
+      "frozen_threshold_coverage": 0.9179012346,
+      "frozen_threshold_selective_risk": 0.3040171397
+    }
   },
   "outputs": {
     "condition_summary": "reports/prototype_noise_demand_w05_screening_summary.csv",
