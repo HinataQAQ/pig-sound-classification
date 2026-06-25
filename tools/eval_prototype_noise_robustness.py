@@ -414,7 +414,10 @@ def noise_result_qualification(
     manifest_sha_verified: bool,
     unsafe_allow_checkpoint_sha_mismatch: bool,
     provenance_gates_ok: bool = True,
+    run_stage: str = "screening",
 ) -> dict[str, Any]:
+    if run_stage not in {"prescreen_smoke", "screening"}:
+        raise ValueError(f"run_stage must be prescreen_smoke or screening, got {run_stage!r}")
     feature_pipeline_equivalent = feature_backend == "training_exact"
     eligible = bool(
         feature_pipeline_equivalent
@@ -428,8 +431,8 @@ def noise_result_qualification(
         "feature_backend": feature_backend,
         "feature_pipeline_equivalent": feature_pipeline_equivalent,
         "input_role": "frozen_test",
-        "run_scope": "fold_seed",
-        "single_fold_debug": True,
+        "run_scope": "fold_seed_smoke" if run_stage == "prescreen_smoke" else "fold_seed",
+        "single_fold_debug": run_stage == "prescreen_smoke",
         "eligible_for_cv_aggregation": eligible,
         "paper_candidate_result": False,
         "paper_main_result": False,
@@ -633,6 +636,7 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--batch_size", type=int, default=32)
     ap.add_argument("--global_noise_seed", type=int, default=3407)
     ap.add_argument("--noise_repeat", type=int, default=0)
+    ap.add_argument("--run_stage", choices=("prescreen_smoke", "screening"), default="screening")
     ap.add_argument("--selected_channel", type=int, default=None, help="Optional guard; when set it must equal manifest selected_channel.")
     ap.add_argument("--target_coverage", type=float, default=0.95)
     ap.add_argument("--allow_overwrite", action="store_true")
@@ -685,7 +689,7 @@ def main() -> None:
         == str(clean_prediction_metadata.get("calibration_json_sha256", "")).strip().lower(),
         "test_manifest_sha_verified": True,
         "noise_manifest_sha_verified": bool(expected_manifest_sha) and actual_noise_manifest_sha == expected_manifest_sha,
-        "noise_provenance_sha_verified": bool(actual_noise_provenance_sha)
+        "noise_provenance_policy_verified": bool(actual_noise_provenance_sha)
         and str(noise_provenance.get("license_status", "")) == "conflicting_metadata",
         "selected_noise_file_sha_verified": False,
         "noise_vs_pig_md5_disjoint": False,
@@ -704,7 +708,7 @@ def main() -> None:
         raise RuntimeError("Calibration JSON SHA256 mismatch against clean prediction metadata.")
     if not provenance_gates["noise_manifest_sha_verified"]:
         raise RuntimeError("Noise manifest SHA256 mismatch against DEMAND provenance metadata.")
-    if not provenance_gates["noise_provenance_sha_verified"]:
+    if not provenance_gates["noise_provenance_policy_verified"]:
         raise RuntimeError("DEMAND provenance JSON failed license/provenance verification.")
     verify_manifest_matches_metadata(test_manifest, bundle_meta, "test")
     provenance_gates["test_manifest_sha_verified"] = True
@@ -776,7 +780,7 @@ def main() -> None:
             "calibration_sha_verified",
             "test_manifest_sha_verified",
             "noise_manifest_sha_verified",
-            "noise_provenance_sha_verified",
+            "noise_provenance_policy_verified",
             "selected_noise_file_sha_verified",
             "noise_vs_pig_md5_disjoint",
             "selected_channel_verified",
@@ -836,6 +840,7 @@ def main() -> None:
                 "noise_sha256": None if environment == "clean" else noise_sha,
                 "environment_recording_id": None if environment == "clean" else str(noise_row["environment_recording_id"]),
                 "selected_channel": None if environment == "clean" else selected_channels[environment],
+                "global_noise_seed": None if environment == "clean" else int(args.global_noise_seed),
                 "snr_reference": "clean" if snr is None else "active_valid_region",
                 "target_active_snr_db": "clean" if snr is None else float(snr),
                 "simulated_noise": environment != "clean",
@@ -986,18 +991,21 @@ def main() -> None:
         snr_errors.append(float(r["achieved_active_snr_db"]) - float(r["target_active_snr_db"]))
     same_offset_groups = []
     if not noisy_prov.empty:
-        for keys, group in noisy_prov.groupby(["clean_path", "noise_environment", "noise_repeat", "noise_draw_id"], dropna=False):
+        for keys, group in noisy_prov.groupby(["clean_path", "noise_environment", "noise_repeat", "offset_key_version"], dropna=False):
             offsets = sorted(set(int(x) for x in group["noise_offset"]))
+            draw_ids = sorted(set(str(x) for x in group["noise_draw_id"]))
             snrs = sorted(float(x) for x in group["target_active_snr_db"])
             same_offset_groups.append(
                 {
                     "clean_path": keys[0],
                     "noise_environment": keys[1],
                     "noise_repeat": int(keys[2]),
-                    "noise_draw_id": keys[3],
+                    "offset_key_version": keys[3],
+                    "noise_draw_id": draw_ids[0] if len(draw_ids) == 1 else draw_ids,
+                    "unique_noise_draw_ids": draw_ids,
                     "unique_noise_offsets": offsets,
                     "target_active_snr_db": snrs,
-                    "same_offset_across_snr": len(offsets) == 1,
+                    "same_offset_across_snr": len(offsets) == 1 and len(draw_ids) == 1,
                 }
             )
     same_offset_across_snr_verified = all(x["same_offset_across_snr"] for x in same_offset_groups)
@@ -1008,6 +1016,7 @@ def main() -> None:
         manifest_sha_verified=bool(provenance_gates.get("test_manifest_sha_verified", False)),
         unsafe_allow_checkpoint_sha_mismatch=False,
         provenance_gates_ok=bool(provenance_gates.get("ok", False)),
+        run_stage=args.run_stage,
     )
     payload = {
         "artifact_type": "prototype_noise_robustness_debug",
@@ -1015,6 +1024,7 @@ def main() -> None:
         "fold": fold,
         "seed": seed,
         "lambda": bundle_meta.get("model_config", {}).get("hier_aux_weight"),
+        "run_stage": args.run_stage,
         **qualification,
         "qualification_fields": qualification,
         "simulated_noise": True,
@@ -1024,6 +1034,7 @@ def main() -> None:
         "snr_db": [float(x) for x in args.snr_db],
         "target_active_snr_db": [float(x) for x in args.snr_db],
         "snr_reference": "active_valid_region",
+        "global_noise_seed": int(args.global_noise_seed),
         "noise_repeat": int(args.noise_repeat),
         "offset_key_version": "demand_noise_offset_v2",
         "selected_channels": selected_channels,

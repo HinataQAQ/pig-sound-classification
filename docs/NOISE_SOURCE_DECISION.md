@@ -45,8 +45,9 @@ screening protocol:
 - `STRAFFIC`: mixed environmental noise. This is a busy street traffic
   intersection recording.
 
-The first debug run uses only `DWASHING` at 20 dB and 10 dB SNR. It does not run
-the full 5 folds x 3 seeds screening set and does not include 0 dB.
+The fixed screening uses all three selected environments over 5 folds x 3 seeds
+at 20, 10, and 0 dB active-event SNR. The 0 dB condition is an extreme
+simulated-noise stress condition, not an ordinary deployment noise level.
 
 ## Channel Policy
 

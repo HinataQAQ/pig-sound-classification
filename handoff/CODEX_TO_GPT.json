@@ -1,163 +1,145 @@
 {
   "status": "completed",
-  "task": "demand_noise_prescreen_protocol_fixes",
-  "full_15_run_screening_approved": false,
-  "branch": "codex/demand-noise-prescreen-fix",
-  "base_branch": "codex/demand-noise-debug",
+  "task": "demand_noise_screening_w05",
+  "approval": {
+    "current_user_attachment_approved": true,
+    "stale_gpt_to_codex_file_still_says_approved_false": true,
+    "action_taken": "Followed the current explicit APPROVED:true attachment."
+  },
+  "branch": "codex/demand-noise-screening-w05",
+  "base_branch": "codex/demand-noise-prescreen-fix",
   "final_commit_sha": "pending_at_handoff_write; see pushed branch HEAD/final Codex response",
   "scope": {
-    "fold": 0,
-    "seed": 3407,
     "lambda": 0.5,
+    "folds": [0, 1, 2, 3, 4],
+    "seeds": [42, 2024, 3407],
+    "n_fold_seed_runs": 15,
     "feature_backend": "training_exact",
-    "noise_environments": [
-      "DWASHING",
-      "TBUS",
-      "STRAFFIC"
-    ],
-    "target_active_snr_db": [
-      20.0,
-      10.0,
-      0.0
-    ],
+    "noise_source": "DEMAND",
+    "noise_environments": ["DWASHING", "TBUS", "STRAFFIC"],
+    "target_active_snr_db": [20.0, 10.0, 0.0],
+    "global_noise_seed": 3407,
     "noise_repeat": 0,
-    "full_15_run_screening_started": false,
-    "lambda_1_started": false
-  },
-  "fixes": {
     "offset_key_version": "demand_noise_offset_v2",
-    "offset_excludes_model_seed": true,
-    "offset_excludes_snr": true,
-    "method_specific_thresholds": true,
-    "provenance_gates_strengthened": true,
-    "channel_mismatch_rejected": true,
-    "active_event_snr_fields": true,
-    "per_class_metrics_and_confusion": true,
-    "screening_summarizer_hardened": true,
-    "license_metadata_conflict_recorded": true
+    "run_stage": "screening",
+    "noise_protocol": "zero_shot_frozen",
+    "lambda_1_started": false,
+    "noise_aware_recalibration_started": false,
+    "noise_augmentation_training_started": false,
+    "local_unlicensed_noise_started": false,
+    "real_farm_external_validation_started": false
   },
-  "acceptance": {
-    "clean_equivalence_ok": true,
-    "clean_equivalence_match_count": 168,
-    "same_offset_across_snr_verified": true,
-    "same_waveform_embedding_reused": true,
-    "no_nan_inf_at_0db": true,
+  "pre_run_patch": {
+    "run_stage_arg_added": true,
+    "smoke_run_scope": "fold_seed_smoke",
+    "screening_run_scope": "fold_seed",
+    "screening_single_fold_debug": false,
+    "noise_metrics_records_global_noise_seed": true,
+    "noise_metrics_records_noise_repeat": true,
+    "noise_metrics_records_offset_key_version": true,
+    "noise_provenance_policy_verified_key": true,
+    "strict_per_run_exact_grid_validation": true,
+    "strict_paired_n_15": true,
+    "cross_seed_draw_audit": true,
+    "moderate_extreme_all_noisy_strata": true,
+    "fold_cluster_paired_stats": true
+  },
+  "verification": {
+    "noise_script_help": true,
+    "py_compile": true,
+    "noise_unittest_count": 29,
+    "prototype_core_unittest_count": 47,
+    "total_unittest_count": 76,
+    "git_diff_check": true
+  },
+  "aggregate_provenance": {
+    "run_scope": "aggregate",
+    "screening_result": true,
+    "final_25_run_result": false,
+    "paper_candidate_result": true,
+    "paper_main_result": false,
+    "n_fold_seed_runs": 15,
     "simulated_noise": true,
     "real_farm_external_validation": false,
-    "paper_main_result": false,
-    "eligible_for_noise_aggregation": true
+    "cross_seed_noise_draw_audit_ok": true,
+    "cross_seed_noise_draw_audit_groups": 2520
   },
-  "provenance_gates": {
-    "checkpoint_sha_verified": true,
-    "prototype_bundle_sha_verified": true,
-    "calibration_sha_verified": true,
-    "test_manifest_sha_verified": true,
-    "noise_manifest_sha_verified": true,
-    "noise_provenance_sha_verified": true,
-    "selected_noise_file_sha_verified": true,
-    "noise_vs_pig_md5_disjoint": true,
-    "selected_channel_verified": true,
-    "ok": true
-  },
-  "method_specific_clean_val_thresholds": {
-    "raw_softmax": {
-      "global": 0.8629439473152161,
-      "per_class": {
-        "cough": 0.999169647693634,
-        "calm_grunt": 0.9971354603767395,
-        "feeding": 0.7203384041786194,
-        "stress_vocal": 0.7393773794174194
-      }
+  "macro_f1_summary": {
+    "MODERATE_NOISE": {
+      "raw_softmax": {"mean": 0.6454417303, "std": 0.0273060901},
+      "prototype": {"mean": 0.6540766356, "std": 0.024861506},
+      "hierarchical": {"mean": 0.6525566504, "std": 0.0270550837},
+      "fused": {"mean": 0.649657564, "std": 0.0258266758}
     },
-    "prototype": {
-      "global": 0.82790607213974,
-      "per_class": {
-        "cough": 0.9999868273735046,
-        "calm_grunt": 0.9999257922172546,
-        "feeding": 0.7864745259284973,
-        "stress_vocal": 0.6714802980422974
-      }
+    "EXTREME_STRESS": {
+      "raw_softmax": {"mean": 0.5569395758, "std": 0.0296534905},
+      "prototype": {"mean": 0.5658329095, "std": 0.0258030058},
+      "hierarchical": {"mean": 0.5571578429, "std": 0.026775769},
+      "fused": {"mean": 0.5614219218, "std": 0.0266788702}
     },
-    "hierarchical": {
-      "global": 0.8532170057296753,
-      "per_class": {
-        "cough": 0.9999885559082031,
-        "calm_grunt": 0.9998205304145813,
-        "feeding": 0.7066670656204224,
-        "stress_vocal": 0.7599010467529297
-      }
+    "ALL_NOISY": {
+      "raw_softmax": {"mean": 0.6159410122, "std": 0.0250810097},
+      "prototype": {"mean": 0.6246620603, "std": 0.0227446589},
+      "hierarchical": {"mean": 0.6207570479, "std": 0.0234492572},
+      "fused": {"mean": 0.6202456833, "std": 0.0229817996}
     }
   },
-  "macro_f1": {
-    "clean": {
-      "raw_softmax": 0.946360153256705,
-      "prototype": 0.946360153256705,
-      "hierarchical": 0.9522727272727273
+  "paired_statistics": {
+    "MODERATE_NOISE": {
+      "prototype_minus_raw_softmax": {"mean_delta": 0.0086349053, "wilcoxon_p": 0.0023294397, "wins_ties_losses": "13/1/1"},
+      "hierarchical_minus_raw_softmax": {"mean_delta": 0.0071149201, "wilcoxon_p": 0.0124511719, "wins_ties_losses": "12/0/3"},
+      "hierarchical_minus_prototype": {"mean_delta": -0.0015199852, "wilcoxon_p": 0.1514282227, "wins_ties_losses": "5/0/10"}
     },
-    "DWASHING_20dB": {
-      "raw_softmax": 0.6563208109719738,
-      "prototype": 0.6658136482939632,
-      "hierarchical": 0.6611023206751054
+    "EXTREME_STRESS": {
+      "prototype_minus_raw_softmax": {"mean_delta": 0.0088933337, "wilcoxon_p": 0.3027954102, "wins_ties_losses": "7/0/8"},
+      "hierarchical_minus_raw_softmax": {"mean_delta": 0.000218267, "wilcoxon_p": 0.5994873047, "wins_ties_losses": "6/0/9"},
+      "hierarchical_minus_prototype": {"mean_delta": -0.0086750667, "wilcoxon_p": 0.0015258789, "wins_ties_losses": "2/0/13"}
     },
-    "DWASHING_10dB": {
-      "raw_softmax": 0.6048148148148148,
-      "prototype": 0.6146616541353384,
-      "hierarchical": 0.6200903377847604
-    },
-    "DWASHING_0dB": {
-      "raw_softmax": 0.5946651129800384,
-      "prototype": 0.6051144885511449,
-      "hierarchical": 0.6
-    },
-    "TBUS_20dB": {
-      "raw_softmax": 0.6140450415307956,
-      "prototype": 0.6140450415307956,
-      "hierarchical": 0.6194638694638694
-    },
-    "TBUS_10dB": {
-      "raw_softmax": 0.5994697564807542,
-      "prototype": 0.6044091710758378,
-      "hierarchical": 0.6048148148148148
-    },
-    "TBUS_0dB": {
-      "raw_softmax": 0.5637614942528735,
-      "prototype": 0.5761432991755529,
-      "hierarchical": 0.564465557913608
-    },
-    "STRAFFIC_20dB": {
-      "raw_softmax": 0.5946160993793727,
-      "prototype": 0.6048148148148148,
-      "hierarchical": 0.5999404589052992
-    },
-    "STRAFFIC_10dB": {
-      "raw_softmax": 0.5331406442922887,
-      "prototype": 0.553182214472537,
-      "hierarchical": 0.54
-    },
-    "STRAFFIC_0dB": {
-      "raw_softmax": 0.37721259278614905,
-      "prototype": 0.36320159138555363,
-      "hierarchical": 0.3550941525353703
+    "ALL_NOISY": {
+      "prototype_minus_raw_softmax": {"mean_delta": 0.0087210481, "wilcoxon_p": 0.0026245117, "wins_ties_losses": "13/0/2"},
+      "hierarchical_minus_raw_softmax": {"mean_delta": 0.0048160358, "wilcoxon_p": 0.229309082, "wins_ties_losses": "9/0/6"},
+      "hierarchical_minus_prototype": {"mean_delta": -0.0039050123, "wilcoxon_p": 0.0001220703, "wins_ties_losses": "1/0/14"}
     }
   },
-  "notable_per_class_result": {
-    "0db_cough_f1": "0.0 for raw_softmax, prototype, and hierarchical across DWASHING, TBUS, and STRAFFIC",
-    "interpretation": "0 dB active-event SNR should be framed as a severe stress test."
+  "all_noisy_class_f1_from_confusion": {
+    "raw_softmax": {"cough": 0.0876897133, "calm_grunt": 0.9922942207, "feeding": 0.8259385666, "stress_vocal": 0.5981413686},
+    "prototype": {"cough": 0.0985915493, "calm_grunt": 0.9857391304, "feeding": 0.8433086752, "stress_vocal": 0.6065076914},
+    "hierarchical": {"cough": 0.0963572268, "calm_grunt": 0.9875424689, "feeding": 0.8317628583, "stress_vocal": 0.6058863329}
   },
-  "snr_audit": {
-    "snr_reference": "active_valid_region",
-    "snr_error_abs_max": 4.918568325962269e-7,
-    "DWASHING_cough_20db_active_mean": 19.999999991871725,
-    "DWASHING_cough_20db_full_window_mean": 12.920642655653957,
-    "DWASHING_cough_valid_duration_ratio_mean": 0.2341845238095238
+  "all_noisy_errors": {
+    "raw_softmax": {"feeding_to_stress": 1381, "stress_to_feeding": 350, "cough_to_calm_grunt": 20, "cough_to_feeding": 0, "cough_to_stress_vocal": 5390},
+    "prototype": {"feeding_to_stress": 1211, "stress_to_feeding": 350, "cough_to_calm_grunt": 75, "cough_to_feeding": 0, "cough_to_stress_vocal": 5301},
+    "hierarchical": {"feeding_to_stress": 1371, "stress_to_feeding": 281, "cough_to_calm_grunt": 63, "cough_to_feeding": 0, "cough_to_stress_vocal": 5320}
+  },
+  "all_noisy_uncertainty": {
+    "raw_softmax": {"mean_aurc": 0.1798268246, "frozen_threshold_coverage": 0.9171957672, "frozen_threshold_selective_risk": 0.3046870421},
+    "prototype": {"mean_aurc": 0.2080293912, "frozen_threshold_coverage": 0.9218694885, "frozen_threshold_selective_risk": 0.2991857798},
+    "hierarchical": {"mean_aurc": 0.21026091, "frozen_threshold_coverage": 0.9179012346, "frozen_threshold_selective_risk": 0.3040171397}
   },
   "outputs": {
-    "debug_dir": "reports/prototype_noise_demand_w05_fold0_seed3407_prescreen_smoke",
-    "noise_metrics": "reports/prototype_noise_demand_w05_fold0_seed3407_prescreen_smoke/noise_metrics.json",
-    "metrics_by_condition": "reports/prototype_noise_demand_w05_fold0_seed3407_prescreen_smoke/metrics_by_condition.csv",
-    "confusion": "reports/prototype_noise_demand_w05_fold0_seed3407_prescreen_smoke/confusion_by_condition_method.json",
-    "snr_by_class": "reports/prototype_noise_demand_w05_fold0_seed3407_prescreen_smoke/snr_by_class.csv",
-    "provenance_gates": "reports/prototype_noise_demand_w05_fold0_seed3407_prescreen_smoke/provenance_gates.json"
+    "condition_summary": "reports/prototype_noise_demand_w05_screening_summary.csv",
+    "paired_stats": "reports/prototype_noise_demand_w05_screening_paired_stats.csv",
+    "confusion_summary": "reports/prototype_noise_demand_w05_screening_confusion_summary.csv",
+    "per_fold_deltas": "reports/prototype_noise_demand_w05_screening_per_fold_deltas.csv",
+    "fold_cluster_paired_stats": "reports/prototype_noise_demand_w05_screening_fold_cluster_paired_stats.csv",
+    "cross_seed_draw_audit_csv": "reports/prototype_noise_demand_w05_screening_cross_seed_draw_audit.csv",
+    "cross_seed_draw_audit_json": "reports/prototype_noise_demand_w05_screening_cross_seed_draw_audit.json",
+    "aggregate_provenance": "reports/prototype_noise_demand_w05_screening_provenance.json"
   },
-  "recommendation": "Start the fixed 15-run DEMAND screening only after explicit APPROVED:true. The smoke meets protocol gates, but 0 dB active-event SNR is severe and should be interpreted as stress testing."
+  "paper_usability": {
+    "paper_usable_as_screening_evidence": true,
+    "paper_main_result": false,
+    "real_farm_external_validation": false,
+    "note": "Simulated DEMAND noise screening only. 0 dB is an extreme simulated-noise stress condition."
+  },
+  "failures": [],
+  "warnings": [
+    "Existing pandas DataFrame fragmentation warnings from prototype_model_adapter.py during prediction output construction."
+  ],
+  "gpt_pro_questions": [
+    "Is the ALL_NOISY prototype gain over raw Softmax sufficient for an SCI 4 robustness section given cough weakness?",
+    "Should hierarchical prototype be reported as secondary/diagnostic under noise because prototype-only is stronger in this screening?",
+    "Should 0 dB be retained in main tables as severe stress testing or moved to an appendix?"
+  ],
+  "recommended_next_step": "Stop. Decide whether to prepare paper-facing DEMAND tables/figures or first analyze cough failure modes."
 }

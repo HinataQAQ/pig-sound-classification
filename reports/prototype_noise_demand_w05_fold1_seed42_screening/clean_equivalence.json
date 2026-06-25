@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "alignment": {
+    "alignment_ok": true,
+    "matched_count": 168,
+    "reference_count": 168,
+    "reproduced_count": 168,
+    "missing_reference_paths": [],
+    "extra_reproduced_paths": [],
+    "duplicate_reference_paths": [],
+    "duplicate_reproduced_paths": [],
+    "y_true_match_count": 168,
+    "y_pred_match_count": 168,
+    "y_true_all_match": true,
+    "y_pred_all_match": true
+  },
+  "y_true_match": true,
+  "raw_softmax_y_pred_match": true,
+  "reference_macro_f1": 0.9404424276800907,
+  "reproduced_macro_f1": 0.9404424276800907,
+  "macro_f1_abs_diff": 0.0,
+  "macro_f1_tolerance": 1e-06,
+  "sample_count": 168
+}

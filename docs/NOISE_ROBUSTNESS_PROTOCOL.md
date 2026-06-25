@@ -6,19 +6,22 @@ or rejection thresholds.
 
 ## Scope
 
-Current debug scope:
+Current screening scope:
 
-- fold: 0
-- seed: 3407
+- folds: 0, 1, 2, 3, 4
+- seeds: 42, 2024, 3407
 - checkpoint family: hierarchical, lambda 0.5
 - feature backend: `training_exact`
 - noise source: DEMAND
-- debug environment: `DWASHING`
-- debug SNRs: 20 dB and 10 dB
+- environments: `DWASHING`, `TBUS`, `STRAFFIC`
+- active-event SNRs: 20 dB, 10 dB, 0 dB
+- global noise seed: 3407
+- noise repeat: 0
 - protocol: zero-shot frozen
 
-The debug run is a single fold-seed result. It is not a paper main result and it
-does not start the 5 folds x 3 seeds screening protocol.
+The 5 folds x 3 seeds screening protocol is a paper-candidate simulated-noise
+screening result. It is not a 25-run final result, not a paper main result, and
+not real-farm external validation.
 
 ## Frozen Zero-Shot Rule
 
@@ -50,6 +53,7 @@ All noise robustness outputs must record:
 - `noise_protocol=zero_shot_frozen`
 - `real_farm_external_validation=false`
 - `feature_backend=training_exact`
+- `run_stage=prescreen_smoke` or `run_stage=screening`
 - `run_scope=fold_seed` for a single run
 - `paper_main_result=false` for a single run
 
@@ -145,9 +149,9 @@ The planned screening grid is:
 SNR values refer to active-event SNR over the clean valid non-padding region. Use
 phrases such as `0 dB active-event SNR`, not `0 dB clip SNR`.
 
-The first pre-screening smoke run uses fold0/seed3407 over the three selected
-DEMAND environments at 20, 10, and 0 dB. It must not start the full 15-run
-screening set.
+The completed screening uses all three selected DEMAND environments at 20, 10,
+and 0 dB active-event SNR for all 5 folds x 3 seeds. The 0 dB condition must be
+described as an extreme simulated-noise stress condition.
 
 ## Reporting
 

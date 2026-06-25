@@ -32,10 +32,114 @@ from eval_prototype_noise_robustness import (  # noqa: E402
     risk_at_coverages,
     verify_selected_channel,
 )
-from summarize_prototype_noise_robustness import validate_screening_protocol  # noqa: E402
+from summarize_prototype_noise_robustness import (  # noqa: E402
+    build_cross_seed_draw_audit,
+    fold_cluster_paired_stats,
+    paired_stats_by_condition,
+    validate_screening_protocol,
+    validate_single_run_exact_grid,
+)
 
 
 class NoiseRobustnessPipelineTests(unittest.TestCase):
+    def _metric_rows(self, missing_env: str | None = None, missing_snr: float | None = None, missing_method: str | None = None):
+        rows = []
+        for method in ("raw_softmax", "prototype", "hierarchical", "fused"):
+            if missing_method == method:
+                continue
+            rows.append(
+                {
+                    "noise_environment": "clean",
+                    "snr_db": "clean",
+                    "target_active_snr_db": "clean",
+                    "condition": "clean",
+                    "method": method,
+                    "macro_f1": 0.9,
+                    "top1_acc": 0.9,
+                    "top2_acc": 1.0,
+                    "ece": 0.01,
+                    "brier": 0.02,
+                    "nll": 0.03,
+                    "aurc": 0.01,
+                    "frozen_threshold_coverage": 0.95,
+                    "frozen_threshold_selective_risk": 0.05,
+                    "feeding_to_stress": 1,
+                    "stress_to_feeding": 0,
+                    "cough_to_calm_grunt": 0,
+                    "cough_to_feeding": 0,
+                    "cough_to_stress_vocal": 0,
+                }
+            )
+        for env in ("DWASHING", "TBUS", "STRAFFIC"):
+            if missing_env == env:
+                continue
+            for snr in (20.0, 10.0, 0.0):
+                if missing_snr == snr:
+                    continue
+                for method in ("raw_softmax", "prototype", "hierarchical", "fused"):
+                    if missing_method == method:
+                        continue
+                    base = 0.5 + 0.01 * snr
+                    bump = {"raw_softmax": 0.0, "prototype": 0.01, "hierarchical": 0.02, "fused": 0.015}[method]
+                    rows.append(
+                        {
+                            "noise_environment": env,
+                            "snr_db": snr,
+                            "target_active_snr_db": snr,
+                            "condition": f"{env}_{snr:g}dB",
+                            "method": method,
+                            "macro_f1": base + bump,
+                            "top1_acc": base + bump,
+                            "top2_acc": 0.8,
+                            "ece": 0.1,
+                            "brier": 0.2,
+                            "nll": 0.3,
+                            "aurc": 0.2,
+                            "frozen_threshold_coverage": 0.9,
+                            "frozen_threshold_selective_risk": 0.2,
+                            "feeding_to_stress": 2,
+                            "stress_to_feeding": 1,
+                            "cough_to_calm_grunt": 3,
+                            "cough_to_feeding": 4,
+                            "cough_to_stress_vocal": 5,
+                        }
+                    )
+        return rows
+
+    def _payload(self, fold=0, seed=3407, **overrides):
+        payload = {
+            "fold": fold,
+            "seed": seed,
+            "lambda": 0.5,
+            "run_stage": "screening",
+            "global_noise_seed": 3407,
+            "noise_repeat": 0,
+            "offset_key_version": "demand_noise_offset_v2",
+            "single_fold_debug": False,
+            "run_scope": "fold_seed",
+            "paper_main_result": False,
+            "noise_environments": ["DWASHING", "TBUS", "STRAFFIC"],
+            "snr_db": [20.0, 10.0, 0.0],
+            "target_active_snr_db": [20.0, 10.0, 0.0],
+            "simulated_noise": True,
+            "noise_protocol": "zero_shot_frozen",
+            "real_farm_external_validation": False,
+            "clean_equivalence": {"ok": True},
+            "provenance_gates": {"ok": True},
+            "same_waveform_embedding_reused": True,
+            "same_offset_across_snr_verified": True,
+            "test_parameter_selection": False,
+            "feature_backend": "training_exact",
+            "eligible_for_noise_aggregation": True,
+            "metrics_by_condition": self._metric_rows(),
+            "outputs": {},
+        }
+        payload.update(overrides)
+        return payload
+
+    def _screening_payloads(self):
+        return [self._payload(fold=fold, seed=seed) for fold in range(5) for seed in (42, 2024, 3407)]
+
     def test_deterministic_seed_is_stable_across_processes(self):
         parts = ["fold0", "seed3407", "data/a.wav", "abc", "DWASHING", "noise-sha", "20", "20260625"]
         here = deterministic_seed(parts)
@@ -213,6 +317,29 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
         self.assertFalse(numpy["feature_pipeline_equivalent"])
         self.assertFalse(numpy["eligible_for_cv_aggregation"])
 
+    def test_noise_qualification_sets_stage_specific_debug_flags(self):
+        smoke = noise_result_qualification(
+            feature_backend="training_exact",
+            clean_equivalence_ok=True,
+            leakage_audit_ok=True,
+            manifest_sha_verified=True,
+            unsafe_allow_checkpoint_sha_mismatch=False,
+            run_stage="prescreen_smoke",
+        )
+        screening = noise_result_qualification(
+            feature_backend="training_exact",
+            clean_equivalence_ok=True,
+            leakage_audit_ok=True,
+            manifest_sha_verified=True,
+            unsafe_allow_checkpoint_sha_mismatch=False,
+            run_stage="screening",
+        )
+
+        self.assertTrue(smoke["single_fold_debug"])
+        self.assertEqual(smoke["run_scope"], "fold_seed_smoke")
+        self.assertFalse(screening["single_fold_debug"])
+        self.assertEqual(screening["run_scope"], "fold_seed")
+
     def test_verify_selected_channel_rejects_silent_cli_manifest_disagreement(self):
         row = {"selected_channel": 1}
 
@@ -268,24 +395,118 @@ class NoiseRobustnessPipelineTests(unittest.TestCase):
             validate_screening_protocol(payloads)
 
     def test_validate_screening_protocol_accepts_fixed_15_run_grid(self):
-        payloads = [
-            {
-                "fold": fold,
-                "seed": seed,
-                "lambda": 0.5,
-                "noise_environments": ["DWASHING", "TBUS", "STRAFFIC"],
-                "snr_db": [20, 10, 0],
-                "eligible_for_noise_aggregation": True,
-            }
-            for fold in range(5)
-            for seed in (42, 2024, 3407)
-        ]
+        payloads = self._screening_payloads()
 
         result = validate_screening_protocol(payloads)
 
         self.assertEqual(result["n_fold_seed_runs"], 15)
         self.assertFalse(result["paper_main_result"])
         self.assertTrue(result["screening_result"])
+
+    def test_validate_single_run_exact_grid_rejects_missing_environment(self):
+        payload = self._payload(noise_environments=["DWASHING", "TBUS"])
+
+        with self.assertRaisesRegex(ValueError, "environments"):
+            validate_single_run_exact_grid(payload)
+
+    def test_validate_single_run_exact_grid_rejects_missing_zero_db(self):
+        payload = self._payload(snr_db=[20, 10], target_active_snr_db=[20, 10])
+
+        with self.assertRaisesRegex(ValueError, "SNR"):
+            validate_single_run_exact_grid(payload)
+
+    def test_validate_single_run_exact_grid_rejects_missing_condition_method(self):
+        payload = self._payload(metrics_by_condition=self._metric_rows(missing_method="fused"))
+
+        with self.assertRaisesRegex(ValueError, "condition/method"):
+            validate_single_run_exact_grid(payload)
+
+    def test_validate_screening_protocol_rejects_global_noise_seed_mismatch(self):
+        payloads = self._screening_payloads()
+        payloads[0]["global_noise_seed"] = 123
+
+        with self.assertRaisesRegex(ValueError, "global_noise_seed"):
+            validate_screening_protocol(payloads)
+
+    def test_validate_screening_protocol_rejects_noise_repeat_mismatch(self):
+        payloads = self._screening_payloads()
+        payloads[0]["noise_repeat"] = 1
+
+        with self.assertRaisesRegex(ValueError, "noise_repeat"):
+            validate_screening_protocol(payloads)
+
+    def test_paired_stats_fail_when_condition_n_is_not_15(self):
+        payloads = self._screening_payloads()
+        frame = pd.DataFrame(
+            [
+                {**row, "fold": payload["fold"], "seed": payload["seed"], "lambda": payload["lambda"]}
+                for payload in payloads[:-1]
+                for row in payload["metrics_by_condition"]
+            ]
+        )
+
+        with self.assertRaisesRegex(RuntimeError, "paired n"):
+            paired_stats_by_condition(frame)
+
+    def test_moderate_and_extreme_grouping_are_reported(self):
+        payloads = self._screening_payloads()
+        frame = pd.DataFrame(
+            [
+                {**row, "fold": payload["fold"], "seed": payload["seed"], "lambda": payload["lambda"]}
+                for payload in payloads
+                for row in payload["metrics_by_condition"]
+            ]
+        )
+
+        paired = paired_stats_by_condition(frame)
+
+        self.assertIn("MODERATE_NOISE", set(paired["noise_environment"]))
+        self.assertIn("EXTREME_STRESS", set(paired["noise_environment"]))
+        self.assertIn("ALL_NOISY", set(paired["noise_environment"]))
+        self.assertTrue((paired[paired["noise_environment"] == "MODERATE_NOISE"]["n"] == 15).all())
+
+    def test_fold_cluster_bootstrap_is_reproducible(self):
+        payloads = self._screening_payloads()
+        frame = pd.DataFrame(
+            [
+                {**row, "fold": payload["fold"], "seed": payload["seed"], "lambda": payload["lambda"]}
+                for payload in payloads
+                for row in payload["metrics_by_condition"]
+            ]
+        )
+
+        first = fold_cluster_paired_stats(frame)
+        second = fold_cluster_paired_stats(frame)
+
+        pd.testing.assert_frame_equal(first, second)
+        self.assertEqual(set(first["n_folds"]), {5})
+
+    def test_cross_seed_draw_audit_rejects_mismatched_draw_id(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            paths = []
+            for seed in (42, 2024, 3407):
+                path = Path(tmp) / f"seed{seed}.csv"
+                pd.DataFrame(
+                    [
+                        {
+                            "fold": 0,
+                            "seed": seed,
+                            "clean_md5": "a" * 32,
+                            "noise_environment": "DWASHING",
+                            "noise_repeat": 0,
+                            "offset_key_version": "demand_noise_offset_v2",
+                            "noise_draw_id": "draw-a" if seed != 3407 else "draw-b",
+                            "noise_offset": 123,
+                            "noise_sha256": "b" * 64,
+                            "selected_channel": 1,
+                            "global_noise_seed": 3407,
+                        }
+                    ]
+                ).to_csv(path, index=False)
+                paths.append(path)
+
+            with self.assertRaisesRegex(ValueError, "cross-seed"):
+                build_cross_seed_draw_audit(paths)
 
     def test_clean_equivalence_gate_handles_suffixed_y_true_columns(self):
         with tempfile.TemporaryDirectory() as tmp:

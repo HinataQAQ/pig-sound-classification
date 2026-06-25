@@ -192,3 +192,70 @@
   summaries under `reports/prototype_noise_demand_w05_fold0_seed3407_prescreen_smoke`.
 - Recommendation: protocol is ready for review before a fixed 15-run DEMAND
   screening, but do not start it without explicit `APPROVED: true`.
+
+## 2026-06-25 - DEMAND lambda 0.5 fixed 15-run screening
+
+- Status: completed
+- Branch: `codex/demand-noise-screening-w05`
+- Approval state: current user attachment was `APPROVED: true`, conditional on
+  pre-run provenance patch. The stale `handoff/GPT_TO_CODEX.md` still says
+  `APPROVED: false`; current explicit user instruction was followed.
+- Pre-run patch: added `--run_stage prescreen_smoke|screening`; screening runs
+  now record `run_stage=screening`, `run_scope=fold_seed`,
+  `single_fold_debug=false`, `global_noise_seed=3407`, `noise_repeat=0`, and
+  `offset_key_version=demand_noise_offset_v2`. Summarizer now enforces exact
+  1 clean + 9 noisy condition grid, strict paired `n=15`, fixed DEMAND
+  screening protocol, cross-seed draw audit, MODERATE_NOISE / EXTREME_STRESS /
+  ALL_NOISY strata, and fold-cluster paired statistics.
+- Verification before screening: all noise script `--help` commands passed,
+  `py_compile` passed, `tests.test_noise_robustness_pipeline` passed with 29
+  tests, `tests.test_prototype_pipeline_core` passed with 47 tests, and
+  `git diff --check` passed.
+- Screening scope: 5 folds x 3 seeds, lambda 0.5, `DWASHING`, `TBUS`,
+  `STRAFFIC`, active-event SNR `20/10/0` dB, `global_noise_seed=3407`,
+  `noise_repeat=0`, zero-shot frozen, no noisy validation or test tuning.
+- Completion: 15/15 fold-seed runs completed; no run failed.
+- Aggregate provenance: `run_scope=aggregate`, `screening_result=true`,
+  `final_25_run_result=false`, `paper_candidate_result=true`,
+  `paper_main_result=false`, `n_fold_seed_runs=15`,
+  `simulated_noise=true`, `real_farm_external_validation=false`,
+  `cross_seed_noise_draw_audit_ok=true`.
+- Cross-seed draw audit: 2520 groups, all OK; same clean MD5/fold/environment
+  uses identical draw ID, offset, noise SHA, selected channel, and global noise
+  seed across seeds 42, 2024, and 3407.
+- Mean/std Macro-F1:
+  - MODERATE_NOISE raw/prototype/hierarchical/fused:
+    `0.645442/0.027306`, `0.654077/0.024862`,
+    `0.652557/0.027055`, `0.649658/0.025827`.
+  - EXTREME_STRESS raw/prototype/hierarchical/fused:
+    `0.556940/0.029653`, `0.565833/0.025803`,
+    `0.557158/0.026776`, `0.561422/0.026679`.
+  - ALL_NOISY raw/prototype/hierarchical/fused:
+    `0.615941/0.025081`, `0.624662/0.022745`,
+    `0.620757/0.023449`, `0.620246/0.022982`.
+- ALL_NOISY paired stats:
+  - prototype - raw: mean delta `0.008721`, p `0.002625`,
+    wins/ties/losses `13/0/2`.
+  - hierarchical - raw: mean delta `0.004816`, p `0.229309`,
+    wins/ties/losses `9/0/6`.
+  - hierarchical - prototype: mean delta `-0.003905`, p `0.000122`,
+    wins/ties/losses `1/0/14`.
+- ALL_NOISY aggregate class F1 from confusion:
+  - raw: cough `0.087690`, calm `0.992294`, feeding `0.825939`,
+    stress `0.598141`.
+  - prototype: cough `0.098592`, calm `0.985739`, feeding `0.843309`,
+    stress `0.606508`.
+  - hierarchical: cough `0.096357`, calm `0.987542`, feeding `0.831763`,
+    stress `0.605886`.
+- Key interpretation: prototype-only is the most robust method in this
+  simulated DEMAND screening. Hierarchical prototype is useful diagnostic
+  evidence but does not beat prototype-only under noise. Cough remains the
+  weakest class, with most cough errors going to `stress_vocal`.
+- Outputs: `reports/prototype_noise_demand_w05_fold{fold}_seed{seed}_screening/`
+  plus aggregate CSV/JSON files with prefix
+  `reports/prototype_noise_demand_w05_screening`.
+- Warnings: existing pandas DataFrame fragmentation warnings appeared during
+  prediction output construction; no exit status or results were affected.
+- Stop point: do not start lambda 1.0, noise-aware recalibration, noise
+  augmentation training, local unlicensed noise, or real-farm validation without
+  a new explicit approval.

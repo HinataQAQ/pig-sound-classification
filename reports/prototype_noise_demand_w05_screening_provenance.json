@@ -1,0 +1,39 @@
+{
+  "run_scope": "aggregate",
+  "screening_result": true,
+  "final_25_run_result": false,
+  "paper_candidate_result": true,
+  "paper_main_result": false,
+  "n_fold_seed_runs": 15,
+  "folds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "seeds": [
+    42,
+    2024,
+    3407
+  ],
+  "noise_environments": [
+    "DWASHING",
+    "STRAFFIC",
+    "TBUS"
+  ],
+  "target_active_snr_db": [
+    20.0,
+    10.0,
+    0.0
+  ],
+  "lambda": 0.5,
+  "global_noise_seed": 3407,
+  "noise_repeat": 0,
+  "offset_key_version": "demand_noise_offset_v2",
+  "simulated_noise": true,
+  "real_farm_external_validation": false,
+  "cross_seed_noise_draw_audit_ok": true,
+  "cross_seed_noise_draw_audit_csv": "reports\\prototype_noise_demand_w05_screening_cross_seed_draw_audit.csv",
+  "cross_seed_noise_draw_audit_json": "reports\\prototype_noise_demand_w05_screening_cross_seed_draw_audit.json"
+}

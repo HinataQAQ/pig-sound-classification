@@ -1,0 +1,1564 @@
+{
+  "rows": [
+    {
+      "noise_environment": "clean",
+      "snr_db": "clean",
+      "target_active_snr_db": "clean",
+      "condition": "clean",
+      "method": "raw_softmax",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          42,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          36,
+          6
+        ],
+        [
+          0,
+          0,
+          4,
+          38
+        ]
+      ]
+    },
+    {
+      "noise_environment": "clean",
+      "snr_db": "clean",
+      "target_active_snr_db": "clean",
+      "condition": "clean",
+      "method": "prototype",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          42,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          7,
+          35
+        ]
+      ]
+    },
+    {
+      "noise_environment": "clean",
+      "snr_db": "clean",
+      "target_active_snr_db": "clean",
+      "condition": "clean",
+      "method": "hierarchical",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          42,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          4,
+          38
+        ]
+      ]
+    },
+    {
+      "noise_environment": "clean",
+      "snr_db": "clean",
+      "target_active_snr_db": "clean",
+      "condition": "clean",
+      "method": "fused",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          42,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          4,
+          38
+        ]
+      ]
+    },
+    {
+      "noise_environment": "DWASHING",
+      "snr_db": 20.0,
+      "target_active_snr_db": 20.0,
+      "condition": "DWASHING_20dB",
+      "method": "raw_softmax",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          29,
+          0,
+          0,
+          13
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          36,
+          6
+        ],
+        [
+          0,
+          0,
+          4,
+          38
+        ]
+      ]
+    },
+    {
+      "noise_environment": "DWASHING",
+      "snr_db": 20.0,
+      "target_active_snr_db": 20.0,
+      "condition": "DWASHING_20dB",
+      "method": "prototype",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          30,
+          0,
+          0,
+          12
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          6,
+          36
+        ]
+      ]
+    },
+    {
+      "noise_environment": "DWASHING",
+      "snr_db": 20.0,
+      "target_active_snr_db": 20.0,
+      "condition": "DWASHING_20dB",
+      "method": "hierarchical",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          29,
+          0,
+          0,
+          13
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          4,
+          38
+        ]
+      ]
+    },
+    {
+      "noise_environment": "DWASHING",
+      "snr_db": 20.0,
+      "target_active_snr_db": 20.0,
+      "condition": "DWASHING_20dB",
+      "method": "fused",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          29,
+          0,
+          0,
+          13
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          4,
+          38
+        ]
+      ]
+    },
+    {
+      "noise_environment": "DWASHING",
+      "snr_db": 10.0,
+      "target_active_snr_db": 10.0,
+      "condition": "DWASHING_10dB",
+      "method": "raw_softmax",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          17,
+          0,
+          0,
+          25
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          36,
+          6
+        ],
+        [
+          0,
+          0,
+          3,
+          39
+        ]
+      ]
+    },
+    {
+      "noise_environment": "DWASHING",
+      "snr_db": 10.0,
+      "target_active_snr_db": 10.0,
+      "condition": "DWASHING_10dB",
+      "method": "prototype",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          18,
+          0,
+          0,
+          24
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          6,
+          36
+        ]
+      ]
+    },
+    {
+      "noise_environment": "DWASHING",
+      "snr_db": 10.0,
+      "target_active_snr_db": 10.0,
+      "condition": "DWASHING_10dB",
+      "method": "hierarchical",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          18,
+          0,
+          0,
+          24
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          3,
+          39
+        ]
+      ]
+    },
+    {
+      "noise_environment": "DWASHING",
+      "snr_db": 10.0,
+      "target_active_snr_db": 10.0,
+      "condition": "DWASHING_10dB",
+      "method": "fused",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          18,
+          0,
+          0,
+          24
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          3,
+          39
+        ]
+      ]
+    },
+    {
+      "noise_environment": "DWASHING",
+      "snr_db": 0.0,
+      "target_active_snr_db": 0.0,
+      "condition": "DWASHING_0dB",
+      "method": "raw_softmax",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          4,
+          0,
+          0,
+          38
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          32,
+          10
+        ],
+        [
+          0,
+          0,
+          1,
+          41
+        ]
+      ]
+    },
+    {
+      "noise_environment": "DWASHING",
+      "snr_db": 0.0,
+      "target_active_snr_db": 0.0,
+      "condition": "DWASHING_0dB",
+      "method": "prototype",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          7,
+          0,
+          0,
+          35
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          36,
+          6
+        ],
+        [
+          0,
+          0,
+          3,
+          39
+        ]
+      ]
+    },
+    {
+      "noise_environment": "DWASHING",
+      "snr_db": 0.0,
+      "target_active_snr_db": 0.0,
+      "condition": "DWASHING_0dB",
+      "method": "hierarchical",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          6,
+          0,
+          0,
+          36
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          34,
+          8
+        ],
+        [
+          0,
+          0,
+          2,
+          40
+        ]
+      ]
+    },
+    {
+      "noise_environment": "DWASHING",
+      "snr_db": 0.0,
+      "target_active_snr_db": 0.0,
+      "condition": "DWASHING_0dB",
+      "method": "fused",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          6,
+          0,
+          0,
+          36
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          34,
+          8
+        ],
+        [
+          0,
+          0,
+          2,
+          40
+        ]
+      ]
+    },
+    {
+      "noise_environment": "TBUS",
+      "snr_db": 20.0,
+      "target_active_snr_db": 20.0,
+      "condition": "TBUS_20dB",
+      "method": "raw_softmax",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          17,
+          0,
+          0,
+          25
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          36,
+          6
+        ],
+        [
+          0,
+          0,
+          4,
+          38
+        ]
+      ]
+    },
+    {
+      "noise_environment": "TBUS",
+      "snr_db": 20.0,
+      "target_active_snr_db": 20.0,
+      "condition": "TBUS_20dB",
+      "method": "prototype",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          17,
+          0,
+          0,
+          25
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          6,
+          36
+        ]
+      ]
+    },
+    {
+      "noise_environment": "TBUS",
+      "snr_db": 20.0,
+      "target_active_snr_db": 20.0,
+      "condition": "TBUS_20dB",
+      "method": "hierarchical",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          17,
+          0,
+          0,
+          25
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          3,
+          39
+        ]
+      ]
+    },
+    {
+      "noise_environment": "TBUS",
+      "snr_db": 20.0,
+      "target_active_snr_db": 20.0,
+      "condition": "TBUS_20dB",
+      "method": "fused",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          17,
+          0,
+          0,
+          25
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          3,
+          39
+        ]
+      ]
+    },
+    {
+      "noise_environment": "TBUS",
+      "snr_db": 10.0,
+      "target_active_snr_db": 10.0,
+      "condition": "TBUS_10dB",
+      "method": "raw_softmax",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          3,
+          0,
+          0,
+          39
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          35,
+          7
+        ],
+        [
+          0,
+          0,
+          2,
+          40
+        ]
+      ]
+    },
+    {
+      "noise_environment": "TBUS",
+      "snr_db": 10.0,
+      "target_active_snr_db": 10.0,
+      "condition": "TBUS_10dB",
+      "method": "prototype",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          3,
+          0,
+          0,
+          39
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          6,
+          36
+        ]
+      ]
+    },
+    {
+      "noise_environment": "TBUS",
+      "snr_db": 10.0,
+      "target_active_snr_db": 10.0,
+      "condition": "TBUS_10dB",
+      "method": "hierarchical",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          3,
+          0,
+          0,
+          39
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          2,
+          40
+        ]
+      ]
+    },
+    {
+      "noise_environment": "TBUS",
+      "snr_db": 10.0,
+      "target_active_snr_db": 10.0,
+      "condition": "TBUS_10dB",
+      "method": "fused",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          3,
+          0,
+          0,
+          39
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          2,
+          40
+        ]
+      ]
+    },
+    {
+      "noise_environment": "TBUS",
+      "snr_db": 0.0,
+      "target_active_snr_db": 0.0,
+      "condition": "TBUS_0dB",
+      "method": "raw_softmax",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          25,
+          17
+        ],
+        [
+          0,
+          0,
+          1,
+          41
+        ]
+      ]
+    },
+    {
+      "noise_environment": "TBUS",
+      "snr_db": 0.0,
+      "target_active_snr_db": 0.0,
+      "condition": "TBUS_0dB",
+      "method": "prototype",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          31,
+          11
+        ],
+        [
+          0,
+          0,
+          4,
+          38
+        ]
+      ]
+    },
+    {
+      "noise_environment": "TBUS",
+      "snr_db": 0.0,
+      "target_active_snr_db": 0.0,
+      "condition": "TBUS_0dB",
+      "method": "hierarchical",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          27,
+          15
+        ],
+        [
+          0,
+          0,
+          2,
+          40
+        ]
+      ]
+    },
+    {
+      "noise_environment": "TBUS",
+      "snr_db": 0.0,
+      "target_active_snr_db": 0.0,
+      "condition": "TBUS_0dB",
+      "method": "fused",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          27,
+          15
+        ],
+        [
+          0,
+          0,
+          2,
+          40
+        ]
+      ]
+    },
+    {
+      "noise_environment": "STRAFFIC",
+      "snr_db": 20.0,
+      "target_active_snr_db": 20.0,
+      "condition": "STRAFFIC_20dB",
+      "method": "raw_softmax",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          35,
+          7
+        ],
+        [
+          0,
+          0,
+          2,
+          40
+        ]
+      ]
+    },
+    {
+      "noise_environment": "STRAFFIC",
+      "snr_db": 20.0,
+      "target_active_snr_db": 20.0,
+      "condition": "STRAFFIC_20dB",
+      "method": "prototype",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          37,
+          5
+        ],
+        [
+          0,
+          0,
+          5,
+          37
+        ]
+      ]
+    },
+    {
+      "noise_environment": "STRAFFIC",
+      "snr_db": 20.0,
+      "target_active_snr_db": 20.0,
+      "condition": "STRAFFIC_20dB",
+      "method": "hierarchical",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          36,
+          6
+        ],
+        [
+          0,
+          0,
+          2,
+          40
+        ]
+      ]
+    },
+    {
+      "noise_environment": "STRAFFIC",
+      "snr_db": 20.0,
+      "target_active_snr_db": 20.0,
+      "condition": "STRAFFIC_20dB",
+      "method": "fused",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          36,
+          6
+        ],
+        [
+          0,
+          0,
+          2,
+          40
+        ]
+      ]
+    },
+    {
+      "noise_environment": "STRAFFIC",
+      "snr_db": 10.0,
+      "target_active_snr_db": 10.0,
+      "condition": "STRAFFIC_10dB",
+      "method": "raw_softmax",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          21,
+          21
+        ],
+        [
+          0,
+          0,
+          1,
+          41
+        ]
+      ]
+    },
+    {
+      "noise_environment": "STRAFFIC",
+      "snr_db": 10.0,
+      "target_active_snr_db": 10.0,
+      "condition": "STRAFFIC_10dB",
+      "method": "prototype",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          30,
+          12
+        ],
+        [
+          0,
+          0,
+          3,
+          39
+        ]
+      ]
+    },
+    {
+      "noise_environment": "STRAFFIC",
+      "snr_db": 10.0,
+      "target_active_snr_db": 10.0,
+      "condition": "STRAFFIC_10dB",
+      "method": "hierarchical",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          22,
+          20
+        ],
+        [
+          0,
+          0,
+          2,
+          40
+        ]
+      ]
+    },
+    {
+      "noise_environment": "STRAFFIC",
+      "snr_db": 10.0,
+      "target_active_snr_db": 10.0,
+      "condition": "STRAFFIC_10dB",
+      "method": "fused",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          22,
+          20
+        ],
+        [
+          0,
+          0,
+          2,
+          40
+        ]
+      ]
+    },
+    {
+      "noise_environment": "STRAFFIC",
+      "snr_db": 0.0,
+      "target_active_snr_db": 0.0,
+      "condition": "STRAFFIC_0dB",
+      "method": "raw_softmax",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          9,
+          33
+        ],
+        [
+          0,
+          0,
+          0,
+          42
+        ]
+      ]
+    },
+    {
+      "noise_environment": "STRAFFIC",
+      "snr_db": 0.0,
+      "target_active_snr_db": 0.0,
+      "condition": "STRAFFIC_0dB",
+      "method": "prototype",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          15,
+          27
+        ],
+        [
+          0,
+          0,
+          0,
+          42
+        ]
+      ]
+    },
+    {
+      "noise_environment": "STRAFFIC",
+      "snr_db": 0.0,
+      "target_active_snr_db": 0.0,
+      "condition": "STRAFFIC_0dB",
+      "method": "hierarchical",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          10,
+          32
+        ],
+        [
+          0,
+          0,
+          0,
+          42
+        ]
+      ]
+    },
+    {
+      "noise_environment": "STRAFFIC",
+      "snr_db": 0.0,
+      "target_active_snr_db": 0.0,
+      "condition": "STRAFFIC_0dB",
+      "method": "fused",
+      "labels": [
+        "cough",
+        "calm_grunt",
+        "feeding",
+        "stress_vocal"
+      ],
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          42
+        ],
+        [
+          0,
+          42,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          10,
+          32
+        ],
+        [
+          0,
+          0,
+          0,
+          42
+        ]
+      ]
+    }
+  ]
+}
