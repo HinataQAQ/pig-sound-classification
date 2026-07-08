@@ -381,3 +381,49 @@
   full verification results are recorded in the final Codex response.
 - Stop point: review the generated paper package. Do not start new experiments
   without a new explicit `APPROVED: true`.
+
+## 2026-07-08 - Paper figures and Word-friendly tables V2
+
+- Status: completed
+- Branch: `paper/sci-draft-v1`
+- Base: `a015ac2`
+- Approval state: `handoff/GPT_TO_CODEX.md` contained `APPROVED: true`; the
+  external task file
+  `C:\Users\s1205\OneDrive\Desktop\论文\codex_paper_figures_and_tables_tasks.md`
+  specified the figure/table generation scope.
+- Scope: generated figures and Word-friendly table files only. No model
+  training, inference, checkpoint/prototype/calibration construction, SNR/noise
+  draw change, threshold tuning, or statistical protocol change was started.
+- New script: `tools/generate_paper_figures_and_tables.py` validates inputs,
+  generates all eight figures as SVG/PDF/300-dpi PNG, writes figure source
+  manifests, and exports dependency-free Word-friendly table files.
+- Documentation: added `paper/README_figures_tables.md` with the generation
+  command and output descriptions.
+- Figure outputs: regenerated
+  `paper/figures/figure1_overall_method_architecture.{svg,pdf,png}` through
+  `paper/figures/figure8_risk_coverage_curves.{svg,pdf,png}`.
+- Table outputs: added `paper/tables/word_friendly/paper_main_tables.docx`,
+  consolidated and per-table HTML files, and `table_sources.csv`.
+- Source manifests: added `paper/figures/figure_data_sources.csv` and
+  `paper/figures/figure_data_sources.json`.
+- Metrics represented: duration Macro-F1 `1s=0.9226`, `2s=0.9472`,
+  `3s=0.9434`, delta `0.0246`, p `0.000162`; ALL_NOISY
+  raw/prototype/hierarchical Macro-F1 `0.6173/0.6230/0.6200`; ALL_NOISY
+  raw/prototype/hierarchical AURC/AUGRC
+  `0.1775/0.1239`, `0.2109/0.1394`, `0.2122/0.1403`; cough F1
+  `0.0867/0.0974/0.0957`.
+- Leakage audit: source result CSVs under `paper/tables/*.csv` and
+  `paper/appendix/*.csv` have no diff; no audio, checkpoint, NPZ, cache,
+  embedding, or prediction CSV file was added. Train/val/test boundaries and
+  path/source_id/MD5 disjointness are unchanged because this task reads only
+  existing aggregate paper files.
+- Verification: generator `--help` passed, `py_compile` passed, full generation
+  passed, DOCX `word/document.xml` parsed successfully, required caution labels
+  were found in SVG/HTML outputs, and all eight PNGs were visually inspected.
+- Paper usability: `paper_usable=true` for the figure/table package; this task
+  does not create new scientific results and remains simulated-noise-only.
+- Questions for GPT Pro: decide target-journal table format preference, whether
+  Figure 1 needs a journal-specific visual style pass, and whether final
+  captions need additional simulated-noise/0 dB caution wording.
+- Stop point: review generated figures/tables and captions. Do not start new
+  experiments or another paper stage without a new explicit `APPROVED: true`.

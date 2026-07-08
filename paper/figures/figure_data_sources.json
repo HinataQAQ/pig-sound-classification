@@ -1,0 +1,30 @@
+{
+  "figure1_overall_method_architecture": [
+    "tools/train_hier_longcontext_crnn.py",
+    "tools/prototype_model_adapter.py",
+    "paper/tables/table1_dataset_and_leakage_free_protocol.csv"
+  ],
+  "figure2_duration_macro_f1": [
+    "paper/tables/table3_duration_comparison.csv"
+  ],
+  "figure3_prototype_structure": [
+    "tools/prototype_model_adapter.py"
+  ],
+  "figure4_macro_f1_vs_snr": [
+    "paper/appendix/noise_25_run_summary.csv"
+  ],
+  "figure5_noise_degradation_by_environment": [
+    "paper/appendix/noise_25_run_summary.csv"
+  ],
+  "figure6_feeding_stress_confusion": [
+    "paper/tables/table8_per_class_noise_results_and_confusion_directions.csv",
+    "paper/appendix/noise_25_run_summary.csv"
+  ],
+  "figure7_cough_collapse": [
+    "paper/tables/table8_per_class_noise_results_and_confusion_directions.csv",
+    "paper/appendix/noise_25_run_summary.csv"
+  ],
+  "figure8_risk_coverage_curves": [
+    "paper/tables/table9_selective_prediction_metrics_corrected_augrc.csv"
+  ]
+}

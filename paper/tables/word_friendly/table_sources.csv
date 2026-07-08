@@ -1,0 +1,10 @@
+table,title,source_csv
+Table 1,Dataset and leakage-free protocol,paper/tables/table1_dataset_and_leakage_free_protocol.csv
+Table 2,Clean baseline and architecture ablations,paper/tables/table2_clean_baseline_and_architecture_ablations.csv
+Table 3,Duration comparison,paper/tables/table3_duration_comparison.csv
+Table 4,Hierarchical auxiliary weight ablation,paper/tables/table4_hierarchical_aux_weight_ablation.csv
+Table 5,Clean Softmax/prototype/hierarchical prototype results,paper/tables/table5_clean_softmax_main_prototype_hierarchical_prototype.csv
+Table 6,Simulated-noise robustness by stratum,paper/tables/table6_simulated_noise_robustness_by_stratum.csv
+Table 7,Paired statistics,paper/tables/table7_paired_statistics.csv
+Table 8,Per-class noise results and confusion directions,paper/tables/table8_per_class_noise_results_and_confusion_directions.csv
+Table 9,Selective prediction metrics after AUGRC correction,paper/tables/table9_selective_prediction_metrics_corrected_augrc.csv

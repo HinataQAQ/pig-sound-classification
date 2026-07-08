@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Table 7. Paired statistics</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+h1 { font-size: 18px; margin: 0 0 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5pt; }
+th, td { border: 1px solid #888; padding: 4px 6px; vertical-align: top; }
+th { background: #f0f0f0; font-weight: 700; }
+caption { caption-side: top; text-align: left; font-weight: 700; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<h1>Table 7. Paired statistics</h1>
+<table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>experiment</th>
+      <th>noise_environment</th>
+      <th>snr_db</th>
+      <th>comparison</th>
+      <th>n</th>
+      <th>mean_delta</th>
+      <th>std_delta</th>
+      <th>bootstrap_ci95_low</th>
+      <th>bootstrap_ci95_high</th>
+      <th>wilcoxon_p</th>
+      <th>wins</th>
+      <th>ties</th>
+      <th>losses</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>clean_prototype</td>
+      <td></td>
+      <td></td>
+      <td>hierarchical - raw_softmax</td>
+      <td>25</td>
+      <td>0.002937</td>
+      <td>0.010336</td>
+      <td>-0.000478</td>
+      <td>0.007294</td>
+      <td>0.058253</td>
+      <td>13</td>
+      <td>8</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td>clean_prototype</td>
+      <td></td>
+      <td></td>
+      <td>prototype - raw_softmax</td>
+      <td>25</td>
+      <td>0.000803</td>
+      <td>0.008611</td>
+      <td>-0.00231</td>
+      <td>0.004431</td>
+      <td>0.571243</td>
+      <td>10</td>
+      <td>7</td>
+      <td>8</td>
+    </tr>
+    <tr>
+      <td>clean_prototype</td>
+      <td></td>
+      <td></td>
+      <td>hierarchical - prototype</td>
+      <td>25</td>
+      <td>0.002134</td>
+      <td>0.00727</td>
+      <td>-0.000499</td>
+      <td>0.004996</td>
+      <td>0.22133</td>
+      <td>8</td>
+      <td>12</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td>simulated_noise</td>
+      <td>ALL_NOISY</td>
+      <td>GROUP</td>
+      <td>prototype - raw_softmax</td>
+      <td>25</td>
+      <td>0.005755</td>
+      <td>0.012301</td>
+      <td>0.001606</td>
+      <td>0.010894</td>
+      <td>0.010511</td>
+      <td>18</td>
+      <td>0</td>
+      <td>7</td>
+    </tr>
+    <tr>
+      <td>simulated_noise</td>
+      <td>ALL_NOISY</td>
+      <td>GROUP</td>
+      <td>hierarchical - raw_softmax</td>
+      <td>25</td>
+      <td>0.00271</td>
+      <td>0.01074</td>
+      <td>-0.000999</td>
+      <td>0.007085</td>
+      <td>0.312333</td>
+      <td>13</td>
+      <td>0</td>
+      <td>12</td>
+    </tr>
+    <tr>
+      <td>simulated_noise</td>
+      <td>ALL_NOISY</td>
+      <td>GROUP</td>
+      <td>hierarchical - prototype</td>
+      <td>25</td>
+      <td>-0.003045</td>
+      <td>0.003836</td>
+      <td>-0.004581</td>
+      <td>-0.001639</td>
+      <td>0.000376</td>
+      <td>5</td>
+      <td>0</td>
+      <td>20</td>
+    </tr>
+    <tr>
+      <td>simulated_noise</td>
+      <td>MODERATE_NOISE</td>
+      <td>GROUP</td>
+      <td>prototype - raw_softmax</td>
+      <td>25</td>
+      <td>0.006129</td>
+      <td>0.010831</td>
+      <td>0.002442</td>
+      <td>0.010697</td>
+      <td>0.001673</td>
+      <td>19</td>
+      <td>1</td>
+      <td>5</td>
+    </tr>
+    <tr>
+      <td>simulated_noise</td>
+      <td>MODERATE_NOISE</td>
+      <td>GROUP</td>
+      <td>hierarchical - raw_softmax</td>
+      <td>25</td>
+      <td>0.00495</td>
+      <td>0.010635</td>
+      <td>0.001224</td>
+      <td>0.009409</td>
+      <td>0.010511</td>
+      <td>19</td>
+      <td>0</td>
+      <td>6</td>
+    </tr>
+    <tr>
+      <td>simulated_noise</td>
+      <td>MODERATE_NOISE</td>
+      <td>GROUP</td>
+      <td>hierarchical - prototype</td>
+      <td>25</td>
+      <td>-0.001179</td>
+      <td>0.004114</td>
+      <td>-0.002806</td>
+      <td>0.000431</td>
+      <td>0.190814</td>
+      <td>10</td>
+      <td>0</td>
+      <td>15</td>
+    </tr>
+    <tr>
+      <td>simulated_noise</td>
+      <td>EXTREME_STRESS</td>
+      <td>GROUP</td>
+      <td>prototype - raw_softmax</td>
+      <td>25</td>
+      <td>0.005007</td>
+      <td>0.017759</td>
+      <td>-0.001264</td>
+      <td>0.012147</td>
+      <td>0.560171</td>
+      <td>11</td>
+      <td>0</td>
+      <td>14</td>
+    </tr>
+    <tr>
+      <td>simulated_noise</td>
+      <td>EXTREME_STRESS</td>
+      <td>GROUP</td>
+      <td>hierarchical - raw_softmax</td>
+      <td>25</td>
+      <td>-0.00177</td>
+      <td>0.014106</td>
+      <td>-0.007079</td>
+      <td>0.003706</td>
+      <td>0.380984</td>
+      <td>11</td>
+      <td>0</td>
+      <td>14</td>
+    </tr>
+    <tr>
+      <td>simulated_noise</td>
+      <td>EXTREME_STRESS</td>
+      <td>GROUP</td>
+      <td>hierarchical - prototype</td>
+      <td>25</td>
+      <td>-0.006777</td>
+      <td>0.00769</td>
+      <td>-0.009784</td>
+      <td>-0.003952</td>
+      <td>0.000162</td>
+      <td>6</td>
+      <td>0</td>
+      <td>19</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Table 3. Duration comparison</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+h1 { font-size: 18px; margin: 0 0 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5pt; }
+th, td { border: 1px solid #888; padding: 4px 6px; vertical-align: top; }
+th { background: #f0f0f0; font-weight: 700; }
+caption { caption-side: top; text-align: left; font-weight: 700; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<h1>Table 3. Duration comparison</h1>
+<table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>duration</th>
+      <th>model</th>
+      <th>n</th>
+      <th>mean_macro_f1</th>
+      <th>std_macro_f1</th>
+      <th>min_macro_f1</th>
+      <th>max_macro_f1</th>
+      <th>paired_note</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>2 s</td>
+      <td>logmel_dur2</td>
+      <td>25</td>
+      <td>0.9472</td>
+      <td>0.0168</td>
+      <td>0.9213</td>
+      <td>0.9821</td>
+      <td>2 s - 1 s mean delta=0.0246, Wilcoxon p=0.000162</td>
+    </tr>
+    <tr>
+      <td>3 s</td>
+      <td>logmel_dur3</td>
+      <td>15</td>
+      <td>0.9434</td>
+      <td>0.0223</td>
+      <td>0.8912</td>
+      <td>0.9702</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>1 s</td>
+      <td>logmel</td>
+      <td>25</td>
+      <td>0.9226</td>
+      <td>0.0145</td>
+      <td>0.8919</td>
+      <td>0.9462</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

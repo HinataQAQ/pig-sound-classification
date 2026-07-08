@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Table 5. Clean Softmax/prototype/hierarchical prototype results</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+h1 { font-size: 18px; margin: 0 0 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5pt; }
+th, td { border: 1px solid #888; padding: 4px 6px; vertical-align: top; }
+th { background: #f0f0f0; font-weight: 700; }
+caption { caption-side: top; text-align: left; font-weight: 700; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<h1>Table 5. Clean Softmax/prototype/hierarchical prototype results</h1>
+<table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>method</th>
+      <th>n</th>
+      <th>mean_macro_f1</th>
+      <th>std_macro_f1</th>
+      <th>min_macro_f1</th>
+      <th>max_macro_f1</th>
+      <th>mean_top1_acc</th>
+      <th>mean_top2_acc</th>
+      <th>mean_ece</th>
+      <th>mean_brier</th>
+      <th>mean_nll</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>raw_softmax</td>
+      <td>25</td>
+      <td>0.951</td>
+      <td>0.0124</td>
+      <td>0.9217</td>
+      <td>0.9762</td>
+      <td>0.9512</td>
+      <td>1.0</td>
+      <td>0.0305</td>
+      <td>0.0754</td>
+      <td>0.126</td>
+    </tr>
+    <tr>
+      <td>calibrated_softmax</td>
+      <td>25</td>
+      <td>0.951</td>
+      <td>0.0124</td>
+      <td>0.9217</td>
+      <td>0.9762</td>
+      <td>0.9512</td>
+      <td>1.0</td>
+      <td>0.0273</td>
+      <td>0.0751</td>
+      <td>0.1256</td>
+    </tr>
+    <tr>
+      <td>prototype</td>
+      <td>25</td>
+      <td>0.9519</td>
+      <td>0.0131</td>
+      <td>0.9226</td>
+      <td>0.9762</td>
+      <td>0.9519</td>
+      <td>1.0</td>
+      <td>0.0262</td>
+      <td>0.0706</td>
+      <td>0.1171</td>
+    </tr>
+    <tr>
+      <td>hierarchical</td>
+      <td>25</td>
+      <td>0.954</td>
+      <td>0.012</td>
+      <td>0.9343</td>
+      <td>0.9762</td>
+      <td>0.954</td>
+      <td>1.0</td>
+      <td>0.0306</td>
+      <td>0.0725</td>
+      <td>0.1273</td>
+    </tr>
+    <tr>
+      <td>fused</td>
+      <td>25</td>
+      <td>0.9535</td>
+      <td>0.0103</td>
+      <td>0.9343</td>
+      <td>0.9702</td>
+      <td>0.9536</td>
+      <td>1.0</td>
+      <td>0.0266</td>
+      <td>0.0724</td>
+      <td>0.1212</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

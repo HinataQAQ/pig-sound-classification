@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Table 1. Dataset and leakage-free protocol</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+h1 { font-size: 18px; margin: 0 0 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5pt; }
+th, td { border: 1px solid #888; padding: 4px 6px; vertical-align: top; }
+th { background: #f0f0f0; font-weight: 700; }
+caption { caption-side: top; text-align: left; font-weight: 700; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<h1>Table 1. Dataset and leakage-free protocol</h1>
+<table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>item</th>
+      <th>value</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Clean classes</td>
+      <td>cough; calm_grunt; feeding; stress_vocal</td>
+    </tr>
+    <tr>
+      <td>Auxiliary subtypes</td>
+      <td>dry_cough; abdominal_cough; calm_grunt; feeding; frightened_stress; anxious_stress</td>
+    </tr>
+    <tr>
+      <td>Clean backbone protocol</td>
+      <td>cap3x expansion; 2-second Log-Mel; CRNN; 5 folds x 5 seeds</td>
+    </tr>
+    <tr>
+      <td>Prototype protocol</td>
+      <td>train-only prototypes; validation-only calibration; frozen test evaluation; no cross-fold or cross-seed mixing</td>
+    </tr>
+    <tr>
+      <td>Noise protocol</td>
+      <td>DEMAND DWASHING/TBUS/STRAFFIC; active-event SNR 20/10/0 dB; global_noise_seed=3407; noise_repeat=0</td>
+    </tr>
+    <tr>
+      <td>Leakage controls</td>
+      <td>path/source_id/MD5 disjointness; manifest SHA checks; checkpoint/prototype/calibration SHA provenance</td>
+    </tr>
+    <tr>
+      <td>External validation</td>
+      <td>Not performed; all noise results are simulated-noise robustness only</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

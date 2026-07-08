@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Table 2. Clean baseline and architecture ablations</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+h1 { font-size: 18px; margin: 0 0 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5pt; }
+th, td { border: 1px solid #888; padding: 4px 6px; vertical-align: top; }
+th { background: #f0f0f0; font-weight: 700; }
+caption { caption-side: top; text-align: left; font-weight: 700; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<h1>Table 2. Clean baseline and architecture ablations</h1>
+<table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>protocol</th>
+      <th>model</th>
+      <th>n</th>
+      <th>mean_macro_f1</th>
+      <th>std_macro_f1</th>
+      <th>min_macro_f1</th>
+      <th>max_macro_f1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>cap2x</td>
+      <td>mctafd_no_se_gated</td>
+      <td>15</td>
+      <td>0.9156</td>
+      <td>0.017</td>
+      <td>0.8919</td>
+      <td>0.9345</td>
+    </tr>
+    <tr>
+      <td>cap2x</td>
+      <td>logmel</td>
+      <td>15</td>
+      <td>0.9142</td>
+      <td>0.0187</td>
+      <td>0.8738</td>
+      <td>0.9405</td>
+    </tr>
+    <tr>
+      <td>cap3x</td>
+      <td>logmel_dur2</td>
+      <td>25</td>
+      <td>0.9472</td>
+      <td>0.0168</td>
+      <td>0.9213</td>
+      <td>0.9821</td>
+    </tr>
+    <tr>
+      <td>cap3x</td>
+      <td>logmel_dur2_attn</td>
+      <td>15</td>
+      <td>0.9431</td>
+      <td>0.0198</td>
+      <td>0.9078</td>
+      <td>0.9762</td>
+    </tr>
+    <tr>
+      <td>cap3x</td>
+      <td>logmel</td>
+      <td>25</td>
+      <td>0.9226</td>
+      <td>0.0145</td>
+      <td>0.8919</td>
+      <td>0.9462</td>
+    </tr>
+    <tr>
+      <td>cap3x</td>
+      <td>mctafd_no_se_gated</td>
+      <td>15</td>
+      <td>0.9208</td>
+      <td>0.0138</td>
+      <td>0.8906</td>
+      <td>0.9523</td>
+    </tr>
+    <tr>
+      <td>cap3x</td>
+      <td>logmel_specaug</td>
+      <td>15</td>
+      <td>0.9198</td>
+      <td>0.0225</td>
+      <td>0.8763</td>
+      <td>0.9582</td>
+    </tr>
+    <tr>
+      <td>cap3x</td>
+      <td>logmel_sg</td>
+      <td>15</td>
+      <td>0.9093</td>
+      <td>0.0149</td>
+      <td>0.8832</td>
+      <td>0.9285</td>
+    </tr>
+    <tr>
+      <td>cap3x</td>
+      <td>logmel_pcen</td>
+      <td>15</td>
+      <td>0.8916</td>
+      <td>0.0199</td>
+      <td>0.8497</td>
+      <td>0.9226</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

@@ -1,155 +1,183 @@
-# Codex to GPT Handoff - SCI Draft v1 Paper Package
+# Codex to GPT Handoff - Paper Figures and Tables V2
 
 ## Status
 
-Completed. The user provided `APPROVED: true` for the post-experiment paper
-stage. No new model training, inference, SNR, noise draw, prototype,
-checkpoint, calibration, or statistical protocol change was started.
+Completed. The task was approved by `handoff/GPT_TO_CODEX.md`
+(`APPROVED: true`) and by the external task file
+`C:\Users\s1205\OneDrive\Desktop\论文\codex_paper_figures_and_tables_tasks.md`.
 
-This round only corrected AUGRC, regenerated selective-classification
-statistics from existing prediction CSV files, created a paper-ready package,
-and drafted bilingual manuscript files.
+This round generated reproducible paper figures and Word-friendly table files
+from existing paper summary CSVs. No new model training, model inference,
+checkpoint/prototype/calibration construction, SNR/noise draw change, or
+statistical protocol change was started.
 
 ## Branch
 
 - Branch: `paper/sci-draft-v1`
-- Base commit: `c6de8d1541643da3d21d62032c4544f5d39cffae`
+- Base commit: `a015ac2`
 - Commit SHA: see final Codex response after commit/push
 
-## Code Changes
+## Changed Files
 
-- `tools/eval_prototype_noise_robustness.py`
-  - Corrected `generalized_risk_coverage_auc`.
-  - AURC still uses `sum(loss_accepted) / accepted_count`.
-  - AUGRC now uses generalized risk
-    `sum(loss_accepted) / total_sample_count`, integrated over coverage.
-  - Stored scale remains project-native 0..1, not fd-shifts display scale x1000.
-- `tools/summarize_prototype_noise_robustness.py`
-  - Added `--recompute_selective_from_predictions`.
-  - Recomputes AURC, corrected AUGRC, risk@80/90/95, and frozen-threshold
-    coverage/risk from existing `noise_predictions.csv`.
-  - Removed automatic AUGRC backfill from AURC.
-- `tests/test_noise_robustness_pipeline.py`
-  - Added deterministic test where AURC and AUGRC differ.
-  - Added summary test proving AUGRC is recomputed from prediction CSV rather
-    than copied from JSON/AURC.
-- `tools/create_paper_package.py`
-  - Added reproducible paper package generator.
-- `docs/NOISE_ROBUSTNESS_PROTOCOL.md`
-  - Documented corrected AUGRC formula and source.
+- Added `tools/generate_paper_figures_and_tables.py`
+  - Reproducible argparse generator.
+  - Validates required source files.
+  - Writes all eight figures as SVG, PDF, and 300-dpi PNG.
+  - Writes Word-friendly table outputs without adding new dependencies.
+- Added `paper/README_figures_tables.md`
+  - Documents the generation command and output fields.
+- Regenerated:
+  - `paper/figures/figure1_overall_method_architecture.{svg,pdf,png}`
+  - `paper/figures/figure2_duration_macro_f1.{svg,pdf,png}`
+  - `paper/figures/figure3_prototype_structure.{svg,pdf,png}`
+  - `paper/figures/figure4_macro_f1_vs_snr.{svg,pdf,png}`
+  - `paper/figures/figure5_noise_degradation_by_environment.{svg,pdf,png}`
+  - `paper/figures/figure6_feeding_stress_confusion.{svg,pdf,png}`
+  - `paper/figures/figure7_cough_collapse.{svg,pdf,png}`
+  - `paper/figures/figure8_risk_coverage_curves.{svg,pdf,png}`
+- Added source manifests:
+  - `paper/figures/figure_data_sources.csv`
+  - `paper/figures/figure_data_sources.json`
+- Added Word-friendly tables:
+  - `paper/tables/word_friendly/paper_main_tables.docx`
+  - `paper/tables/word_friendly/paper_main_tables.html`
+  - `paper/tables/word_friendly/table_1_dataset_and_leakage_free_protocol.html`
+  - `paper/tables/word_friendly/table_2_clean_baseline_and_architecture_ablations.html`
+  - `paper/tables/word_friendly/table_3_duration_comparison.html`
+  - `paper/tables/word_friendly/table_4_hierarchical_auxiliary_weight_ablation.html`
+  - `paper/tables/word_friendly/table_5_clean_softmax_prototype_hierarchical_prototype_results.html`
+  - `paper/tables/word_friendly/table_6_simulated_noise_robustness_by_stratum.html`
+  - `paper/tables/word_friendly/table_7_paired_statistics.html`
+  - `paper/tables/word_friendly/table_8_per_class_noise_results_and_confusion_directions.html`
+  - `paper/tables/word_friendly/table_9_selective_prediction_metrics_after_augrc_correction.html`
+  - `paper/tables/word_friendly/table_sources.csv`
 
 ## Commands
 
 ```powershell
-$env:PYTHONNOUSERSITE="1"
-git switch -c paper/sci-draft-v1
+Get-Content -Raw -Encoding UTF8 handoff\GPT_TO_CODEX.md
+Get-Content -Raw -Encoding UTF8 'C:\Users\s1205\OneDrive\Desktop\论文\codex_paper_figures_and_tables_tasks.md'
+git branch --show-current
+git status --short --branch
+rg --files paper tools handoff docs
 
-$metrics = @()
-foreach ($fold in 0..4) {
-  foreach ($seed in @(42,123,777,2024,3407)) {
-    $stage = if ($seed -in @(123,777)) { "final" } else { "screening" }
-    $metrics += "reports/prototype_noise_demand_w05_fold${fold}_seed${seed}_${stage}/noise_metrics.json"
-  }
-}
-C:\py\anaconda3\envs\pigsound-gpu\python.exe tools\summarize_prototype_noise_robustness.py --metrics_json $metrics --protocol final --out_dir reports\prototype_noise_demand_w05_final --file_prefix final --recompute_selective_from_predictions
-C:\py\anaconda3\envs\pigsound-gpu\python.exe tools\create_paper_package.py
-C:\py\anaconda3\envs\pigsound-gpu\python.exe tools\summarize_prototype_noise_robustness.py --help
-C:\py\anaconda3\envs\pigsound-gpu\python.exe -m py_compile tools\eval_prototype_noise_robustness.py tools\summarize_prototype_noise_robustness.py tools\create_paper_package.py tests\test_noise_robustness_pipeline.py
-C:\py\anaconda3\envs\pigsound-gpu\python.exe -m unittest tests.test_noise_robustness_pipeline -v
-git diff --check
+$env:PYTHONNOUSERSITE="1"
+$env:PYTHONIOENCODING="utf-8"
+conda run -n pigsound-gpu python tools\generate_paper_figures_and_tables.py --help
+conda run -n pigsound-gpu python -m py_compile tools\generate_paper_figures_and_tables.py
+conda run -n pigsound-gpu python tools\generate_paper_figures_and_tables.py --dpi 300
+
+python -c "import zipfile, xml.etree.ElementTree as ET; p='paper/tables/word_friendly/paper_main_tables.docx'; z=zipfile.ZipFile(p); print('\n'.join(z.namelist())); ET.fromstring(z.read('word/document.xml')); print('document.xml parse ok')"
+rg -n "0 dB active-event SNR|simulated additive noise|main-class prototype|hierarchical prototype|Cough collapse under simulated active-event noise|Prototype AURC/AUGRC is not better|ALL_NOISY|MODERATE_NOISE|EXTREME_STRESS" paper\figures paper\tables\word_friendly
+git diff -- paper\tables\*.csv paper\appendix\*.csv
+Get-ChildItem paper\figures -File
+Get-ChildItem paper\tables\word_friendly -File
 ```
 
-## Corrected Selective Metrics
+Visual spot checks were performed on all eight generated PNG figures in Codex.
 
-The corrected `reports/prototype_noise_demand_w05_final/final_aurc_augrc_summary.csv`
-now has distinct AURC and AUGRC values. For `ALL_NOISY`:
+Note: PowerShell `conda activate pigsound-gpu` hit a local Windows
+encoding/temp-file issue in this shell. `conda run -n pigsound-gpu` succeeded
+and was used for the verified commands.
 
-| Method | AURC | AUGRC | Frozen coverage | Frozen selective risk |
-| --- | ---: | ---: | ---: | ---: |
-| raw_softmax | 0.177458 | 0.123881 | 0.920000 | 0.302386 |
-| prototype | 0.210937 | 0.139362 | 0.921190 | 0.298765 |
-| hierarchical | 0.212211 | 0.140298 | 0.921852 | 0.303299 |
-| fused | 0.184808 | 0.127355 | 0.919418 | 0.301143 |
+## Figure Data Sources
 
-Aggregate Macro-F1 is unchanged because no model inference was rerun:
+- Figure 1: `tools/train_hier_longcontext_crnn.py`;
+  `tools/prototype_model_adapter.py`;
+  `paper/tables/table1_dataset_and_leakage_free_protocol.csv`
+- Figure 2: `paper/tables/table3_duration_comparison.csv`
+- Figure 3: `tools/prototype_model_adapter.py`
+- Figure 4: `paper/appendix/noise_25_run_summary.csv`
+- Figure 5: `paper/appendix/noise_25_run_summary.csv`
+- Figure 6: `paper/tables/table8_per_class_noise_results_and_confusion_directions.csv`;
+  `paper/appendix/noise_25_run_summary.csv`
+- Figure 7: `paper/tables/table8_per_class_noise_results_and_confusion_directions.csv`;
+  `paper/appendix/noise_25_run_summary.csv`
+- Figure 8: `paper/tables/table9_selective_prediction_metrics_corrected_augrc.csv`
 
-- `ALL_NOISY` raw/prototype/hierarchical/fused:
-  `0.617281`, `0.623036`, `0.619991`, `0.620066`.
-- `MODERATE_NOISE` raw/prototype/hierarchical/fused:
-  `0.647225`, `0.653354`, `0.652175`, `0.649915`.
-- `EXTREME_STRESS` raw/prototype/hierarchical/fused:
-  `0.557393`, `0.562400`, `0.555623`, `0.560369`.
+## Core Metrics Represented
 
-## Paper Package
+No metric values were recomputed or modified. The generated plots and tables use
+the existing paper CSV values.
 
-Created:
+- Duration comparison:
+  - 1 s Macro-F1 `0.9226`
+  - 2 s Macro-F1 `0.9472`
+  - 3 s Macro-F1 `0.9434`
+  - 2 s - 1 s mean delta `0.0246`, Wilcoxon p `0.000162`
+- Clean hierarchy/prototype:
+  - lambda 1.0 clean hierarchy mean Macro-F1 `0.9515`
+  - lambda 0.5 clean hierarchy mean Macro-F1 `0.9510`
+  - clean hierarchical prototype Macro-F1 `0.9540`
+- Simulated DEMAND noise:
+  - ALL_NOISY raw/prototype/hierarchical Macro-F1:
+    `0.6173`, `0.6230`, `0.6200`
+  - MODERATE_NOISE raw/prototype/hierarchical Macro-F1:
+    `0.6472`, `0.6534`, `0.6522`
+  - EXTREME_STRESS raw/prototype/hierarchical Macro-F1:
+    `0.5574`, `0.5624`, `0.5556`
+- Corrected selective prediction summary for ALL_NOISY:
+  - raw_softmax AURC/AUGRC `0.1775 / 0.1239`
+  - prototype AURC/AUGRC `0.2109 / 0.1394`
+  - hierarchical AURC/AUGRC `0.2122 / 0.1403`
+- Cough collapse under ALL_NOISY:
+  - cough F1 raw/prototype/hierarchical: `0.0867`, `0.0974`, `0.0957`
+  - cough -> stress_vocal counts raw/prototype/hierarchical:
+    `8935`, `8748`, `8780`
+- Feeding/stress confusion under ALL_NOISY:
+  - feeding -> stress_vocal raw/prototype/hierarchical:
+    `2168`, `2006`, `2240`
+  - stress_vocal -> feeding raw/prototype/hierarchical:
+    `616`, `606`, `495`
 
-- `paper/manuscript/paper_cn_draft.md`
-- `paper/manuscript/paper_en_draft.md`
-- `paper/references/references.bib`
-- `paper/CLAIMS_AND_EVIDENCE.md`
-- `paper/tables/table1_dataset_and_leakage_free_protocol.csv`
-- `paper/tables/table2_clean_baseline_and_architecture_ablations.csv`
-- `paper/tables/table3_duration_comparison.csv`
-- `paper/tables/table4_hierarchical_aux_weight_ablation.csv`
-- `paper/tables/table5_clean_softmax_main_prototype_hierarchical_prototype.csv`
-- `paper/tables/table6_simulated_noise_robustness_by_stratum.csv`
-- `paper/tables/table7_paired_statistics.csv`
-- `paper/tables/table8_per_class_noise_results_and_confusion_directions.csv`
-- `paper/tables/table9_selective_prediction_metrics_corrected_augrc.csv`
-- `paper/figures/figure1_overall_method_architecture.{svg,pdf,png}`
-- `paper/figures/figure2_duration_macro_f1.{svg,pdf,png}`
-- `paper/figures/figure3_prototype_structure.{svg,pdf,png}`
-- `paper/figures/figure4_macro_f1_vs_snr.{svg,pdf,png}`
-- `paper/figures/figure5_noise_degradation_by_environment.{svg,pdf,png}`
-- `paper/figures/figure6_feeding_stress_confusion.{svg,pdf,png}`
-- `paper/figures/figure7_cough_collapse.{svg,pdf,png}`
-- `paper/figures/figure8_risk_coverage_curves.{svg,pdf,png}`
-- `paper/appendix/*`
-- `paper/reproducibility/*`
-
-Reference count: `6`.
-
-## Data Boundaries
+## Data Boundaries and Leakage Audit
 
 - No training data, validation data, or test data role was changed.
 - No test-set tuning was performed.
-- Selective metrics were recomputed from saved frozen-test prediction CSV files.
-- Full prediction CSV files were not copied into `paper/`.
-- No audio, DEMAND archives, checkpoints, embeddings, NPZ files, or caches were
-  added for this paper package.
+- No model training, model inference, calibration, prototype construction, or
+  threshold selection was run.
+- Source result CSVs under `paper/tables/*.csv` and `paper/appendix/*.csv`
+  have no diff after generation.
+- Path/source_id/MD5 disjointness is unchanged because this task reads only
+  existing aggregate paper files and source-code mappings.
+- No audio, DEMAND archives, checkpoints, embeddings, NPZ files, caches, or
+  prediction CSV files were added.
+- Word-friendly table values are copied as text from the source CSV files.
+
+## Verification
+
+- `--help` passed for the new generator.
+- `py_compile` passed for `tools/generate_paper_figures_and_tables.py`.
+- Full generation completed with `--dpi 300`.
+- DOCX package opened as a zip and `word/document.xml` parsed successfully.
+- Required labels were found in generated SVG/HTML outputs:
+  - `simulated additive noise`
+  - `0 dB active-event SNR / extreme simulated-noise stress condition`
+  - `main-class prototype`
+  - `hierarchical prototype`
+  - `Cough collapse under simulated active-event noise`
+  - `Prototype AURC/AUGRC is not better than raw Softmax`
+- Visual inspection of all eight PNGs found no blocking label overlaps after
+  layout fixes.
 
 ## Paper Usability
 
-- `paper_usable_as_single_run_evidence`: false
-- `paper_main_result`: true only for the existing final 25-run aggregate.
-- `real_farm_external_validation`: false
-- `simulated_noise_only`: true
+- `paper_usable`: true for figure/table package.
+- `paper_main_result`: unchanged; this task does not create new scientific
+  results.
+- `real_farm_external_validation`: false.
+- `simulated_noise_only`: true.
+- Values modified: false.
 
-## Interpretation Guardrails
+## Blockers / Questions for GPT Pro
 
-Supported:
+- No code or data blocker remains for figure/table generation.
+- GPT Pro should decide whether the target journal prefers the DOCX table file,
+  the HTML table files, or manual journal-template table formatting.
+- GPT Pro should review final captions and decide whether Figure 1 needs a
+  journal-specific visual style pass.
 
-1. 2-second context significantly improves clean pig-vocal classification.
-2. Hierarchical subtype supervision adds fine-grained semantics and improves
-   the clean boundary, but its gain over the 2-second baseline is not
-   statistically significant.
-3. Main-class prototype inference significantly improves aggregate Macro-F1
-   under simulated DEMAND noise without noisy retraining.
+## Recommended Next Step
 
-Not supported:
-
-- Hierarchical prototype is most noise robust.
-- Real-farm external validation.
-- Universal uncertainty improvement.
-- First invention of prototypical networks.
-- Successful cough recognition at 0 dB.
-
-## Blockers / Questions
-
-- The draft is structurally complete but still needs human scientific editing
-  before journal submission.
-- Reference metadata is intentionally conservative; verify journal-specific
-  bibliography style before submission.
-- Decide whether to add a dedicated cough-failure analysis subsection or leave
-  it as a limitation.
+Stop here and review the generated paper figures/tables and captions. Do not
+start a new experiment or paper stage without a new explicit `APPROVED: true`.

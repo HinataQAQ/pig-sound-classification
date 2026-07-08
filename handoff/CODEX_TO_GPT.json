@@ -1,15 +1,14 @@
 {
   "status": "completed",
-  "task": "sci_draft_v1_augrc_correction_and_paper_package",
+  "task": "paper_figures_and_tables_v2",
   "approval": {
-    "current_user_approved": true,
-    "gpt_to_codex_approved_true": true
+    "gpt_to_codex_approved_true": true,
+    "external_task_file": "C:\\Users\\s1205\\OneDrive\\Desktop\\论文\\codex_paper_figures_and_tables_tasks.md"
   },
   "branch": "paper/sci-draft-v1",
-  "base_commit_sha": "c6de8d1541643da3d21d62032c4544f5d39cffae",
+  "base_commit_sha": "a015ac2",
   "final_commit_sha": "see_final_codex_response_after_commit",
   "scope": {
-    "new_model_experiments_started": false,
     "model_training_started": false,
     "model_inference_started": false,
     "checkpoints_changed": false,
@@ -18,125 +17,180 @@
     "snr_changed": false,
     "noise_draw_changed": false,
     "statistical_protocol_changed": false,
-    "augrc_corrected": true,
-    "selective_metrics_regenerated_from_existing_predictions": true,
-    "paper_package_created": true
-  },
-  "augrc_correction": {
-    "old_incorrect_definition": "cumsum(losses) / accepted_count, duplicating selective risk/AURC under 0/1 loss",
-    "corrected_definition": "generalized_risk(k)=sum(losses among accepted samples)/total_sample_count, integrated over coverage",
-    "stored_scale": "0..1 unscaled project units",
-    "source": "official fd-shifts RiskCoverageStats generalized risk implementation",
-    "unit_tests_added": [
-      "deterministic AUGRC example where AURC and AUGRC differ",
-      "summary recomputation from prediction CSV instead of JSON/AURC backfill"
-    ]
-  },
-  "corrected_all_noisy_selective_metrics": {
-    "raw_softmax": {
-      "aurc": 0.177458,
-      "augrc": 0.123881,
-      "frozen_threshold_coverage": 0.92,
-      "frozen_threshold_selective_risk": 0.302386
-    },
-    "prototype": {
-      "aurc": 0.210937,
-      "augrc": 0.139362,
-      "frozen_threshold_coverage": 0.92119,
-      "frozen_threshold_selective_risk": 0.298765
-    },
-    "hierarchical": {
-      "aurc": 0.212211,
-      "augrc": 0.140298,
-      "frozen_threshold_coverage": 0.921852,
-      "frozen_threshold_selective_risk": 0.303299
-    },
-    "fused": {
-      "aurc": 0.184808,
-      "augrc": 0.127355,
-      "frozen_threshold_coverage": 0.919418,
-      "frozen_threshold_selective_risk": 0.301143
-    }
-  },
-  "macro_f1_unchanged": {
-    "ALL_NOISY": {
-      "raw_softmax": 0.617281,
-      "prototype": 0.623036,
-      "hierarchical": 0.619991,
-      "fused": 0.620066
-    },
-    "MODERATE_NOISE": {
-      "raw_softmax": 0.647225,
-      "prototype": 0.653354,
-      "hierarchical": 0.652175,
-      "fused": 0.649915
-    },
-    "EXTREME_STRESS": {
-      "raw_softmax": 0.557393,
-      "prototype": 0.5624,
-      "hierarchical": 0.555623,
-      "fused": 0.560369
-    }
-  },
-  "paper_package": {
-    "root": "paper",
-    "manuscripts": [
-      "paper/manuscript/paper_cn_draft.md",
-      "paper/manuscript/paper_en_draft.md"
-    ],
-    "references": "paper/references/references.bib",
-    "reference_count": 6,
-    "tables": [
-      "paper/tables/table1_dataset_and_leakage_free_protocol.csv",
-      "paper/tables/table2_clean_baseline_and_architecture_ablations.csv",
-      "paper/tables/table3_duration_comparison.csv",
-      "paper/tables/table4_hierarchical_aux_weight_ablation.csv",
-      "paper/tables/table5_clean_softmax_main_prototype_hierarchical_prototype.csv",
-      "paper/tables/table6_simulated_noise_robustness_by_stratum.csv",
-      "paper/tables/table7_paired_statistics.csv",
-      "paper/tables/table8_per_class_noise_results_and_confusion_directions.csv",
-      "paper/tables/table9_selective_prediction_metrics_corrected_augrc.csv"
-    ],
-    "figures": [
-      "paper/figures/figure1_overall_method_architecture.svg",
-      "paper/figures/figure2_duration_macro_f1.svg",
-      "paper/figures/figure3_prototype_structure.svg",
-      "paper/figures/figure4_macro_f1_vs_snr.svg",
-      "paper/figures/figure5_noise_degradation_by_environment.svg",
-      "paper/figures/figure6_feeding_stress_confusion.svg",
-      "paper/figures/figure7_cough_collapse.svg",
-      "paper/figures/figure8_risk_coverage_curves.svg"
-    ]
+    "source_result_csv_values_modified": false,
+    "figures_regenerated": true,
+    "word_friendly_tables_generated": true
   },
   "commands": [
-    "git switch -c paper/sci-draft-v1",
-    "python tools/summarize_prototype_noise_robustness.py --metrics_json <25 existing noise_metrics.json> --protocol final --out_dir reports/prototype_noise_demand_w05_final --file_prefix final --recompute_selective_from_predictions",
-    "python tools/create_paper_package.py",
-    "python tools/summarize_prototype_noise_robustness.py --help",
-    "python -m py_compile tools/eval_prototype_noise_robustness.py tools/summarize_prototype_noise_robustness.py tools/create_paper_package.py tests/test_noise_robustness_pipeline.py",
-    "python -m unittest tests.test_noise_robustness_pipeline -v",
-    "git diff --check"
+    "Get-Content -Raw -Encoding UTF8 handoff\\GPT_TO_CODEX.md",
+    "Get-Content -Raw -Encoding UTF8 'C:\\Users\\s1205\\OneDrive\\Desktop\\论文\\codex_paper_figures_and_tables_tasks.md'",
+    "git branch --show-current",
+    "git status --short --branch",
+    "rg --files paper tools handoff docs",
+    "$env:PYTHONNOUSERSITE=\"1\"",
+    "$env:PYTHONIOENCODING=\"utf-8\"",
+    "conda run -n pigsound-gpu python tools\\generate_paper_figures_and_tables.py --help",
+    "conda run -n pigsound-gpu python -m py_compile tools\\generate_paper_figures_and_tables.py",
+    "conda run -n pigsound-gpu python tools\\generate_paper_figures_and_tables.py --dpi 300",
+    "python -c \"import zipfile, xml.etree.ElementTree as ET; p='paper/tables/word_friendly/paper_main_tables.docx'; z=zipfile.ZipFile(p); print('\\\\n'.join(z.namelist())); ET.fromstring(z.read('word/document.xml')); print('document.xml parse ok')\"",
+    "rg -n \"0 dB active-event SNR|simulated additive noise|main-class prototype|hierarchical prototype|Cough collapse under simulated active-event noise|Prototype AURC/AUGRC is not better|ALL_NOISY|MODERATE_NOISE|EXTREME_STRESS\" paper\\figures paper\\tables\\word_friendly",
+    "git diff -- paper\\tables\\*.csv paper\\appendix\\*.csv",
+    "Get-ChildItem paper\\figures -File",
+    "Get-ChildItem paper\\tables\\word_friendly -File"
   ],
+  "changed_files": {
+    "scripts": [
+      "tools/generate_paper_figures_and_tables.py"
+    ],
+    "docs": [
+      "paper/README_figures_tables.md",
+      "handoff/CODEX_TO_GPT.md",
+      "handoff/CODEX_TO_GPT.json",
+      "handoff/HISTORY.md"
+    ],
+    "figure_triplets": [
+      "paper/figures/figure1_overall_method_architecture.{svg,pdf,png}",
+      "paper/figures/figure2_duration_macro_f1.{svg,pdf,png}",
+      "paper/figures/figure3_prototype_structure.{svg,pdf,png}",
+      "paper/figures/figure4_macro_f1_vs_snr.{svg,pdf,png}",
+      "paper/figures/figure5_noise_degradation_by_environment.{svg,pdf,png}",
+      "paper/figures/figure6_feeding_stress_confusion.{svg,pdf,png}",
+      "paper/figures/figure7_cough_collapse.{svg,pdf,png}",
+      "paper/figures/figure8_risk_coverage_curves.{svg,pdf,png}"
+    ],
+    "figure_manifests": [
+      "paper/figures/figure_data_sources.csv",
+      "paper/figures/figure_data_sources.json"
+    ],
+    "word_friendly_tables": [
+      "paper/tables/word_friendly/paper_main_tables.docx",
+      "paper/tables/word_friendly/paper_main_tables.html",
+      "paper/tables/word_friendly/table_1_dataset_and_leakage_free_protocol.html",
+      "paper/tables/word_friendly/table_2_clean_baseline_and_architecture_ablations.html",
+      "paper/tables/word_friendly/table_3_duration_comparison.html",
+      "paper/tables/word_friendly/table_4_hierarchical_auxiliary_weight_ablation.html",
+      "paper/tables/word_friendly/table_5_clean_softmax_prototype_hierarchical_prototype_results.html",
+      "paper/tables/word_friendly/table_6_simulated_noise_robustness_by_stratum.html",
+      "paper/tables/word_friendly/table_7_paired_statistics.html",
+      "paper/tables/word_friendly/table_8_per_class_noise_results_and_confusion_directions.html",
+      "paper/tables/word_friendly/table_9_selective_prediction_metrics_after_augrc_correction.html",
+      "paper/tables/word_friendly/table_sources.csv"
+    ]
+  },
+  "figure_data_sources": {
+    "figure1_overall_method_architecture": [
+      "tools/train_hier_longcontext_crnn.py",
+      "tools/prototype_model_adapter.py",
+      "paper/tables/table1_dataset_and_leakage_free_protocol.csv"
+    ],
+    "figure2_duration_macro_f1": [
+      "paper/tables/table3_duration_comparison.csv"
+    ],
+    "figure3_prototype_structure": [
+      "tools/prototype_model_adapter.py"
+    ],
+    "figure4_macro_f1_vs_snr": [
+      "paper/appendix/noise_25_run_summary.csv"
+    ],
+    "figure5_noise_degradation_by_environment": [
+      "paper/appendix/noise_25_run_summary.csv"
+    ],
+    "figure6_feeding_stress_confusion": [
+      "paper/tables/table8_per_class_noise_results_and_confusion_directions.csv",
+      "paper/appendix/noise_25_run_summary.csv"
+    ],
+    "figure7_cough_collapse": [
+      "paper/tables/table8_per_class_noise_results_and_confusion_directions.csv",
+      "paper/appendix/noise_25_run_summary.csv"
+    ],
+    "figure8_risk_coverage_curves": [
+      "paper/tables/table9_selective_prediction_metrics_corrected_augrc.csv"
+    ]
+  },
+  "metrics_represented": {
+    "duration_macro_f1": {
+      "1s": 0.9226,
+      "2s": 0.9472,
+      "3s": 0.9434,
+      "delta_2s_minus_1s": 0.0246,
+      "wilcoxon_p": 0.000162
+    },
+    "simulated_noise_macro_f1": {
+      "ALL_NOISY": {
+        "raw_softmax": 0.6173,
+        "prototype": 0.623,
+        "hierarchical": 0.62
+      },
+      "MODERATE_NOISE": {
+        "raw_softmax": 0.6472,
+        "prototype": 0.6534,
+        "hierarchical": 0.6522
+      },
+      "EXTREME_STRESS": {
+        "raw_softmax": 0.5574,
+        "prototype": 0.5624,
+        "hierarchical": 0.5556
+      }
+    },
+    "all_noisy_aurc_augrc": {
+      "raw_softmax": {
+        "aurc": 0.1775,
+        "augrc": 0.1239
+      },
+      "prototype": {
+        "aurc": 0.2109,
+        "augrc": 0.1394
+      },
+      "hierarchical": {
+        "aurc": 0.2122,
+        "augrc": 0.1403
+      }
+    },
+    "all_noisy_cough": {
+      "f1": {
+        "raw_softmax": 0.0867,
+        "prototype": 0.0974,
+        "hierarchical": 0.0957
+      },
+      "cough_to_stress_vocal": {
+        "raw_softmax": 8935,
+        "prototype": 8748,
+        "hierarchical": 8780
+      }
+    }
+  },
   "data_boundaries": {
     "train_val_test_roles_changed": false,
     "test_set_tuning": false,
-    "full_prediction_csv_copied_to_paper": false,
+    "source_result_csv_diff": false,
     "audio_committed": false,
     "demand_archive_committed": false,
     "checkpoints_committed": false,
     "embeddings_or_npz_committed": false,
-    "cache_committed": false
+    "cache_committed": false,
+    "prediction_csv_committed": false,
+    "path_source_id_md5_disjointness_changed": false
+  },
+  "verification": {
+    "generator_help_passed": true,
+    "generator_py_compile_passed": true,
+    "generation_passed": true,
+    "docx_xml_parse_ok": true,
+    "required_labels_found": true,
+    "visual_png_spot_check_passed": true,
+    "numeric_csv_values_modified": false
   },
   "paper_usability": {
-    "paper_main_result": true,
-    "paper_main_result_scope": "existing complete 5 folds x 5 seeds simulated DEMAND aggregate only",
+    "paper_usable": true,
+    "paper_main_result_changed": false,
     "simulated_noise_only": true,
     "real_farm_external_validation": false
   },
+  "blockers": [],
   "questions_for_gpt_pro": [
-    "Whether to add a dedicated cough-failure analysis subsection before submission.",
-    "Whether the target SCI applied journal requires a fuller related-work section.",
-    "Whether the conservative bibliography should be expanded after manual reference verification."
+    "Whether the target journal prefers the DOCX table file, HTML table files, or manual journal-template table formatting.",
+    "Whether Figure 1 should receive a journal-specific visual style pass.",
+    "Whether final captions need extra caution around simulated additive noise and 0 dB active-event SNR."
   ],
-  "recommended_next_step": "Stop and review the paper draft; do not start new experiments without explicit APPROVED:true."
+  "recommended_next_step": "Review generated figures, tables, and captions; do not start new experiments or paper stages without a new explicit APPROVED:true."
 }

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Table 4. Hierarchical auxiliary weight ablation</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 24px; color: #222; }
+h1 { font-size: 18px; margin: 0 0 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5pt; }
+th, td { border: 1px solid #888; padding: 4px 6px; vertical-align: top; }
+th { background: #f0f0f0; font-weight: 700; }
+caption { caption-side: top; text-align: left; font-weight: 700; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<h1>Table 4. Hierarchical auxiliary weight ablation</h1>
+<table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>model</th>
+      <th>n</th>
+      <th>mean_macro_f1</th>
+      <th>std_macro_f1</th>
+      <th>min_macro_f1</th>
+      <th>max_macro_f1</th>
+      <th>mean_aux_f1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>logmel_dur2_hier_w10</td>
+      <td>25</td>
+      <td>0.9515</td>
+      <td>0.016</td>
+      <td>0.9279</td>
+      <td>0.9881</td>
+      <td>0.8098</td>
+    </tr>
+    <tr>
+      <td>logmel_dur2_hier_w05</td>
+      <td>25</td>
+      <td>0.951</td>
+      <td>0.0124</td>
+      <td>0.9217</td>
+      <td>0.9762</td>
+      <td>0.7824</td>
+    </tr>
+    <tr>
+      <td>logmel_dur2_hier_w02</td>
+      <td>25</td>
+      <td>0.9505</td>
+      <td>0.0132</td>
+      <td>0.9143</td>
+      <td>0.9702</td>
+      <td>0.7867</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>
