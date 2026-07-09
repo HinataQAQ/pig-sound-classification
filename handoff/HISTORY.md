@@ -667,3 +667,58 @@
 - Stop point: review the polished English manuscript and fill evidence gaps. Do
   not start new experiments or another paper stage without a new explicit
   `APPROVED: true`.
+
+## 2026-07-09 - Nature Citation reference expansion and claim audit
+
+- Status: completed
+- Branch: `paper/sci-draft-v1`
+- Base: `1808464`
+- Approval state: `handoff/GPT_TO_CODEX.md` contained `APPROVED: true`, and
+  the user explicitly requested the citation-audit task.
+- Scope: used the installed `nature-citation` skill, loaded `SKILL.md`,
+  `manifest.yaml`, all always-load files, plus search-strategy and
+  long-article/script-usage references. Broader academic search was used as
+  allowed by the user because the domain citations should not be limited to
+  Nature/CNS.
+- Updated `paper/references/references.bib`: bibliography expanded from 6 to
+  30 entries, with 24 newly added verified references.
+- Added `paper/references/citation_audit.csv`: 32 claim rows with claim ID,
+  claim text, required support type, current citation, missing-citation flag,
+  candidate search query, recommended citation keys, support strength and audit
+  notes.
+- Added `paper/references/missing_citations.md`: strongest support by core
+  claim group, rejected/not-used candidates, suggested insertion points and
+  unresolved data-source/ethics/code gaps.
+- Main added support: pig call valence/context (`Briefer 2022`, `Tallet 2013`,
+  `Illmann 2013`, `Weary 1995`), pig cough recognition (`Ferrari 2008`,
+  `Exadaktylos 2008`, `Yin 2021`, `Shen 2022`), noisy pig-vocalization
+  classification (`Chung 2025`, `Xie 2024`), CRNN/sound-event classification,
+  animal-sound features, PCEN, SpecAugment, hierarchical classification and
+  audio prototype interpretability.
+- Required boundaries preserved: 2 s remains an internal empirical result, not
+  a universal literature-standard duration; DEMAND remains simulated additive
+  noise, not real-farm external validation; reviews are background only; no
+  prototype-learning novelty claim was introduced.
+- Metrics preserved: 1 s/2 s Log-Mel Macro-F1 `0.9226/0.9472`, delta
+  `0.0246`, p `0.000162`; 3 s Log-Mel `0.9434`; hierarchical lambda means
+  `0.9505/0.9510/0.9515`; clean hierarchical - raw p `0.058253`; ALL_NOISY
+  raw/main/hierarchical `0.6173/0.6230/0.6200`; main - raw delta `0.005755`,
+  CI95 `[0.001606, 0.010894]`, p `0.010511`.
+- Leakage audit: no training, inference, checkpoint, prototype, calibration,
+  threshold, SNR/noise draw, prediction, source result CSV/JSON, raw clean
+  audio, or DEMAND audio change was performed. No `paper/tables/*.csv`,
+  `paper/appendix/*.csv`, prediction file, or source result file was modified.
+- Verification: `references.bib` has 30 entries; `citation_audit.csv` parsed
+  successfully with 32 rows; ASCII audit found zero non-ASCII characters in
+  the three reference audit files; git diff was reviewed for target files.
+- Paper usability: `paper_usable=true` for citation expansion/audit;
+  `submission_complete=false`; `new_results_created=false`;
+  `source_csv_json_values_modified=false`; `simulated_noise_only=true`;
+  `real_farm_external_validation=false`.
+- Remaining blockers: clean pig audio source/license/access, animal ethics
+  details, code release tag/DOI/license, direct external support for exactly
+  2 s pig-vocalization windows, formal spectral-gate citation if retained, and
+  MCTAFD external citation/internal definition if retained.
+- Stop point: review `citation_audit.csv` and insert approved inline citations
+  into the manuscript. Do not start new experiments or another paper stage
+  without a new explicit `APPROVED: true`.

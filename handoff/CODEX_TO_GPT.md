@@ -1,13 +1,13 @@
-# Codex to GPT Handoff - English Manuscript Polishing
+# Codex to GPT Handoff - Nature Citation Audit
 
 ## Status
 
-Completed. The task was approved by `handoff/GPT_TO_CODEX.md`
-(`APPROVED: true`) and directly requested by the user.
+Completed. The task was directly requested by the user and
+`handoff/GPT_TO_CODEX.md` contained `APPROVED: true`.
 
-This round used the installed `nature-polishing` skill. I loaded
-`SKILL.md`, `manifest.yaml`, all manifest `always_load` files, and the relevant
-axis fragments before polishing.
+This round used the installed `nature-citation` skill. I loaded `SKILL.md`,
+`manifest.yaml`, all manifest `always_load` files, and the relevant on-demand
+references for search strategy and long-article/script usage before auditing.
 
 No model training, model inference, checkpoint/prototype/calibration
 construction, threshold tuning, SNR/noise draw change, raw audio edit, or source
@@ -16,101 +16,149 @@ result CSV/JSON modification was performed.
 ## Branch
 
 - Branch: `paper/sci-draft-v1`
-- Base commit: `5bf1ced37ba27362eede3c3e6084df39d0b1e414`
+- Base commit: `1808464`
 - Commit SHA: see final Codex response after commit/push
 
 ## Changed Files
 
-- Added `paper/manuscript/paper_en_full_story_polished.md`
-- Added `paper/manuscript/polishing_change_log.md`
-- Added `paper/manuscript/overclaim_audit.md`
+- Updated `paper/references/references.bib`
+- Added `paper/references/citation_audit.csv`
+- Added `paper/references/missing_citations.md`
 - Updated `handoff/CODEX_TO_GPT.md`
 - Updated `handoff/CODEX_TO_GPT.json`
 - Updated `handoff/HISTORY.md`
 
-## Commands
+## Commands and Searches
 
 ```powershell
-Get-Content -LiteralPath "C:\Users\s1205\.codex\plugins\cache\openai-curated-remote\superpowers\6.1.1\skills\using-superpowers\SKILL.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\SKILL.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\manifest.yaml"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\plugins\cache\openai-curated-remote\superpowers\6.1.1\skills\using-superpowers\references\codex-tools.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\_shared\core\reader-workflow.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\_shared\core\paper-type-taxonomy.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\_shared\core\ethics.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\_shared\core\terminology-ledger.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\static\core\stance.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\static\core\failure-modes.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\static\core\output-format.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\static\fragments\paper_type\algorithmic.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\static\fragments\section\title.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\static\fragments\section\abstract.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\static\fragments\section\intro.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\static\fragments\section\methods.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\static\fragments\section\results.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\static\fragments\section\discussion.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\static\fragments\section\conclusion.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\static\fragments\language\en.md"
-Get-Content -LiteralPath "C:\Users\s1205\.codex\skills\nature-polishing\static\fragments\journal\generic.md"
-Get-Content -LiteralPath "paper\manuscript\paper_en_full_story.md"
-Get-Content -LiteralPath "handoff\GPT_TO_CODEX.md"
-git status --short -- paper/manuscript handoff
-git branch --show-current
-git rev-parse HEAD
-git remote -v
-rg -n -i "\b(prove|proves|proved|proven|novel|first)\b" paper/manuscript/paper_en_full_story_polished.md paper/manuscript/polishing_change_log.md paper/manuscript/overclaim_audit.md
-$files = @('paper/manuscript/paper_en_full_story_polished.md','paper/manuscript/polishing_change_log.md','paper/manuscript/overclaim_audit.md'); foreach ($f in $files) { $text = Get-Content -LiteralPath $f -Raw; $non = [regex]::Matches($text, '[^\x00-\x7F]').Count; "$f non_ascii=$non" }
-$env:PYTHONNOUSERSITE='1'; $env:PYTHONIOENCODING='utf-8'; @'<python QA script>'@ | & 'C:\py\anaconda3\envs\pigsound-gpu\python.exe' -
-$env:PYTHONNOUSERSITE='1'; $env:PYTHONIOENCODING='utf-8'; & 'C:\py\anaconda3\envs\pigsound-gpu\python.exe' tools\summarize_hier_longcontext.py --help
-git status --short -- reports/hier_longcontext_runs.csv reports/hier_longcontext_summary.csv
-git diff -- reports/hier_longcontext_runs.csv reports/hier_longcontext_summary.csv
+Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\SKILL.md"
+Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\manifest.yaml"
+Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\static\core\principles.md"
+Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\static\core\chinese-mode.md"
+Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\static\core\workflow.md"
+Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\references\search-strategy.md"
+Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\references\script-usage.md"
+Get-Content -Raw -LiteralPath "handoff\GPT_TO_CODEX.md"
+git status --short --branch
+Get-ChildItem -LiteralPath paper\manuscript, paper\references, paper | Select-Object FullName, Length, LastWriteTime
+rg -n "^@" paper\references\references.bib
+rg -n "^#|^##|cite|@|citation|reference|claim|Claim|CLAIM" paper\manuscript\paper_en_full_story.md paper\CLAIMS_AND_EVIDENCE_v2.md
+Get-Content -Raw -LiteralPath paper\references\references.bib
+Get-Content -Raw -LiteralPath paper\CLAIMS_AND_EVIDENCE_v2.md
+Get-Content -Raw -LiteralPath paper\manuscript\paper_en_full_story.md
+Get-Content -Raw -LiteralPath paper\manuscript\paper_cn_full_story.md
+rg -n "\[@|Citation needed|References placeholder|DEMAND|Log-Mel|MFCC|SpecAugment|PCEN|prototype|hierarchical|selective|risk-coverage|pig|vocalization|noise" paper\manuscript\paper_en_full_story.md
+$env:PYTHONNOUSERSITE="1"; $env:PYTHONIOENCODING="utf-8"; @'<Crossref DOI metadata script>'@ | & C:\py\anaconda3\envs\pigsound-gpu\python.exe -
+(rg -n "^@" paper\references\references.bib | Measure-Object).Count
+Import-Csv -LiteralPath paper\references\citation_audit.csv
+rg -n "[^\x00-\x7F]" paper\references\references.bib paper\references\citation_audit.csv paper\references\missing_citations.md
+git diff -- paper\references\references.bib paper\references\citation_audit.csv paper\references\missing_citations.md
 ```
+
+Web/metadata searches used English query families for:
+
+- pig vocalization classification, emotional valence and production context
+- pig cough sound recognition and respiratory/sick-cough detection
+- noisy animal-farm pig vocalization recognition
+- Log-Mel/MFCC and animal-sound classification
+- CRNN audio and sound-event classification
+- prototypical networks and audio prototype interpretability
+- hierarchical sound labels/ontology
+- selective classification/risk-coverage
+- DEMAND environmental-noise dataset
+- PCEN and SpecAugment method provenance
 
 Notes:
 
-- `conda activate pigsound-gpu` failed in this PowerShell session with a conda
-  GBK `UnicodeEncodeError`. The text QA and script check were therefore run
-  with the environment Python executable directly:
-  `C:\py\anaconda3\envs\pigsound-gpu\python.exe`.
-- `tools/summarize_hier_longcontext.py --help` is not a conventional help path.
-  It executed the summary script and rewrote
-  `reports/hier_longcontext_runs.csv` and
-  `reports/hier_longcontext_summary.csv`. Git showed no diff for those files,
-  so no tracked result content changed.
+- `conda activate pigsound-gpu` failed once in this PowerShell session with a
+  conda GBK `UnicodeEncodeError`. DOI metadata checks were then run with
+  `C:\py\anaconda3\envs\pigsound-gpu\python.exe` and
+  `PYTHONNOUSERSITE=1`.
+- The `nature_citation.py` script was not used as the final search engine
+  because the user explicitly allowed broader academic search beyond the
+  default Nature/CNS scope. The skill workflow was used for segmentation,
+  conservative support grading, and audit structure.
 
-## Nature-Polishing Routing
+## Citation Expansion Results
 
-- Detected paper type: `algorithmic`
-- Detected sections: `title`, `abstract`, `intro`, `methods`, `results`,
-  `discussion`, `conclusion`
-- Detected language: `en`
-- Detected journal: `generic`
-- On-demand references: none loaded; the user did not request phrasebank,
-  Nature article-pattern calibration, or LaTeX layout work.
+- Existing bibliography entries before audit: `6`.
+- New bibliography entries added: `24`.
+- Total bibliography entries after audit: `30`.
+- Claim-audit rows: `32`.
+- New files contain zero non-ASCII characters.
+- `citation_audit.csv` parsed successfully with PowerShell `Import-Csv`.
 
-## Language and Structural Work
+Added reference groups:
 
-- Rewrote the manuscript into cautious SCI applied-engineering English.
-- Converted visible prose to British English, including `vocalisation`,
-  `behaviour`, `organise`, `summarise`, `artefact`, `generalised`,
-  `finalised`, and `licence`.
-- Split long sentences; automated QA found `long_sentences_gt30 = 0`.
-- Removed `prove`, `novel`, and `first` from the polished manuscript package.
-- Preserved all numeric tokens from the source manuscript:
-  `numeric_tokens_source = 168`, `numeric_tokens_polished = 168`,
-  `missing = {}`, `added = {}`.
-- Added a terminology ledger and a dedicated overclaim audit.
-- Did not add references or fabricate missing evidence.
+- Pig call valence/context: Briefer 2022; Tallet 2013; Illmann 2013; Weary
+  1995; Manteuffel 2004.
+- Pig cough and pig abnormal-vocalization recognition: Ferrari 2008;
+  Exadaktylos 2008; Yin 2021; Shen 2022; Xie 2024.
+- Noisy pig-vocalization classification: Chung 2025 Scientific Reports.
+- Bioacoustic/livestock acoustic monitoring background: McLoughlin 2019;
+  Coutant 2024; Stowell 2022.
+- Animal/audio feature and classifier background: Acevedo 2009; Huang 2014;
+  Kahl 2021; Cakir 2017; Hershey 2017; Gemmeke 2017.
+- PCEN and SpecAugment: Lostanlen 2019; Park 2019.
+- Hierarchical/prototype interpretation background: Silla 2011; Heinrich 2025.
+
+## Core Claim Support
+
+- Pig call valence/context: strongest external support is
+  `@briefer2022pigcalls`, with additional primary support from
+  `@tallet2013piglets`, `@illmann2013signalneed`, and `@weary1995calling`.
+- Pig cough recognition: strongest external support is
+  `@ferrari2008cough`, `@exadaktylos2008cough`, `@yin2021pigcoughcnn`, and
+  `@shen2022pigcoughfusion`.
+- Noisy pig-vocalization/farm setting context: strongest external support is
+  `@chung2025pvmc` and `@xie2024abnormalpig`; these must not be used to claim
+  this paper has real-farm external validation.
+- 2 s Log-Mel CRNN mainline: strongest support remains internal
+  `paper/tables/table3_duration_comparison.csv` plus the paired-duration script.
+  No direct external standard for 2 s pig-vocalization windows was found.
+- CRNN audio classification: `@choi2017crnn` and `@cakir2017crnn_sed`.
+- Log-Mel/MFCC animal/audio classification: `@mcfee2015librosa`,
+  `@acevedo2009animalcalls`, `@huang2014anuran`, `@kahl2021birdnet`, and
+  `@hershey2017cnn_audio`.
+- PCEN and SpecAugment method provenance: `@lostanlen2019pcen` and
+  `@park2019specaugment`.
+- Prototypical networks: `@snell2017prototypical`.
+- Bioacoustic prototype interpretability: `@heinrich2025audioprotopnet`
+  provides analogical audio-prototype support, but it is a bird-sound paper,
+  not a pig-vocalization result.
+- Hierarchical classification/sound ontology: `@silla2011hierarchical` and
+  `@gemmeke2017audioset` provide background only.
+- Selective classification/risk-coverage: existing `@geifman2017selective` and
+  `@fdshifts_riskcoverage` remain appropriate.
+- DEMAND: existing `@demand2018` remains appropriate for public environmental
+  noise recordings.
+
+## Rejected or Not-Used Candidates
+
+- ResearchGate, Google Scholar, and aggregator pages were treated only as
+  discovery aids, not citation support.
+- Guarino et al. field-test cough-detection work was not added because exact
+  DOI/publisher metadata were not verified in this pass and the cough claim is
+  already covered by four verified primary papers.
+- Generic environmental sound CNN papers were omitted because the bibliography
+  was kept within the requested 25--35 entries and more relevant audio/animal
+  references were available.
+- Additional pig cough fusion/monitoring papers beyond Yin 2021 and Shen 2022
+  were not needed for the current claim set.
+- Reviews were not used as specific experimental-result support.
+- DEMAND-as-real-farm-validation was explicitly rejected as an interpretation.
+- Prototype learning as a claimed novelty was explicitly rejected.
 
 ## Metrics and Scientific Boundaries Preserved
+
+No scientific result was changed. Key locked metrics remain:
 
 - 2 s Log-Mel clean mean Macro-F1 `0.9472`; 1 s Log-Mel `0.9226`; paired delta
   `0.0246`; Wilcoxon p `0.000162`.
 - 3 s Log-Mel comparison `0.9434` remains a 15-run comparison.
 - Hierarchical lambda=1.0 highest mean Macro-F1 `0.9515`.
 - Lambda=0.5 balanced mean Macro-F1 `0.9510` and standard deviation `0.0124`.
-- Hierarchical gain over the 2 s baseline is not described as statistically
-  significant.
+- Hierarchical gain over the 2 s baseline remains nonsignificant.
 - Clean hierarchical prototype mean Macro-F1 `0.9540`, but clean
   hierarchical - raw Softmax p `0.058253` remains nonsignificant.
 - ALL_NOISY raw/main prototype/hierarchical prototype Macro-F1
@@ -127,61 +175,32 @@ Notes:
 - DEMAND is simulated additive noise only.
 - Real-farm external validation was not performed.
 
-## Overclaim Audit Results
-
-Main risks identified:
-
-- The title phrase `duration-aware hierarchical representations` could imply a
-  generally superior system unless the abstract clearly bounds the hierarchy
-  result.
-- Positive hierarchical means could invite a statistically significant clean
-  performance claim. The polished text explicitly rejects that claim.
-- Clean hierarchical prototype results could be confused with noise robustness.
-  The polished text separates clean semantic explanation from noise robustness.
-- Main prototype noise gains could be overgeneralised to real farms. The
-  polished text restricts them to DEMAND simulated additive noise.
-- Prototype selective-risk behaviour could be overgeneralised into uncertainty
-  calibration. The polished text states that prototypes do not universally
-  improve uncertainty.
-
-## Evidence Still Needed from Authors
-
-- Verified livestock-acoustics and pig-vocalisation references for Related
-  Work.
-- Clean pig audio availability, owner, licence, and access route.
-- Code release tag, archived DOI, and software licence.
-- Animal-use approval authority and approval number, if applicable.
-- Real-farm external validation data, if the paper wants deployment claims.
-- Additional evidence or methods for reliable cough recognition under 0 dB
-  active-event SNR.
-
 ## Data Boundaries and Leakage Audit
 
 - No training, validation, or test role was changed.
 - No test-set tuning was performed.
 - No new model, prototype, calibration, threshold, fusion, SNR, noise draw,
-  prediction, or checkpoint artefact was created.
+  prediction, or checkpoint artifact was created.
 - No raw clean audio or DEMAND audio was read or modified.
 - No `paper/tables/*.csv`, `paper/appendix/*.csv`, prediction CSV/JSON, or
   source result file was modified.
 - Path/source_id/MD5 disjointness is unchanged because this task only writes
-  manuscript documents.
+  citation audit documents.
+- Newly added citations do not justify any new deployment, real-farm, or
+  statistical-significance claim.
 
 ## Verification
 
-- Forbidden-word scan for `prove`, `proves`, `proved`, `proven`, `novel`, and
-  `first` returned no matches after cleanup.
-- Numeric-token audit matched source and polished manuscript exactly:
-  168 tokens in both, with no missing or added numeric tokens.
-- Sentence-length audit reported zero prose sentences above 30 words.
-- ASCII audit reported zero non-ASCII characters in all three new manuscript
+- `references.bib` entry count: `30`.
+- `citation_audit.csv` row count: `32`.
+- `citation_audit.csv` parsed successfully with `Import-Csv`.
+- ASCII audit found zero non-ASCII characters in the three target reference
   files.
-- `tools/summarize_hier_longcontext.py --help` executed with env Python but is
-  not true argparse help. It rewrote summary files with no git diff.
+- Git diff was reviewed for the target reference files.
 
 ## Paper Usability
 
-- `paper_usable`: true for English language polishing and overclaim auditing.
+- `paper_usable`: true for citation expansion and audit.
 - `submission_complete`: false.
 - `new_results_created`: false.
 - `source_csv_json_values_modified`: false.
@@ -190,25 +209,28 @@ Main risks identified:
 
 ## Blockers
 
-- Related Work still needs verified livestock-acoustics and pig-vocalisation
-  citations.
-- Data availability, clean-audio rights, and licence fields remain unresolved.
-- Code release tag, archived DOI, and software licence remain unresolved.
-- Animal ethics approval details remain unresolved.
-- Real-farm external validation remains absent.
+- Original pig-vocalization recording source, owner, license, access route and
+  permission status remain unresolved.
+- Animal ethics approval authority and approval number or exemption statement
+  remain unresolved.
+- Code release tag, archived DOI and software license remain unresolved.
+- No direct external source was found for exactly 2 s pig-vocalization
+  processing as a general standard.
+- Spectral-gate denoising still lacks a formal citation if the final manuscript
+  needs method provenance beyond an implementation note.
 
 ## Questions for GPT Pro
 
-- Which livestock-acoustics and pig-vocalisation studies should be cited in
-  Related Work?
-- Should the title be shortened for the target SCI applied-engineering journal?
-- Should `vocalisation` be kept as British English, or should the final target
-  journal require US spelling?
-- What exact ethics, data-rights, and code-release statements can the authors
-  legally make?
+- Which of the new domain citations should be inserted into the final Related
+  Work paragraph versus kept only in the bibliography?
+- Should the final manuscript add inline citations now, or should the authors
+  first approve the `citation_audit.csv` mapping?
+- Can the authors provide clean pig-audio source, ethics and license details?
+- Should MCTAFD be cited externally, defined internally, or removed from the
+  final related-work/method framing?
 
 ## Recommended Next Step
 
-Have GPT Pro or the authors fill the evidence gaps for references, data rights,
-code release, and ethics. Do not start new experiments or another paper stage
-without a new explicit `APPROVED: true`.
+Review `paper/references/citation_audit.csv` and insert approved inline
+citations into the manuscript. Do not start new experiments or another paper
+stage without a new explicit `APPROVED: true`.
