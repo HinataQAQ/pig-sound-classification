@@ -427,3 +427,52 @@
   captions need additional simulated-noise/0 dB caution wording.
 - Stop point: review generated figures/tables and captions. Do not start new
   experiments or another paper stage without a new explicit `APPROVED: true`.
+
+## 2026-07-09 - Full-story SCI manuscript rewrite with Nature Writing
+
+- Status: completed
+- Branch: `paper/sci-draft-v1`
+- Base: `01853bf`
+- Approval state: `handoff/GPT_TO_CODEX.md` contained `APPROVED: true`.
+- Scope: used the installed `nature-writing` skill router, always-load files,
+  selected research/full-manuscript/zh-to-en/generic fragments, and relevant
+  writing references before drafting. No model training, inference, checkpoint,
+  prototype, calibration, SNR, noise draw, threshold, raw audio, or result
+  CSV/JSON change was started.
+- Added manuscript files:
+  `paper/manuscript/paper_cn_full_story.md`,
+  `paper/manuscript/paper_en_full_story.md`,
+  `paper/manuscript/section_plan.md`, and
+  `paper/CLAIMS_AND_EVIDENCE_v2.md`.
+- Story 1: reframed the clean mainline around event context rather than
+  feature stacking. Locked evidence: 2 s Log-Mel Macro-F1 `0.9472` versus 1 s
+  `0.9226`, mean delta `0.0246`, Wilcoxon p `0.000162`; 3 s `0.9434`; tabled
+  MCTAFD/PCEN/spectral-gate/SpecAugment/attention variants did not surpass the
+  2 s mainline.
+- Story 2: reframed hierarchical auxiliary supervision as subtype semantics and
+  boundary explanation, not a statistically significant main-performance
+  contribution. Locked evidence: lambda=1.0 highest mean `0.9515`; lambda=0.5
+  lowest std `0.0124`; clean hierarchical prototype `0.9540`; clean
+  hierarchical - raw Softmax p `0.058253`.
+- Story 3: reframed post-hoc prototypes as distinct clean semantic and
+  simulated-noise inference mechanisms. Locked evidence: ALL_NOISY
+  raw/prototype/hierarchical Macro-F1 `0.6173/0.6230/0.6200`; prototype - raw
+  delta `0.005755`, CI95 `[0.001606, 0.010894]`, p `0.010511`; hierarchical -
+  prototype delta `-0.003045`, p `0.000376`.
+- Required boundaries written into the drafts: DEMAND is simulated additive
+  noise only; no real-farm external validation; 0 dB active-event SNR is an
+  extreme stress condition; cough is unreliable at 0 dB; prototypes do not
+  comprehensively improve uncertainty; raw Softmax is better by AURC/AUGRC;
+  prototype only slightly improves frozen-threshold selective risk; fused is an
+  ablation.
+- Leakage audit: source result CSVs and appendix CSVs were read only; no
+  train/val/test roles changed; path/source_id/MD5 disjointness unchanged.
+- Paper usability: `paper_usable=true` as a full-story manuscript draft grounded
+  in existing paper outputs; `new_results_created=false`;
+  `real_farm_external_validation=false`.
+- Questions for GPT Pro: decide target journal and word limits, provide
+  verified livestock-acoustic citations, authorize ethics/data/code
+  availability statements, and choose whether English or Chinese is the
+  authoritative submission source.
+- Stop point: review and condense the full-story drafts. Do not start new
+  experiments or another paper stage without a new explicit `APPROVED: true`.
