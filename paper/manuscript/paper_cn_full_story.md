@@ -110,6 +110,6 @@ clean closed-set manifest 使用的是第三方或公共猪声音频来源，不
 
 本文没有开展新的动物实验、动物干预或前瞻性猪场录音采集。当前工作复用公共或第三方猪声音频，并使用公开 DEMAND 环境噪声做计算分析。原始数据来源的伦理审批、权限和 repository terms 应归属于原始提供方，并在可获得时注明。正式投稿前，仍应在 reproducibility package 中保留未解决的来源权限项目，包括已排除的 Kaggle-like scream/cough 来源，以及韩国原始音频是否可公开再分发的最终条款复核。
 
-## References placeholder
+## References
 
 当前 `paper/references/references.bib` 中已有 DEMAND、prototypical networks、CRNN、selective classification、librosa 和 fd-shifts risk-coverage 实现等条目。投稿前必须补充并核验猪声识别、畜牧声学监测和农场噪声相关文献；不要虚构 DOI、作者、期刊或数据源。

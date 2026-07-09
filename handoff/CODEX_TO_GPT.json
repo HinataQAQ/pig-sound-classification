@@ -1,6 +1,6 @@
 {
   "status": "completed",
-  "task": "source_citation_and_statement_sync",
+  "task": "pre_submission_statement_placeholder_fix",
   "approval": {
     "gpt_to_codex_approved_true": true,
     "direct_user_request": true
@@ -8,59 +8,59 @@
   "branch": "paper/sci-draft-v1",
   "final_commit_sha": "see_final_codex_response_after_commit",
   "changed_files": [
-    "paper/references/references.bib",
-    "paper/reproducibility/DATA_AVAILABILITY.md",
-    "paper/reproducibility/ETHICS_STATEMENT.md",
-    "paper/reproducibility/SOURCE_CITATION_STATUS.md",
     "paper/manuscript/paper_en_full_story_polished.md",
+    "paper/manuscript/paper_en_full_story.md",
     "paper/manuscript/paper_cn_full_story.md",
+    "paper/references/citation_audit.csv",
+    "paper/reproducibility/SUBMISSION_READINESS_CHECKLIST.md",
     "handoff/CODEX_TO_GPT.md",
     "handoff/CODEX_TO_GPT.json",
     "handoff/HISTORY.md"
   ],
-  "citation_status": {
-    "citation_complete": [
-      {
-        "source": "DEMAND environmental noise",
-        "key": "demand2018",
-        "doi": "10.5281/zenodo.1227121"
-      },
-      {
-        "source": "Sow Call Dataset",
-        "key": "sow_call_dataset_2021",
-        "doi": "10.6084/m9.figshare.16940389",
-        "license": "CC BY 4.0"
-      }
+  "inspected_unchanged_files": [
+    "paper/references/references.bib",
+    "paper/reproducibility/DATA_AVAILABILITY.md",
+    "paper/reproducibility/ETHICS_STATEMENT.md",
+    "paper/reproducibility/SOURCE_CITATION_STATUS.md",
+    "paper/reproducibility/PIG_AUDIO_SOURCE_RECOVERY_REPORT.md",
+    "paper/CLAIMS_AND_EVIDENCE_v2.md"
+  ],
+  "text_updates": {
+    "related_work_placeholder_replaced": true,
+    "older_english_manuscript_placeholder_cleanup": true,
+    "chinese_manuscript_references_heading_cleanup": true,
+    "citation_audit_placeholder_note_cleanup": true,
+    "related_work_citations_used_from_existing_bib_and_audit": [
+      "briefer2022pigcalls",
+      "mcloughlin2019automated",
+      "coutant2024scoping",
+      "ferrari2008cough",
+      "exadaktylos2008cough",
+      "yin2021pigcoughcnn",
+      "shen2022pigcoughfusion",
+      "xie2024abnormalpig",
+      "chung2025pvmc"
     ],
-    "citation_partial": [
-      {
-        "source": "Smart Farm Korea / data.go.kr pig-cough voice dataset",
-        "key": "smartfarmkorea_pig_cough_voice",
-        "urls": [
-          "https://www.data.go.kr/data/15117368/fileData.do",
-          "https://www.smartfarmkorea.net/unstructuredDataset/pigCoughSound.do?menuId=M11040204"
-        ],
-        "reason": "Exact source URLs and no-restriction data.go.kr usage-permission range were recovered, but raw-audio redistribution still needs final provider-terms confirmation."
-      }
-    ],
-    "unresolved_do_not_submit_until_fixed": [
-      {
-        "source": "Kaggle-like porcine scream/cough dataset",
-        "local_root": "data/raw/scream_cough_small",
-        "reason": "License is Unknown and owner rights/ethics were not recovered."
-      }
-    ],
-    "excluded_from_main_results": [
-      "SoundWel",
-      "aSwine",
-      "empty placeholder roots"
-    ]
+    "data_availability_submission_wording": true,
+    "code_availability_submission_wording": true,
+    "ethics_submission_wording": true,
+    "single_github_release_placeholder": true,
+    "submission_readiness_checklist_added": true
+  },
+  "citation_status_preserved": {
+    "demand": "citation_complete",
+    "sow_call_dataset": "citation_complete",
+    "smart_farm_korea_data_go_kr_pig_cough": "citation_partial",
+    "kaggle_like_scream_cough": "unresolved_do_not_submit_until_fixed",
+    "soundwel_aswine_empty_roots": "excluded_from_main_results"
   },
   "metrics": {
     "model_metrics_changed": false,
     "result_csv_json_changed": false,
     "training_evaluation_code_changed": false,
-    "new_model_results_created": false
+    "new_model_results_created": false,
+    "figures_changed": false,
+    "numerical_results_changed": false
   },
   "data_boundaries": {
     "train_val_test_roles_changed": false,
@@ -68,28 +68,34 @@
     "raw_audio_modified": false,
     "raw_audio_deleted": false,
     "raw_audio_redistributed": false,
+    "korea_raw_audio_redistribution_claimed": false,
     "paper_core_claims_changed": false
   },
   "verification": {
-    "references_bib_parse_ok": true,
-    "references_bib_entry_count": 32,
-    "data_availability_doi_url_guard_ok": true,
+    "placeholder_grep_citation_needed": "no_matches",
+    "placeholder_grep_references_placeholder": "no_matches",
+    "placeholder_grep_not_finalised": "no_matches",
+    "placeholder_grep_must_be_completed": "no_matches",
+    "boundary_grep_real_farm_external_validation_claim": "no_matches",
+    "boundary_grep_all_raw_audio_openly_redistributed": "no_matches",
+    "github_release_url_placeholder_count": 1,
     "no_experiment_result_csv_json_changed": true,
     "no_model_training_evaluation_code_changed": true,
     "korea_not_written_as_citation_complete": true,
-    "kaggle_like_not_written_as_verified": true,
-    "git_diff_check": "ok_with_line_ending_warnings_only"
+    "kaggle_like_not_in_main_data_description": true
   },
   "paper_usability": {
     "paper_usable": true,
     "submission_complete": "conditional",
-    "safe_to_submit_after_updates": "conditional: safe only with raw third-party audio non-redistribution and a pending/final Korean provider-terms check recorded"
+    "safe_to_submit_after_updates": "not yet final; remaining blockers must be resolved before journal upload"
   },
   "blockers": [
-    "Final Korean provider-terms check before any raw-audio archive.",
-    "Final code/results release tag or DOI.",
-    "Target-journal ethics/exemption wording for third-party public animal audio reuse.",
+    "Target journal and article type must be selected.",
+    "Final public code release URL/tag is needed; no code DOI is claimed.",
+    "Final Smart Farm Korea / data.go.kr provider-terms check is needed before any raw-audio archive.",
+    "Corresponding author, affiliations, funding, and conflict-of-interest declarations are needed.",
+    "Decision is needed on checkpoint/prototype artifact archival.",
     "Kaggle-like source remains unresolved and excluded."
   ],
-  "recommended_next_step": "Review synchronized citation/status wording and do not start another stage without explicit APPROVED:true."
+  "recommended_next_step": "Replace the single code-release placeholder after the final repository release exists. Do not start another stage without explicit APPROVED:true."
 }

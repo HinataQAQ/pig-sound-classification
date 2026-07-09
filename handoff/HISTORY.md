@@ -760,3 +760,21 @@
 - Paper usability: `paper_usable=true`; `submission_complete=conditional`; manuscript is safer after these updates if raw third-party audio is not redistributed and the Korean provider-terms check remains explicit or is finalized.
 - Remaining blockers: final Korea provider-terms confirmation before any raw-audio archive, final code/results release tag or DOI, target-journal ethics/exemption wording, and unresolved Kaggle-like source exclusion.
 - Stop point: review synchronized citation/status wording. Do not start another stage without a new explicit `APPROVED: true`.
+
+## 2026-07-09 - Pre-submission statement placeholder fix
+
+- Status: completed.
+- Branch: `paper/sci-draft-v1`.
+- Approval state: `handoff/GPT_TO_CODEX.md` contained `APPROVED: true`, and the user explicitly requested only pre-submission statement and citation-placeholder repair.
+- Scope: manuscript/reproducibility text only. No model experiment, inference, training/evaluation code edit, experiment result CSV/JSON edit, figure edit, raw-audio edit, or core scientific-conclusion change was performed.
+- Updated `paper/manuscript/paper_en_full_story_polished.md`: replaced the Related Work citation placeholder with verified citation keys already present in `references.bib` and `citation_audit.csv`; converted Data Availability, Code Availability, and Ethics Statement to submission wording; kept the DEMAND protocol framed as simulated additive noise rather than real-farm external validation.
+- Updated `paper/manuscript/paper_en_full_story.md` with the same placeholder cleanup and submission-availability boundaries, and removed the remaining references-placeholder heading from `paper/manuscript/paper_cn_full_story.md`.
+- Updated `paper/references/citation_audit.csv` only to remove a placeholder-triggering audit-note phrase; recommended citation keys and audit conclusions were unchanged.
+- Added `paper/reproducibility/SUBMISSION_READINESS_CHECKLIST.md`: remaining required items are target journal, code release URL/tag, Korea provider terms final check, corresponding author/affiliations, funding, conflict of interest, and whether checkpoint/prototype artifacts will be archived.
+- Updated `handoff/CODEX_TO_GPT.md` and `handoff/CODEX_TO_GPT.json` for this round.
+- Citation/source boundaries preserved: DEMAND and Sow Call remain citation complete; Smart Farm Korea / data.go.kr remains `citation_partial`; Kaggle-like scream/cough remains unresolved and excluded; no raw Korean audio redistribution is claimed.
+- Metrics preserved: no numerical results, tables, figures, source result CSV/JSON, abstract values, or core conclusions were changed.
+- Leakage/data boundaries: train/validation/test roles unchanged; no test-set tuning; no fold/seed artifacts constructed; no raw audio modified, copied, deleted, or redistributed.
+- Verification: placeholder grep checks returned no matches for the four requested placeholder phrases; exact boundary checks returned no matches for the two requested positive-claim phrases; the code-release URL placeholder appears once; no result CSV/JSON diffs; no Python/training/evaluation code diffs.
+- Paper usability: `paper_usable=true`; `submission_complete=conditional`; remaining blockers are final code release URL/tag, target-journal metadata, corresponding author/affiliations, funding, conflict of interest, checkpoint/prototype archival decision, and final Korea provider-terms check before any raw-audio archive.
+- Stop point: replace the single code-release placeholder after the final repository release exists. Do not start another stage without a new explicit `APPROVED: true`.

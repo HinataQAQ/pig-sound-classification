@@ -50,7 +50,7 @@ The study then evaluates post-hoc main and hierarchical prototypes under a froze
 
 ## Related Work
 
-Automatic animal-sound recognition combines bioacoustic sensing with supervised audio classification. Prior pig-vocalisation studies and farm-acoustic monitoring systems should be cited once the target literature set is finalised. The present manuscript should not claim originality by ignoring that literature. Its distinction should instead be framed around an evidence-controlled engineering sequence. This sequence covers duration selection, hierarchical subtype supervision, and frozen prototype inference under simulated additive noise. [Citation needed: pig vocalization recognition and livestock acoustic monitoring literature.]
+Automatic animal-sound recognition combines bioacoustic sensing with supervised audio classification. Prior work has used pig-vocalisation analysis to characterise call valence and production context, to support animal-welfare monitoring, and to study pig-cough or sick-cough recognition [@briefer2022pigcalls; @mcloughlin2019automated; @coutant2024scoping; @ferrari2008cough; @exadaktylos2008cough; @yin2021pigcoughcnn; @shen2022pigcoughfusion]. Recent smart-farm studies also address abnormal pig vocalisations and noisy farm-environment classification [@xie2024abnormalpig; @chung2025pvmc]. The present manuscript should not claim originality by ignoring that literature. Its distinction is instead framed around an evidence-controlled engineering sequence. This sequence covers duration selection, hierarchical subtype supervision, and frozen prototype inference under simulated additive noise.
 
 CRNN architectures have been widely used for audio classification. Convolutional layers can extract local time-frequency patterns, while recurrent layers summarise temporal dependencies [@choi2017crnn]. In this work, the CRNN is not presented as a new architecture. It provides a stable backbone for testing which input duration and supervision structure are supported by the pig-vocalisation evidence.
 
@@ -212,7 +212,7 @@ Third, cough recognition under 0 dB active-event SNR is unreliable. The appendix
 
 Clean hierarchical prototype improvement over raw Softmax also remains nonsignificant at p=0.058253. Fifth, prototype inference does not comprehensively improve uncertainty. Raw Softmax has better AURC/AUGRC ranking in the aggregate noise summaries.
 
-Sixth, the fused method is an ablation and should not be promoted as a core contribution. Finally, target-journal formatting, full animal-ethics provenance, data-sharing permissions for original pig audio, and complete livestock-acoustics citations remain to be finalised.
+Sixth, the fused method is an ablation and should not be promoted as a core contribution. Finally, target-journal metadata, full source-side ethics provenance, and data-sharing permissions for original pig audio remain submission dependencies rather than empirical results.
 
 ## Conclusion
 
@@ -224,18 +224,14 @@ The work offers a reproducible path towards noise-aware pig-vocalisation inferen
 
 ## Data Availability
 
-The manuscript draft is based on aggregate CSV files under `paper/tables/` and `paper/appendix/` in the project repository. Code, commands, aggregate tables, figure source-data mappings, cross-validation manifests, and hash-based leakage/provenance audits are available in the repository package. The raw third-party pig audio is not redistributed. Korean cough recordings should be obtained from Smart Farm Korea / data.go.kr [@smartfarmkorea_pig_cough_voice], and Sow Call Dataset recordings should be obtained from figshare [@sow_call_dataset_2021]. DEMAND environmental noise is public on Zenodo [@demand2018] but should also be accessed through the original record rather than bundled in the repository. The unresolved Kaggle-like scream/cough source is excluded from the current main results until its licence and owner rights are resolved.
+Processed aggregate tables and figure source data supporting the results are available in the project repository and/or Supplementary Data associated with this article. These materials include the paper-ready summary tables, paired statistics, figure source-data mappings, command records, cross-validation manifests, and hash-based leakage and provenance audits. Raw third-party pig audio is not redistributed. Smart Farm Korea / data.go.kr pig-cough recordings should be obtained from the original provider [@smartfarmkorea_pig_cough_voice]. Sow Call Dataset recordings should be obtained from figshare via DOI 10.6084/m9.figshare.16940389 [@sow_call_dataset_2021]. DEMAND environmental-noise recordings should be obtained from Zenodo via DOI 10.5281/zenodo.1227121 [@demand2018]. The unresolved Kaggle-like scream/cough source is excluded from the current main results and is not part of the submitted data description.
 
 ## Code Availability
 
-The code availability statement is not finalised in the reviewed files. The manuscript should cite the public repository URL, release tag, or archived DOI when available. The current draft should not claim that code, checkpoints, or raw data are already publicly released unless the authors have completed that release.
+The code and reproducibility package will be made available at [GitHub release URL]. The release should include the scripts, command records, aggregate tables, figure source-data mappings, manifests, and leakage/provenance audit files needed to reproduce the reported analyses from the permitted inputs. No code DOI is claimed here. Model checkpoints, prototype artifacts, and raw third-party audio are not included unless released separately with provider-compatible terms, file hashes, and artifact-to-result mapping.
 
 ## Ethics Statement
 
-No new animal experiment, animal intervention, or prospective farm recording was conducted for this manuscript. The study reuses public or third-party pig-audio recordings and public DEMAND environmental noise for computational analysis. Original source-side ethics approvals, permissions, and repository terms should be attributed to the original providers where available. Any unresolved source-permission items, including the excluded Kaggle-like scream/cough source and the final Korean raw-audio redistribution check, should remain listed in the reproducibility package before submission.
+No new animal experiment, animal intervention, or prospective farm recording was conducted for this manuscript. The study is a computational reuse of public or third-party pig-audio recordings and public DEMAND environmental noise. Original source-side permissions, repository terms, and any animal-ethics approvals remain with the original data providers. Source-specific access and redistribution restrictions are described in the Data Availability statement.
 
-## References placeholder
-
-Use the verified bibliography entries already present in `paper/references/references.bib`. These include DEMAND [@demand2018], prototypical networks [@snell2017prototypical], CRNN [@choi2017crnn], selective classification [@geifman2017selective], librosa [@mcfee2015librosa], and fd-shifts risk-coverage implementation [@fdshifts_riskcoverage].
-
-Add verified livestock-acoustics and pig-vocalisation references before submission. Do not fabricate DOI, author, venue, or dataset details.
+## References
