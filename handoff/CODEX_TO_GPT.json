@@ -1,6 +1,6 @@
 {
   "status": "completed",
-  "task": "clean_pig_audio_source_recovery_audit",
+  "task": "source_citation_and_statement_sync",
   "approval": {
     "gpt_to_codex_approved_true": true,
     "direct_user_request": true
@@ -8,112 +8,88 @@
   "branch": "paper/sci-draft-v1",
   "final_commit_sha": "see_final_codex_response_after_commit",
   "changed_files": [
-    "paper/reproducibility/PIG_AUDIO_SOURCE_RECOVERY_REPORT.md",
-    "paper/reproducibility/PIG_AUDIO_SOURCE_AUDIT.csv",
-    "paper/reproducibility/UNRESOLVED_DATA_SOURCES.md",
+    "paper/references/references.bib",
+    "paper/reproducibility/DATA_AVAILABILITY.md",
+    "paper/reproducibility/ETHICS_STATEMENT.md",
+    "paper/reproducibility/SOURCE_CITATION_STATUS.md",
+    "paper/manuscript/paper_en_full_story_polished.md",
+    "paper/manuscript/paper_cn_full_story.md",
     "handoff/CODEX_TO_GPT.md",
     "handoff/CODEX_TO_GPT.json",
     "handoff/HISTORY.md"
   ],
-  "verified_sources": {
-    "current_mainline": [
+  "citation_status": {
+    "citation_complete": [
       {
-        "local_root": "data/external/korea_raw/dry_cough",
-        "source": "Smart Farm Korea / data.go.kr pig cough sound",
-        "confidence": "high",
-        "classification": "A. verified_public_reusable"
+        "source": "DEMAND environmental noise",
+        "key": "demand2018",
+        "doi": "10.5281/zenodo.1227121"
       },
       {
-        "local_root": "data/external/korea_raw/abdominal_cough",
-        "source": "Smart Farm Korea / data.go.kr pig cough sound",
-        "confidence": "high",
-        "classification": "A. verified_public_reusable"
-      },
-      {
-        "local_root": "data/raw/sow_call_dataset_labeled/*",
-        "source": "figshare Sow call dataset",
-        "confidence": "high",
-        "license": "CC BY 4.0",
-        "classification": "A. verified_public_reusable"
+        "source": "Sow Call Dataset",
+        "key": "sow_call_dataset_2021",
+        "doi": "10.6084/m9.figshare.16940389",
+        "license": "CC BY 4.0"
       }
     ],
-    "non_current": [
+    "citation_partial": [
       {
-        "local_root": "data/raw/soundwel and derived reviewed/processed roots",
-        "source": "Zenodo SoundWel",
-        "confidence": "high",
-        "license": "CC BY 4.0"
-      },
-      {
-        "local_root": "data/external/aswine and aswine-derived processed roots",
-        "source": "aSwine GitHub",
-        "confidence": "high",
-        "license": "CC BY-NC 4.0"
-      },
-      {
-        "local_root": "data/raw/wu_pig_speech",
-        "source": "duplicate of figshare Sow call dataset",
-        "confidence": "high"
+        "source": "Smart Farm Korea / data.go.kr pig-cough voice dataset",
+        "key": "smartfarmkorea_pig_cough_voice",
+        "urls": [
+          "https://www.data.go.kr/data/15117368/fileData.do",
+          "https://www.smartfarmkorea.net/unstructuredDataset/pigCoughSound.do?menuId=M11040204"
+        ],
+        "reason": "Exact source URLs and no-restriction data.go.kr usage-permission range were recovered, but raw-audio redistribution still needs final provider-terms confirmation."
       }
+    ],
+    "unresolved_do_not_submit_until_fixed": [
+      {
+        "source": "Kaggle-like porcine scream/cough dataset",
+        "local_root": "data/raw/scream_cough_small",
+        "reason": "License is Unknown and owner rights/ethics were not recovered."
+      }
+    ],
+    "excluded_from_main_results": [
+      "SoundWel",
+      "aSwine",
+      "empty placeholder roots"
     ]
   },
-  "unresolved_sources": [
-    {
-      "local_root": "data/raw/scream_cough_small",
-      "suspected_source": "Kaggle porcine scream sounds and cough sounds",
-      "reason": "Kaggle page license is Unknown",
-      "classification": "E. unresolved_do_not_submit_as_final"
-    },
-    {
-      "local_root": "data/external/kaggle_porcine; data/external/sow_call; data/korea_subtype/raw/*",
-      "reason": "empty placeholders in this audit"
-    }
-  ],
-  "korea_cough_source_identified": true,
-  "highest_risk_dataset": {
-    "overall": "data/raw/scream_cough_small Kaggle license Unknown",
-    "current_mainline": "Korea pig cough because raw-audio redistribution terms should be checked once more"
-  },
-  "final_recommendation": "safe_only_after_source_citation_added",
   "metrics": {
     "model_metrics_changed": false,
-    "new_model_results_created": false,
-    "cap3x_manifest_total_rows": 7310,
-    "cap3x_unique_paths": 3812,
-    "blank_md5_rows": 0,
-    "blank_source_id_rows": 0
-  },
-  "leakage_audit": {
-    "fold0_hash_cross_split_duplicate_groups": 0,
-    "fold0_exact_path_overlap": 0,
-    "fold0_source_id_overlap": 0,
-    "test_set_tuning": false
+    "result_csv_json_changed": false,
+    "training_evaluation_code_changed": false,
+    "new_model_results_created": false
   },
   "data_boundaries": {
+    "train_val_test_roles_changed": false,
+    "test_set_tuning": false,
     "raw_audio_modified": false,
     "raw_audio_deleted": false,
-    "training_scripts_modified": false,
-    "evaluation_scripts_modified": false,
-    "paper_results_modified": false,
-    "paper_claims_changed": false,
-    "data_availability_changed": false
+    "raw_audio_redistributed": false,
+    "paper_core_claims_changed": false
+  },
+  "verification": {
+    "references_bib_parse_ok": true,
+    "references_bib_entry_count": 32,
+    "data_availability_doi_url_guard_ok": true,
+    "no_experiment_result_csv_json_changed": true,
+    "no_model_training_evaluation_code_changed": true,
+    "korea_not_written_as_citation_complete": true,
+    "kaggle_like_not_written_as_verified": true,
+    "git_diff_check": "ok_with_line_ending_warnings_only"
   },
   "paper_usability": {
     "paper_usable": true,
-    "submission_complete": false,
-    "source_citations_needed": true
+    "submission_complete": "conditional",
+    "safe_to_submit_after_updates": "conditional: safe only with raw third-party audio non-redistribution and a pending/final Korean provider-terms check recorded"
   },
   "blockers": [
-    "Add Korea and Sow call citations/license wording.",
-    "Decide Korea raw-audio redistribution route after final terms sanity check.",
-    "Exclude Kaggle scream/cough until license is resolved.",
-    "Add third-party-data ethics/exemption statement if required."
+    "Final Korean provider-terms check before any raw-audio archive.",
+    "Final code/results release tag or DOI.",
+    "Target-journal ethics/exemption wording for third-party public animal audio reuse.",
+    "Kaggle-like source remains unresolved and excluded."
   ],
-  "questions_for_gpt_pro": [
-    "Cite Smart Farm Korea and data.go.kr together or use data.go.kr as formal catalog?",
-    "Redistribute raw audio or source-link with manifests/checksums?",
-    "Need separate animal ethics exemption statement?",
-    "Omit non-current SoundWel/aSwine/Kaggle from final Data Availability?"
-  ],
-  "recommended_next_step": "Review source recovery files and add approved source citations/Data Availability wording. Do not start another stage without explicit APPROVED:true."
+  "recommended_next_step": "Review synchronized citation/status wording and do not start another stage without explicit APPROVED:true."
 }

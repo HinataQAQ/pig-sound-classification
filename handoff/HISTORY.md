@@ -742,3 +742,21 @@
 - Final recommendation: `safe_only_after_source_citation_added`.
 - Paper usability: `paper_usable=true` for source-provenance audit; `submission_complete=false`; source citations, license wording, Data Availability wording, and third-party ethics/exemption language still require author/GPT Pro judgment.
 - Stop point: review the new source recovery files and decide citations/Data Availability wording. Do not start another paper or experiment stage without a new explicit `APPROVED: true`.
+
+## 2026-07-09 - Source citation and statement synchronization
+
+- Status: completed.
+- Branch: `paper/sci-draft-v1`.
+- Approval state: `handoff/GPT_TO_CODEX.md` contained `APPROVED: true`, and the user explicitly requested only data-source citation completion and statement updates.
+- Scope: synchronized the clean pig-audio provenance audit into the paper submission package. No model experiment, inference, training/evaluation code edit, experimental result CSV/JSON edit, raw-audio edit, or paper core-claim change was performed.
+- Updated `paper/references/references.bib`: DEMAND retained; added `sow_call_dataset_2021` for figshare DOI `10.6084/m9.figshare.16940389`; added `smartfarmkorea_pig_cough_voice` with the audited data.go.kr and Smart Farm Korea URLs and no fabricated DOI.
+- Updated `paper/reproducibility/DATA_AVAILABILITY.md`: raw third-party pig audio is not redistributed; shareable code, commands, aggregate tables, figures, manifests, hash-based leakage audits, and provenance are distinguished from provider-controlled raw audio; DEMAND, Sow Call, and Korea sources are cited from audited identifiers.
+- Updated `paper/reproducibility/ETHICS_STATEMENT.md`: no new animal experiment was conducted; pig audio is reused from public or third-party sources; original source-side ethics/permissions are attributed to original providers where available; unresolved permission items remain listed before submission.
+- Added `paper/reproducibility/SOURCE_CITATION_STATUS.md`: DEMAND and Sow Call are `citation_complete`; Korea is `citation_partial`; Kaggle-like scream/cough is `unresolved_do_not_submit_until_fixed`; SoundWel/aSwine/placeholders are `excluded_from_main_results`.
+- Updated `paper/manuscript/paper_en_full_story_polished.md` and `paper/manuscript/paper_cn_full_story.md` only in the data-source paragraph plus Data Availability/Ethics sections.
+- Metrics preserved: no scientific result numbers, tables, figures, abstracts, or core conclusions were changed.
+- Leakage/data boundaries: train/validation/test roles unchanged; no test-set tuning; no fold/seed artifacts constructed; existing path/source_id/MD5 audit statements preserved.
+- Verification: `references.bib` parsed with 32 entries and required dataset keys; Data Availability DOI/URL guard passed; no result CSV/JSON diffs; no Python/training/evaluation code diffs; Korea not marked `citation_complete`; Kaggle-like source not marked verified; `git diff --check` had only line-ending warnings.
+- Paper usability: `paper_usable=true`; `submission_complete=conditional`; manuscript is safer after these updates if raw third-party audio is not redistributed and the Korean provider-terms check remains explicit or is finalized.
+- Remaining blockers: final Korea provider-terms confirmation before any raw-audio archive, final code/results release tag or DOI, target-journal ethics/exemption wording, and unresolved Kaggle-like source exclusion.
+- Stop point: review synchronized citation/status wording. Do not start another stage without a new explicit `APPROVED: true`.

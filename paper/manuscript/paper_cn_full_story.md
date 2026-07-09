@@ -52,6 +52,8 @@ CRNN 已广泛用于音频分类，其卷积层提取局部时频结构，循环
 
 最终 clean 和 simulated-noise 结果均按 5 folds x 5 seeds 汇总。模型比较使用 matched fold-seed paired statistics。训练数据可用于模型参数和原型构建，验证数据可用于温度、阈值和融合权重校准，测试数据仅用于评估。协议保持 exact path、source_id 和 MD5 disjointness，并记录 manifest SHA、checkpoint/prototype/calibration SHA provenance。
 
+clean closed-set manifest 使用的是第三方或公共猪声音频来源，不包含本文新采集的动物录音。`dry_cough` 和 `abdominal_cough` 来自 Smart Farm Korea / data.go.kr 猪咳嗽声音数据集 [@smartfarmkorea_pig_cough_voice]。`calm_grunt`、`feeding`、`frightened_stress` 和 `anxious_stress` 来自 figshare Sow Call Dataset [@sow_call_dataset_2021]，本地子类型由原始文件名后缀映射而来。未解决许可的 Kaggle-like scream/cough 来源没有进入当前 cap3x 主线 manifest。
+
 主文表格承担不同证据角色。Table 1 定义类别、子类型、backbone protocol、prototype protocol、noise protocol、leakage controls 和未完成外部验证。Table 2 和 Table 3 支撑 2 秒上下文故事。Table 4 和 clean prototype paired stats 支撑层级辅助监督故事。Table 5 支撑 clean 条件下 hierarchical prototype 的语义作用。Table 6 至 Table 9 支撑 simulated DEMAND noise、paired statistics、per-class failure modes 和 corrected selective prediction 的边界结论。
 
 ## Results
@@ -98,7 +100,7 @@ CRNN 已广泛用于音频分类，其卷积层提取局部时频结构，循环
 
 ## Data Availability
 
-本文草稿基于 `paper/tables/` 和 `paper/appendix/` 下的聚合 CSV 文件。DEMAND 音频不应直接随仓库再分发，需通过原始链接、checksum 和 provenance 说明使用。原始猪声录音的数据共享状态、许可边界和投稿版数据可用性声明仍需作者补充。
+本文草稿基于 `paper/tables/` 和 `paper/appendix/` 下的聚合 CSV 文件。代码、命令、聚合表格、图数据来源映射、交叉验证 manifest、hash-based leakage audit 和 provenance 记录可在仓库投稿包中提供。原始第三方猪声音频不随仓库再分发；韩国咳嗽录音应从 Smart Farm Korea / data.go.kr 获取 [@smartfarmkorea_pig_cough_voice]，Sow Call Dataset 录音应从 figshare 获取 [@sow_call_dataset_2021]。DEMAND 环境噪声是 Zenodo 上的公开数据 [@demand2018]，但也应通过原始记录获取，不应直接打包进仓库。未解决许可的 Kaggle-like scream/cough 来源不进入当前主结果，除非其 licence 和 owner rights 后续得到确认。
 
 ## Code Availability
 
@@ -106,7 +108,7 @@ CRNN 已广泛用于音频分类，其卷积层提取局部时频结构，循环
 
 ## Ethics Statement
 
-已读取文件中没有提供原始猪声录音的动物伦理审批细节。正式投稿前应补充审批机构、审批编号或豁免说明，并说明本文阶段是否仅进行已有录音的计算分析，还是包含新的动物数据采集。
+本文没有开展新的动物实验、动物干预或前瞻性猪场录音采集。当前工作复用公共或第三方猪声音频，并使用公开 DEMAND 环境噪声做计算分析。原始数据来源的伦理审批、权限和 repository terms 应归属于原始提供方，并在可获得时注明。正式投稿前，仍应在 reproducibility package 中保留未解决的来源权限项目，包括已排除的 Kaggle-like scream/cough 来源，以及韩国原始音频是否可公开再分发的最终条款复核。
 
 ## References placeholder
 

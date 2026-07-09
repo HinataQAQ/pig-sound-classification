@@ -3,8 +3,9 @@
 This statement was prepared from the manuscript draft, the paper table and
 appendix CSV files, the DEMAND provenance records, the noise-source decision
 note, and the reproducibility package manifest. It is suitable as a submission
-draft, but several fields remain unresolved and must be confirmed before final
-submission.
+draft. Clean pig-audio source citations have been updated from the 2026-07-09
+source-recovery audit; release DOIs and raw-audio redistribution decisions still
+need final author confirmation before submission.
 
 ## Submission Draft
 
@@ -29,17 +30,33 @@ auxiliary subtypes (`dry_cough`, `abdominal_cough`, `calm_grunt`, `feeding`,
 reconstruct the fold-specific train, validation, and test splits, subject to the
 availability of the underlying audio.
 
-The original clean pig-vocalization recordings are not redistributed in this
-repository. Their formal DOI, source URL, license, data owner, permission terms,
-and public or controlled access route are currently UNRESOLVED. The manuscript
-must not claim that the clean pig audio is openly available until those fields
-are confirmed. If the audio cannot be openly redistributed because of
-third-party, consent, farm-owner, institutional, or animal-use restrictions, the
-final statement should name the responsible data owner or institutional access
-route, specify eligibility and review conditions, and provide public metadata
-where permitted. A vague "available upon request" statement should not be used
-as the only route unless the specific restriction and access procedure are
-stated.
+The original clean pig-vocalization recordings are third-party or public-source
+audio and are not redistributed in this repository. The current clean cap3x
+manifests draw from two recovered source families. The `dry_cough` and
+`abdominal_cough` files map to the Smart Farm Korea / data.go.kr pig-cough voice
+dataset, with the data.go.kr item at
+https://www.data.go.kr/data/15117368/fileData.do and the Smart Farm Korea source
+page at
+https://www.smartfarmkorea.net/unstructuredDataset/pigCoughSound.do?menuId=M11040204.
+The local source-recovery audit records the data.go.kr usage-permission range
+as no restriction, but raw Korean cough audio should still be obtained from the
+original provider portal rather than redistributed with this repository unless
+the authors complete a final provider-terms check. The `calm_grunt`, `feeding`,
+`frightened_stress`, and `anxious_stress` files derive from the Sow Call Dataset
+on figshare, DOI `10.6084/m9.figshare.16940389`, under CC BY 4.0. Local subtype
+labels for the Sow Call Dataset are documented as filename-suffix mappings in
+the source-recovery audit.
+
+Raw third-party pig audio is therefore outside the public repository package.
+Shareable materials include code, commands, aggregate tables, figures, source
+data for figures, cross-validation manifests, hash/source-id leakage audits,
+and provenance records. Manifests, extracted features, and derived labels may be
+shared only as permitted by the corresponding source licence or terms and with
+source attribution. Restricted or provider-controlled raw audio should be
+obtained from the original providers. The unresolved Kaggle-like
+`data/raw/scream_cough_small` source is excluded from the main results and must
+not be used as final submission evidence until its licence and owner rights are
+resolved.
 
 The environmental noise data used for simulated additive-noise evaluation came
 from DEMAND: a collection of multi-channel recordings of acoustic noise in
@@ -86,13 +103,23 @@ paper package.
 - Thiemann, J., Ito, N., and Vincent, E. (2018). DEMAND: a collection of
   multi-channel recordings of acoustic noise in diverse environments. Zenodo.
   https://doi.org/10.5281/zenodo.1227121
+- Sow call dataset. (2021). figshare.
+  https://doi.org/10.6084/m9.figshare.16940389
+- Smart Farm Korea and data.go.kr. Smart Farm Korea pig-cough voice dataset.
+  https://www.data.go.kr/data/15117368/fileData.do and
+  https://www.smartfarmkorea.net/unstructuredDataset/pigCoughSound.do?menuId=M11040204
 
 ## Repository and Citation Actions Before Submission
 
-- Confirm the formal DOI, URL, owner, and license or restriction terms for the
-  clean pig-vocalization recordings.
-- Confirm whether auxiliary subtype labels can be redistributed as metadata and
-  under which license or data-use condition.
+- Cite DEMAND, the Sow Call Dataset, and the Smart Farm Korea / data.go.kr
+  pig-cough voice dataset in the manuscript and reference list.
+- Do not redistribute raw third-party pig audio or DEMAND audio in GitHub; use
+  source links, checksums, manifests, and provenance instead.
+- Before public raw-audio archiving, complete the final Smart Farm Korea /
+  data.go.kr provider-terms check and record the decision.
+- Confirm whether auxiliary subtype labels and extracted features will be
+  redistributed as metadata and under which source-specific licence or data-use
+  condition.
 - Deposit shareable processed results, figure source data, CV manifests, and
   derived artifacts in a durable repository with DOI, version, license, README,
   and checksums.
@@ -104,11 +131,18 @@ paper package.
 
 ## Missing Information and Risk Flags
 
-- UNRESOLVED: clean pig-vocalization data DOI or stable URL.
-- UNRESOLVED: clean pig-vocalization data license and redistribution rights.
-- UNRESOLVED: clean pig-vocalization data owner and access-review route.
+- CONFIRMED FOR CITATION: Sow Call Dataset DOI
+  `10.6084/m9.figshare.16940389`, figshare URL, and CC BY 4.0 licence.
+- CONFIRMED FOR CITATION WITH CAUTION: Smart Farm Korea / data.go.kr pig-cough
+  voice dataset exact URLs and data.go.kr no-restriction usage-permission range;
+  raw-audio redistribution is not claimed here and still needs a final
+  provider-terms check before any public raw-audio archive.
+- UNRESOLVED: licence, owner rights, and ethics/permission status for the
+  Kaggle-like `data/raw/scream_cough_small` source; it is excluded from current
+  main results.
 - UNRESOLVED: animal ethics approval authority, approval number, and permission
-  conditions for the original clean audio collection.
+  conditions for any original source collection, if the target journal requires
+  those details for third-party animal audio reuse.
 - UNRESOLVED: archival DOI or release tag for the code and processed source-data
   package.
 - UNRESOLVED: archival DOI and license for model checkpoints and prototype

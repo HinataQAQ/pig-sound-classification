@@ -112,6 +112,8 @@ The deterministic noise selection key used SHA256. It included fold, normalised 
 
 The clean and simulated-noise result package uses 5 folds x 5 seeds for final paper-facing summaries. Fold-seed pairing is preserved for model comparisons. The locked protocol enforces exact-path, source_id, and MD5 disjointness. Manifest and artefact SHA checks are part of the provenance record.
 
+The clean closed-set manifests combine third-party or public pig-audio sources rather than newly collected animal recordings. The `dry_cough` and `abdominal_cough` subtypes come from the Smart Farm Korea / data.go.kr pig-cough voice dataset [@smartfarmkorea_pig_cough_voice]. The `calm_grunt`, `feeding`, `frightened_stress`, and `anxious_stress` subtypes derive from the figshare Sow Call Dataset [@sow_call_dataset_2021], with local labels mapped from source filename suffixes. The unresolved Kaggle-like scream/cough source is not used in the current cap3x mainline manifests.
+
 Training data may build model parameters and prototypes. Validation data may calibrate thresholds, temperatures, and fusion weights. Test data are evaluation only. This separation is central to the interpretation of prototype and selective-prediction results.
 
 The principal clean tables are organised as follows. Table 1 defines the class set, subtype set, backbone protocol, prototype protocol, noise protocol, leakage controls, and absence of external validation. Table 2 compares the clean baseline with architecture and front-end ablations. Table 3 isolates the duration comparison. Table 4 reports hierarchical auxiliary weights. Table 5 compares clean raw Softmax, calibrated Softmax, main prototype, hierarchical prototype, and fused variants.
@@ -222,9 +224,7 @@ The work offers a reproducible path towards noise-aware pig-vocalisation inferen
 
 ## Data Availability
 
-The manuscript draft is based on aggregate CSV files under `paper/tables/` and `paper/appendix/` in the project repository. The reviewed files state that DEMAND audio should not be redistributed in the repository. The source records contain conflicting licence metadata. Links, checksums, and provenance should therefore be used instead.
-
-A final submission-ready data availability statement must be completed by the authors. It should state the availability status and permission conditions for the original pig-vocalisation recordings.
+The manuscript draft is based on aggregate CSV files under `paper/tables/` and `paper/appendix/` in the project repository. Code, commands, aggregate tables, figure source-data mappings, cross-validation manifests, and hash-based leakage/provenance audits are available in the repository package. The raw third-party pig audio is not redistributed. Korean cough recordings should be obtained from Smart Farm Korea / data.go.kr [@smartfarmkorea_pig_cough_voice], and Sow Call Dataset recordings should be obtained from figshare [@sow_call_dataset_2021]. DEMAND environmental noise is public on Zenodo [@demand2018] but should also be accessed through the original record rather than bundled in the repository. The unresolved Kaggle-like scream/cough source is excluded from the current main results until its licence and owner rights are resolved.
 
 ## Code Availability
 
@@ -232,7 +232,7 @@ The code availability statement is not finalised in the reviewed files. The manu
 
 ## Ethics Statement
 
-The reviewed files do not provide ethics approval details for the original pig-vocalisation recordings. Before submission, the authors should add the animal-use approval authority and approval number, if applicable. They should also state whether this manuscript performed only computational reanalysis of existing recordings or involved new animal data collection.
+No new animal experiment, animal intervention, or prospective farm recording was conducted for this manuscript. The study reuses public or third-party pig-audio recordings and public DEMAND environmental noise for computational analysis. Original source-side ethics approvals, permissions, and repository terms should be attributed to the original providers where available. Any unresolved source-permission items, including the excluded Kaggle-like scream/cough source and the final Korean raw-audio redistribution check, should remain listed in the reproducibility package before submission.
 
 ## References placeholder
 
