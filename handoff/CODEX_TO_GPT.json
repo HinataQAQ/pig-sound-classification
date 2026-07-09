@@ -1,14 +1,17 @@
 {
   "status": "completed",
-  "task": "full_story_sci_manuscript_rewrite",
+  "task": "nature_figure_v2_generation",
   "approval": {
     "gpt_to_codex_approved_true": true
   },
   "branch": "paper/sci-draft-v1",
-  "base_commit_sha": "01853bfc54093cdcb1f5ea151cfc42beb4b38d73",
+  "base_commit_sha": "d481d98916537d08340c841523fdbe299298201e",
   "final_commit_sha": "see_final_codex_response_after_commit",
   "scope": {
-    "nature_writing_skill_loaded": true,
+    "nature_figure_skill_loaded": true,
+    "backend": "python_matplotlib",
+    "openrouter_used": false,
+    "ai_schematic_generation_used": false,
     "model_training_started": false,
     "model_inference_started": false,
     "checkpoints_changed": false,
@@ -16,21 +19,128 @@
     "calibration_changed": false,
     "snr_changed": false,
     "noise_draw_changed": false,
-    "statistical_protocol_changed": false,
+    "raw_audio_read": false,
     "raw_audio_modified": false,
     "source_result_csv_json_modified": false,
-    "manuscript_markdown_added": true
+    "figures_generated": 8
   },
   "changed_files": [
-    "paper/manuscript/paper_cn_full_story.md",
-    "paper/manuscript/paper_en_full_story.md",
-    "paper/manuscript/section_plan.md",
-    "paper/CLAIMS_AND_EVIDENCE_v2.md",
+    "tools/generate_paper_figures_v2.py",
+    "paper/figures_v2/figure_contracts.md",
+    "paper/figures_v2/figure1_overall_workflow.svg",
+    "paper/figures_v2/figure1_overall_workflow.pdf",
+    "paper/figures_v2/figure1_overall_workflow.png",
+    "paper/figures_v2/figure2_duration_ablation.svg",
+    "paper/figures_v2/figure2_duration_ablation.pdf",
+    "paper/figures_v2/figure2_duration_ablation.png",
+    "paper/figures_v2/figure3_hierarchical_supervision.svg",
+    "paper/figures_v2/figure3_hierarchical_supervision.pdf",
+    "paper/figures_v2/figure3_hierarchical_supervision.png",
+    "paper/figures_v2/figure4_clean_prototype_comparison.svg",
+    "paper/figures_v2/figure4_clean_prototype_comparison.pdf",
+    "paper/figures_v2/figure4_clean_prototype_comparison.png",
+    "paper/figures_v2/figure5_simulated_noise_robustness.svg",
+    "paper/figures_v2/figure5_simulated_noise_robustness.pdf",
+    "paper/figures_v2/figure5_simulated_noise_robustness.png",
+    "paper/figures_v2/figure6_active_event_snr_curve.svg",
+    "paper/figures_v2/figure6_active_event_snr_curve.pdf",
+    "paper/figures_v2/figure6_active_event_snr_curve.png",
+    "paper/figures_v2/figure7_per_class_failure.svg",
+    "paper/figures_v2/figure7_per_class_failure.pdf",
+    "paper/figures_v2/figure7_per_class_failure.png",
+    "paper/figures_v2/figure8_selective_prediction.svg",
+    "paper/figures_v2/figure8_selective_prediction.pdf",
+    "paper/figures_v2/figure8_selective_prediction.png",
     "handoff/CODEX_TO_GPT.md",
     "handoff/CODEX_TO_GPT.json",
     "handoff/HISTORY.md"
   ],
-  "metrics_used": {
+  "source_csvs_used_by_generator": [
+    "paper/tables/table1_dataset_and_leakage_free_protocol.csv",
+    "paper/tables/table3_duration_comparison.csv",
+    "paper/tables/table4_hierarchical_aux_weight_ablation.csv",
+    "paper/tables/table5_clean_softmax_main_prototype_hierarchical_prototype.csv",
+    "paper/tables/table6_simulated_noise_robustness_by_stratum.csv",
+    "paper/tables/table7_paired_statistics.csv",
+    "paper/tables/table8_per_class_noise_results_and_confusion_directions.csv",
+    "paper/tables/table9_selective_prediction_metrics_corrected_augrc.csv",
+    "reports/prototype_noise_demand_w05_final/final_summary.csv",
+    "reports/prototype_noise_demand_w05_final/final_per_class_summary.csv"
+  ],
+  "source_files_used_by_generator": [
+    "paper/CLAIMS_AND_EVIDENCE.md"
+  ],
+  "additional_allowed_csvs_inspected_only": [
+    "paper/tables/table2_clean_baseline_and_architecture_ablations.csv",
+    "paper/appendix/noise_25_run_summary.csv",
+    "paper/appendix/noise_25_run_per_class_summary.csv",
+    "reports/prototype_noise_demand_w05_final/final_selective_summary.csv",
+    "reports/prototype_noise_demand_w05_final/final_paired_stats.csv",
+    "reports/prototype_noise_demand_w05_final/final_aurc_augrc_summary.csv"
+  ],
+  "figure_contracts": {
+    "path": "paper/figures_v2/figure_contracts.md",
+    "figures": {
+      "figure1": {
+        "conclusion": "2 s Log-Mel CRNN plus hierarchical heads and train-only prototypes are evaluated under clean and simulated DEMAND noise settings.",
+        "not_to_claim": [
+          "real-farm external validation",
+          "prototype learning invented here",
+          "0 dB is no noise"
+        ]
+      },
+      "figure2": {
+        "conclusion": "2 s context is the clean-audio mainline by matched paired statistics over 1 s.",
+        "not_to_claim": [
+          "first use of 2 s context",
+          "overinterpret 3 s versus 2 s with unequal run counts"
+        ]
+      },
+      "figure3": {
+        "conclusion": "Auxiliary subtype supervision adds semantic structure; lambda=0.5 is stable and lambda=1.0 has the highest mean.",
+        "not_to_claim": [
+          "statistically significant hierarchy gain over the 2 s baseline",
+          "fused as the main innovation"
+        ]
+      },
+      "figure4": {
+        "conclusion": "Hierarchical prototype has the highest clean Macro-F1, while calibration metrics differ by method.",
+        "not_to_claim": [
+          "all prototype variants improve every metric",
+          "universal uncertainty improvement"
+        ]
+      },
+      "figure5": {
+        "conclusion": "Main-class prototype is the most stable aggregate option for MODERATE_NOISE and ALL_NOISY.",
+        "not_to_claim": [
+          "hierarchical prototype is best under noise",
+          "simulated DEMAND noise is real-farm external validation"
+        ]
+      },
+      "figure6": {
+        "conclusion": "Macro-F1 degrades from clean through 20, 10, and 0 dB active-event SNR.",
+        "not_to_claim": [
+          "0 dB is no noise",
+          "DEMAND simulated noise generalizes to external farm validation"
+        ]
+      },
+      "figure7": {
+        "conclusion": "Cough is the major noisy-condition risk and feeding/stress directions remain visible.",
+        "not_to_claim": [
+          "cough is reliable at 0 dB",
+          "unmeasured causal mechanisms from aggregate confusion counts"
+        ]
+      },
+      "figure8": {
+        "conclusion": "Prototype inference does not comprehensively improve uncertainty; raw Softmax ranks better by AURC/AUGRC.",
+        "not_to_claim": [
+          "prototype methods universally improve uncertainty",
+          "omit raw Softmax advantage on AURC/AUGRC"
+        ]
+      }
+    }
+  },
+  "metrics_represented": {
     "duration_macro_f1": {
       "1s": 0.9226,
       "2s": 0.9472,
@@ -45,31 +155,38 @@
       "lambda_1_0_mean_macro_f1": 0.9515
     },
     "clean_prototype": {
-      "raw_softmax": 0.951,
-      "prototype": 0.9519,
-      "hierarchical": 0.954,
-      "hierarchical_minus_raw_wilcoxon_p": 0.058253
+      "raw_softmax_macro_f1": 0.951,
+      "calibrated_softmax_macro_f1": 0.951,
+      "prototype_macro_f1": 0.9519,
+      "hierarchical_macro_f1": 0.954,
+      "fused_macro_f1": 0.9535
     },
     "simulated_noise_macro_f1": {
-      "ALL_NOISY": {
-        "raw_softmax": 0.6173,
-        "prototype": 0.623,
-        "hierarchical": 0.62,
-        "prototype_minus_raw_delta": 0.005755,
-        "prototype_minus_raw_p": 0.010511,
-        "hierarchical_minus_prototype_delta": -0.003045,
-        "hierarchical_minus_prototype_p": 0.000376
-      },
       "MODERATE_NOISE": {
         "raw_softmax": 0.6472,
         "prototype": 0.6534,
-        "hierarchical": 0.6522
+        "hierarchical": 0.6522,
+        "prototype_minus_raw_delta": 0.006129,
+        "prototype_minus_raw_p": 0.001673
       },
       "EXTREME_STRESS": {
         "raw_softmax": 0.5574,
         "prototype": 0.5624,
         "hierarchical": 0.5556
+      },
+      "ALL_NOISY": {
+        "raw_softmax": 0.6173,
+        "prototype": 0.623,
+        "hierarchical": 0.62,
+        "prototype_minus_raw_delta": 0.005755,
+        "prototype_minus_raw_p": 0.010511
       }
+    },
+    "per_class_failure": {
+      "all_noisy_cough_f1_raw": 0.0867,
+      "all_noisy_cough_f1_prototype": 0.0974,
+      "all_noisy_cough_f1_hierarchical": 0.0957,
+      "zero_db_cough_recall_percent_range": "0.0-0.9"
     },
     "selective_prediction_all_noisy": {
       "raw_softmax_aurc": 0.1775,
@@ -82,44 +199,41 @@
       "prototype_frozen_threshold_selective_risk": 0.2988
     }
   },
+  "verification": {
+    "help_passed": true,
+    "generation_passed": true,
+    "svg_pdf_png_exports_created": true,
+    "png_dimension_check_passed": true,
+    "png_nonblank_extrema_check_passed": true,
+    "visual_preview_inspected": true,
+    "layout_issues_found_and_corrected": true,
+    "runtime_warning": "pandas future optional pyarrow dependency warning only"
+  },
   "data_boundaries": {
     "train_val_test_roles_changed": false,
     "test_set_tuning": false,
     "path_source_id_md5_disjointness_changed": false,
+    "raw_audio_read": false,
     "raw_audio_modified": false,
     "demand_audio_modified": false,
     "prediction_csv_modified": false,
     "paper_table_csv_modified": false,
-    "appendix_csv_modified": false
+    "appendix_csv_modified": false,
+    "report_csv_modified": false
   },
   "paper_usability": {
     "paper_usable": true,
     "paper_main_result_changed": false,
     "simulated_noise_only": true,
     "real_farm_external_validation": false,
-    "new_results_created": false
+    "new_results_created": false,
+    "source_csv_json_values_modified": false
   },
-  "required_boundaries_written": {
-    "demand_is_simulated_additive_noise": true,
-    "zero_db_is_extreme_active_event_snr": true,
-    "cough_unreliable_at_zero_db": true,
-    "prototype_not_universal_uncertainty_improvement": true,
-    "raw_softmax_better_aurc_augrc": true,
-    "prototype_only_slight_frozen_threshold_selective_risk_improvement": true,
-    "hierarchical_prototype_weaker_than_main_under_noise": true,
-    "fused_is_ablation": true
-  },
-  "blockers": [
-    "Target journal and exact word limits are missing.",
-    "Complete verified pig-vocalization and livestock-acoustic references are missing.",
-    "Original pig-audio ethics approval and data-sharing permissions are missing from reviewed files.",
-    "Code release URL/tag/archive DOI and checkpoint policy are not finalized."
-  ],
+  "blockers": [],
   "questions_for_gpt_pro": [
-    "Which target SCI journal and manuscript format should the full-story draft be condensed for?",
-    "Which verified pig-vocalization references should be added to replace citation placeholders?",
-    "What exact ethics and data-availability statements are authorized for the original pig recordings?",
-    "Should the English or Chinese draft be treated as the authoritative submission source?"
+    "Should the current figure typography and panel density be tuned for a specific journal template after target venue selection?",
+    "Should final captions repeat every boundary warning or defer some boundaries to Results/Limitations text?",
+    "Should a separate source-data archive be prepared from the same locked CSV inputs?"
   ],
-  "recommended_next_step": "Review and condense the full-story drafts after target journal, citations, ethics, data availability, and code availability are supplied. Do not start new experiments without a new explicit APPROVED:true."
+  "recommended_next_step": "Review the exported figure package and integrate captions into the manuscript. Do not start new experiments without a new explicit APPROVED:true."
 }

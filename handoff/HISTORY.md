@@ -476,3 +476,60 @@
   authoritative submission source.
 - Stop point: review and condense the full-story drafts. Do not start new
   experiments or another paper stage without a new explicit `APPROVED: true`.
+
+## 2026-07-09 - Nature Figure V2 manuscript figure generation
+
+- Status: completed
+- Branch: `paper/sci-draft-v1`
+- Base: `d481d98`
+- Approval state: `handoff/GPT_TO_CODEX.md` contained `APPROVED: true`.
+- Scope: used the installed `nature-figure` skill, loaded `SKILL.md`,
+  `manifest.yaml`, always-load files, and the Python/matplotlib backend
+  fragment. Python/matplotlib was used as the backend. No AI-generated
+  schematic, OpenRouter call, model training, inference, checkpoint,
+  prototype, calibration, SNR/noise draw, threshold, raw audio, or result
+  CSV/JSON change was started.
+- Added generator: `tools/generate_paper_figures_v2.py`.
+- Added contracts: `paper/figures_v2/figure_contracts.md`.
+- Generated exports: Figures 1-8 under `paper/figures_v2/`, each as editable
+  SVG, PDF, and 300 dpi PNG.
+- Source CSVs used by the generator:
+  `paper/tables/table1_dataset_and_leakage_free_protocol.csv`,
+  `paper/tables/table3_duration_comparison.csv`,
+  `paper/tables/table4_hierarchical_aux_weight_ablation.csv`,
+  `paper/tables/table5_clean_softmax_main_prototype_hierarchical_prototype.csv`,
+  `paper/tables/table6_simulated_noise_robustness_by_stratum.csv`,
+  `paper/tables/table7_paired_statistics.csv`,
+  `paper/tables/table8_per_class_noise_results_and_confusion_directions.csv`,
+  `paper/tables/table9_selective_prediction_metrics_corrected_augrc.csv`,
+  `reports/prototype_noise_demand_w05_final/final_summary.csv`, and
+  `reports/prototype_noise_demand_w05_final/final_per_class_summary.csv`.
+- Non-CSV source file used: `paper/CLAIMS_AND_EVIDENCE.md`.
+- Metrics represented: duration Macro-F1 `1s=0.9226`, `2s=0.9472`,
+  `3s=0.9434`, delta `0.0246`, p `0.000162`; hierarchy lambda means
+  `0.9505/0.9510/0.9515`; clean raw/calibrated/prototype/hierarchical/fused
+  Macro-F1 `0.9510/0.9510/0.9519/0.9540/0.9535`; MODERATE_NOISE
+  raw/prototype/hierarchical `0.6472/0.6534/0.6522`; EXTREME_STRESS
+  `0.5574/0.5624/0.5556`; ALL_NOISY `0.6173/0.6230/0.6200`; ALL_NOISY cough
+  F1 `0.0867/0.0974/0.0957`; raw/prototype/hierarchical AURC/AUGRC
+  `0.1775/0.1239`, `0.2109/0.1394`, `0.2122/0.1403`.
+- Required boundaries encoded in contracts/figures: DEMAND is simulated noise
+  only; no real-farm external validation; 0 dB is an extreme active-event SNR
+  stress condition; cough is unreliable under 0 dB; hierarchical prototype is
+  not the noise-optimal method; prototypes do not comprehensively improve
+  uncertainty; raw Softmax ranks better by AURC/AUGRC.
+- Leakage audit: no source result CSV/JSON was modified; no raw audio was read
+  or modified; no training, validation, or test role changed;
+  path/source_id/MD5 disjointness unchanged.
+- Verification: generator `--help` passed; full generation passed; all eight
+  PNG previews passed dimension and nonblank extrema checks; all eight PNGs
+  were visually inspected and layout issues were corrected before final export.
+- Paper usability: `paper_usable=true` for a manuscript figure package;
+  `new_results_created=false`; `real_farm_external_validation=false`.
+- Blockers: none for the requested figures.
+- Questions for GPT Pro: decide target-journal-specific figure typography,
+  final caption boundary wording, and whether to prepare a separate source-data
+  archive from the same locked CSV inputs.
+- Stop point: review generated figures and integrate final captions. Do not
+  start new experiments or another paper stage without a new explicit
+  `APPROVED: true`.
