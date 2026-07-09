@@ -598,3 +598,72 @@
 - Stop point: resolve clean-audio rights, ethics, and archival DOI fields. Do
   not start new experiments or another paper stage without a new explicit
   `APPROVED: true`.
+
+## 2026-07-09 - Nature polishing of English full-story manuscript
+
+- Status: completed
+- Branch: `paper/sci-draft-v1`
+- Base: `5bf1ced`
+- Approval state: `handoff/GPT_TO_CODEX.md` contained `APPROVED: true`, and
+  the user explicitly requested the polishing task.
+- Scope: used the installed `nature-polishing` skill, loaded `SKILL.md`,
+  `manifest.yaml`, all always-load files, and the matching fragments for
+  `paper_type=algorithmic`, all manuscript sections, `language=en`, and
+  `journal=generic`.
+- Added polished manuscript:
+  `paper/manuscript/paper_en_full_story_polished.md`.
+- Added audit outputs:
+  `paper/manuscript/polishing_change_log.md` and
+  `paper/manuscript/overclaim_audit.md`.
+- Main language work: SCI applied-engineering English; British spelling;
+  shorter sentence structure; cautious claim verbs; clearer
+  claim-evidence-boundary logic; no new references; no number changes; no
+  deletion of limitations.
+- Required boundaries preserved: 2 s context significantly improves clean
+  classification; hierarchical auxiliary supervision is positive but not
+  statistically significant over the 2 s baseline; clean hierarchical prototype
+  has the highest Macro-F1; under simulated DEMAND noise, main prototype is the
+  most robust; hierarchical prototype is not the most noise-robust method;
+  prototype inference does not universally improve uncertainty; 0 dB
+  active-event SNR is an extreme stress condition; real-farm external validation
+  was not performed.
+- Metrics preserved: 1 s/2 s Log-Mel Macro-F1 `0.9226/0.9472`, delta
+  `0.0246`, p `0.000162`; 3 s Log-Mel `0.9434`; hierarchical lambda means
+  `0.9505/0.9510/0.9515`; lambda=0.5 std `0.0124`; clean raw/main/hierarchical
+  prototype Macro-F1 `0.9510/0.9519/0.9540`; clean hierarchical - raw p
+  `0.058253`; ALL_NOISY raw/main/hierarchical `0.6173/0.6230/0.6200`; main -
+  raw delta `0.005755`, CI95 `[0.001606, 0.010894]`, p `0.010511`;
+  hierarchical - raw p `0.312333`; hierarchical - main p `0.000376`;
+  ALL_NOISY raw/main/hierarchical AURC/AUGRC `0.1775/0.1239`,
+  `0.2109/0.1394`, and `0.2122/0.1403`.
+- Overclaim risks found: title/abstract could overgeneralise hierarchy;
+  positive hierarchical means could imply significance; clean hierarchical
+  prototype could be confused with noise robustness; main-prototype noise gains
+  could be overgeneralised to real farms; selective-risk behaviour could be
+  overgeneralised into uncertainty calibration.
+- Evidence still needed: verified livestock-acoustics references; clean audio
+  rights and licence; code release tag/DOI/licence; animal ethics approval
+  details; real-farm external validation if deployment claims are desired; new
+  evidence for reliable cough recognition under 0 dB if that claim is desired.
+- Leakage audit: no training, inference, checkpoint, prototype, calibration,
+  threshold, SNR/noise draw, prediction, source result CSV/JSON, raw clean
+  audio, or DEMAND audio change was performed. No `paper/tables/*.csv`,
+  `paper/appendix/*.csv`, prediction file, or source result file was modified.
+- Verification: forbidden-word scan for `prove`, `proves`, `proved`, `proven`,
+  `novel`, and `first` returned no matches; numeric-token audit matched 168
+  source tokens and 168 polished tokens with no additions or removals;
+  sentence-length audit found zero prose sentences above 30 words; ASCII audit
+  found zero non-ASCII characters in all three new manuscript files.
+  `tools/summarize_hier_longcontext.py --help` is not conventional help and
+  executed the summary script, but git showed no diff in the rewritten report
+  CSVs.
+- Paper usability: `paper_usable=true` for English manuscript polishing;
+  `submission_complete=false`; `new_results_created=false`;
+  `source_csv_json_values_modified=false`; `simulated_noise_only=true`;
+  `real_farm_external_validation=false`.
+- Questions for GPT Pro: choose final Related Work citations; decide whether to
+  shorten the title; confirm British vs US spelling for the final journal; fill
+  legally accurate ethics, data-rights, and code-release statements.
+- Stop point: review the polished English manuscript and fill evidence gaps. Do
+  not start new experiments or another paper stage without a new explicit
+  `APPROVED: true`.

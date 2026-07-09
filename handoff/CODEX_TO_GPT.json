@@ -1,129 +1,173 @@
 {
   "status": "completed",
-  "task": "nature_data_availability_code_ethics_reproducibility_package",
+  "task": "nature_polishing_english_full_story_manuscript",
   "approval": {
-    "gpt_to_codex_approved_true": true
+    "gpt_to_codex_approved_true": true,
+    "direct_user_request": true
   },
   "branch": "paper/sci-draft-v1",
-  "base_commit_sha": "855c9d721d639e80bde3c2ad2bb6cbb57a8195d4",
+  "base_commit_sha": "5bf1ced37ba27362eede3c3e6084df39d0b1e414",
   "final_commit_sha": "see_final_codex_response_after_commit",
   "scope": {
-    "nature_data_skill_loaded": true,
+    "nature_polishing_skill_loaded": true,
     "manifest_loaded": true,
     "always_load_files_loaded": [
+      "../_shared/core/reader-workflow.md",
+      "../_shared/core/paper-type-taxonomy.md",
+      "../_shared/core/ethics.md",
+      "../_shared/core/terminology-ledger.md",
       "static/core/stance.md",
-      "static/core/chinese-mode.md",
-      "static/core/workflow.md"
+      "static/core/failure-modes.md",
+      "static/core/output-format.md"
     ],
-    "on_demand_references_loaded": [
-      "references/policy-principles.md",
-      "references/repository-and-identifiers.md",
-      "references/statement-patterns.md",
-      "references/fair-metadata-checklist.md",
-      "references/chinese-author-alignment.md",
-      "references/source-basis.md"
+    "axis_fragments_loaded": [
+      "static/fragments/paper_type/algorithmic.md",
+      "static/fragments/section/title.md",
+      "static/fragments/section/abstract.md",
+      "static/fragments/section/intro.md",
+      "static/fragments/section/methods.md",
+      "static/fragments/section/results.md",
+      "static/fragments/section/discussion.md",
+      "static/fragments/section/conclusion.md",
+      "static/fragments/language/en.md",
+      "static/fragments/journal/generic.md"
     ],
+    "on_demand_references_loaded": [],
     "model_training_started": false,
     "model_inference_started": false,
     "checkpoints_changed": false,
     "prototypes_changed": false,
     "calibration_changed": false,
+    "thresholds_changed": false,
     "snr_changed": false,
     "noise_draw_changed": false,
     "raw_audio_read": false,
     "raw_audio_modified": false,
     "source_result_csv_json_modified": false,
-    "figures_changed_final_diff": false
+    "references_added": false,
+    "numbers_changed": false,
+    "limitations_deleted": false
   },
   "changed_files": [
-    "paper/reproducibility/DATA_AVAILABILITY.md",
-    "paper/reproducibility/CODE_AVAILABILITY.md",
-    "paper/reproducibility/ETHICS_STATEMENT.md",
-    "paper/reproducibility/REPRODUCIBILITY_CHECKLIST.md",
-    "paper/reproducibility/DATA_SOURCE_AUDIT.csv",
+    "paper/manuscript/paper_en_full_story_polished.md",
+    "paper/manuscript/polishing_change_log.md",
+    "paper/manuscript/overclaim_audit.md",
     "handoff/CODEX_TO_GPT.md",
     "handoff/CODEX_TO_GPT.json",
     "handoff/HISTORY.md"
   ],
-  "data_source_audit_rows": [
-    "clean_pig_vocalization_audio",
-    "auxiliary_subtype_labels",
-    "cv_manifests_cap3x",
-    "model_checkpoints",
-    "prototype_artifacts",
-    "demand_noise_audio",
-    "demand_noise_metadata",
-    "generated_tables",
-    "generated_appendix_csv",
-    "generated_figures",
-    "code_repository",
-    "non_redistributed_audio_policy",
-    "sha_provenance"
-  ],
-  "formally_citable_now": [
-    {
-      "name": "DEMAND environmental noise dataset",
-      "doi": "10.5281/zenodo.1227121",
-      "url": "https://zenodo.org/records/1227121",
-      "note": "Cite DOI and Zenodo record; do not redistribute DEMAND audio in GitHub."
+  "polishing": {
+    "detected_axes": {
+      "paper_type": "algorithmic",
+      "section": [
+        "title",
+        "abstract",
+        "intro",
+        "methods",
+        "results",
+        "discussion",
+        "conclusion"
+      ],
+      "language": "en",
+      "journal": "generic"
     },
-    {
-      "name": "Code repository URL",
-      "url": "https://github.com/HinataQAQ/pig-sound-classification",
-      "note": "Release tag and archival software DOI remain unresolved."
-    }
-  ],
-  "unresolved_doi_license_fields": [
-    "clean pig-vocalization dataset DOI or stable URL",
-    "clean pig-vocalization dataset license and redistribution rights",
-    "clean pig-vocalization data owner and access-review route",
-    "auxiliary subtype label ownership and metadata license",
-    "processed source-data archive DOI and license",
-    "code release tag, archived software DOI, and software license confirmation",
-    "model checkpoint archive DOI and license if released",
-    "prototype artifact archive DOI and license if released"
-  ],
-  "ethics_authorization_blockers": [
-    "original clean audio source name and data owner",
-    "public/previously collected/collaborator/third-party status of clean audio",
-    "animal ethics approval authority and approval number if applicable",
-    "farm, institution, or data-owner permission statement if applicable",
-    "permission to reuse clean audio and auxiliary subtype labels",
-    "permission to redistribute or control-access raw clean audio, metadata, and subtype labels",
-    "data-use agreement, confidentiality, farm privacy, or commercial restriction terms"
-  ],
-  "required_ethics_sentence_included": "This manuscript uses previously collected or public audio data; the original collection ethics and permissions must be confirmed before submission.",
+    "target_register": "SCI applied-engineering English",
+    "british_english": true,
+    "new_references_added": false,
+    "numeric_tokens_source": 168,
+    "numeric_tokens_polished": 168,
+    "numeric_tokens_missing": {},
+    "numeric_tokens_added": {},
+    "long_sentences_gt30": 0,
+    "non_ascii_new_manuscript_files": 0,
+    "forbidden_word_scan_matches_after_cleanup": 0
+  },
   "metrics_preserved": {
     "duration": {
       "logmel_1s_macro_f1": 0.9226,
       "logmel_2s_macro_f1": 0.9472,
       "delta_2s_minus_1s": 0.0246,
-      "wilcoxon_p": 0.000162
+      "wilcoxon_p": 0.000162,
+      "logmel_3s_macro_f1_available_15_run": 0.9434,
+      "significant_clean_duration_gain": true
     },
     "hierarchical_auxiliary": {
-      "lambda_1_0_highest_mean_macro_f1": 0.9515,
-      "lambda_0_5_balanced_mean_macro_f1": 0.951,
+      "lambda_0_2_mean_macro_f1": 0.9505,
+      "lambda_0_5_mean_macro_f1": 0.9510,
+      "lambda_1_0_mean_macro_f1": 0.9515,
       "lambda_0_5_std_macro_f1": 0.0124,
       "hier_gain_over_2s_significant": false
     },
     "clean_prototype": {
-      "hierarchical_macro_f1": 0.954,
+      "raw_softmax_macro_f1": 0.9510,
+      "main_prototype_macro_f1": 0.9519,
+      "hierarchical_prototype_macro_f1": 0.9540,
+      "hierarchical_minus_raw_delta": 0.002937,
+      "hierarchical_minus_raw_ci95": [
+        -0.000478,
+        0.007294
+      ],
       "hierarchical_minus_raw_wilcoxon_p": 0.058253,
       "significant": false
     },
     "simulated_noise": {
       "all_noisy_raw_macro_f1": 0.6173,
-      "all_noisy_prototype_macro_f1": 0.623,
-      "all_noisy_hierarchical_macro_f1": 0.62,
-      "prototype_minus_raw_delta": 0.005755,
-      "prototype_minus_raw_ci95": [
+      "all_noisy_main_prototype_macro_f1": 0.6230,
+      "all_noisy_hierarchical_prototype_macro_f1": 0.6200,
+      "main_prototype_minus_raw_delta": 0.005755,
+      "main_prototype_minus_raw_ci95": [
         0.001606,
         0.010894
       ],
-      "prototype_minus_raw_wilcoxon_p": 0.010511,
+      "main_prototype_minus_raw_wilcoxon_p": 0.010511,
+      "hierarchical_minus_raw_delta": 0.002710,
+      "hierarchical_minus_raw_wilcoxon_p": 0.312333,
+      "hierarchical_minus_main_delta": -0.003045,
+      "hierarchical_minus_main_wilcoxon_p": 0.000376,
+      "moderate_noise_raw_main_hierarchical_macro_f1": [
+        0.6472,
+        0.6534,
+        0.6522
+      ],
+      "moderate_noise_main_minus_raw_p": 0.001673,
+      "extreme_stress_raw_main_macro_f1": [
+        0.5574,
+        0.5624
+      ],
+      "extreme_stress_main_minus_raw_p": 0.560171,
+      "all_noisy_cough_f1_raw_main_hierarchical": [
+        0.0867,
+        0.0974,
+        0.0957
+      ],
+      "dwashing_0db_cough_recall_below": 0.009,
+      "all_noisy_aurc_augrc_raw": [
+        0.1775,
+        0.1239
+      ],
+      "all_noisy_aurc_augrc_main": [
+        0.2109,
+        0.1394
+      ],
+      "all_noisy_aurc_augrc_hierarchical": [
+        0.2122,
+        0.1403
+      ],
+      "frozen_threshold_selective_risk_main": 0.2988,
+      "frozen_threshold_selective_risk_raw": 0.3024,
       "simulated_noise_only": true,
       "real_farm_external_validation": false
     }
+  },
+  "required_boundaries_preserved": {
+    "context_2s_significantly_improves_clean_classification": true,
+    "hierarchical_aux_positive_not_significant_over_2s": true,
+    "clean_hierarchical_prototype_highest_macro_f1": true,
+    "demand_noise_main_prototype_most_robust": true,
+    "hierarchical_prototype_not_most_noise_robust": true,
+    "prototype_not_universal_uncertainty_improvement": true,
+    "zero_db_active_event_snr_extreme_stress": true,
+    "real_farm_external_validation_not_performed": true
   },
   "data_boundaries": {
     "train_val_test_roles_changed": false,
@@ -136,40 +180,38 @@
     "paper_table_csv_modified": false,
     "appendix_csv_modified": false,
     "report_csv_modified": false,
-    "final_diff_modifies_figures": false
+    "reports_hier_longcontext_rewritten_but_no_git_diff": true
   },
   "verification": {
-    "data_source_audit_import_csv_passed": true,
-    "data_source_audit_row_count": 13,
-    "keyword_audit_passed": true,
-    "non_ascii_count_all_new_files": 0,
-    "summarize_prototype_noise_robustness_help_passed": true,
-    "create_paper_package_true_help_available": false,
-    "create_paper_package_direct_execution_passed": true,
-    "create_paper_package_direct_execution_note": "Script produced package manifest summary rather than argparse help.",
-    "conda_wrapper_issue": "Parallel conda run hit temporary-file collision; later conda wrapper hit GBK UnicodeEncodeError for create_paper_package.py.",
-    "accidental_figure_regeneration_restored": true
+    "forbidden_word_scan_passed": true,
+    "numeric_token_audit_passed": true,
+    "sentence_length_audit_passed": true,
+    "ascii_audit_passed": true,
+    "summarize_hier_longcontext_help_conventional": false,
+    "summarize_hier_longcontext_executed_no_git_diff": true,
+    "conda_activate_issue": "PowerShell conda activation failed with GBK UnicodeEncodeError; direct environment Python was used for text QA."
   },
   "paper_usability": {
     "paper_usable": true,
-    "paper_main_result_changed": false,
-    "simulated_noise_only": true,
-    "real_farm_external_validation": false,
+    "submission_complete": false,
     "new_results_created": false,
-    "source_csv_json_values_modified": false
+    "source_csv_json_values_modified": false,
+    "simulated_noise_only": true,
+    "real_farm_external_validation": false
   },
   "blockers": [
-    "clean pig audio DOI/URL/license/owner/access route unresolved",
-    "animal ethics and original collection permission unresolved",
-    "code release tag/software DOI/license unresolved",
-    "checkpoint/prototype artifact release plan unresolved",
-    "DEMAND license metadata conflict should be retained"
+    "Verified livestock-acoustics and pig-vocalisation references still needed.",
+    "Clean pig audio availability, owner, licence, and access route remain unresolved.",
+    "Code release tag, archived DOI, and software licence remain unresolved.",
+    "Animal-use approval authority and approval number remain unresolved, if applicable.",
+    "Real-farm external validation remains absent.",
+    "Reliable cough recognition under 0 dB active-event SNR remains unsupported."
   ],
   "questions_for_gpt_pro": [
-    "What is the final data-access route for clean pig audio: public repository, controlled access, third-party restricted, or institutional request route?",
-    "What are the exact animal ethics approval authority and approval number, or should the paper use a previously collected/public-data statement?",
-    "Should checkpoints and prototype NPZ artifacts be archived, or should code regeneration be the official route?",
-    "Which repository should host processed source data, figures, manifests, and the code release DOI?"
+    "Which livestock-acoustics and pig-vocalisation studies should be cited in Related Work?",
+    "Should the title be shortened for the target SCI applied-engineering journal?",
+    "Should British-English vocalisation spelling be retained for the final target journal?",
+    "What exact ethics, data-rights, and code-release statements can the authors legally make?"
   ],
-  "recommended_next_step": "Resolve clean-audio rights, ethics, and code/source-data archival DOI fields. Do not start new experiments without a new explicit APPROVED:true."
+  "recommended_next_step": "Fill evidence gaps for references, data rights, code release, and ethics. Do not start new experiments without a new explicit APPROVED:true."
 }
