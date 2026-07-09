@@ -722,3 +722,23 @@
 - Stop point: review `citation_audit.csv` and insert approved inline citations
   into the manuscript. Do not start new experiments or another paper stage
   without a new explicit `APPROVED: true`.
+
+## 2026-07-09 - Clean pig audio source recovery audit
+
+- Status: completed.
+- Branch: `paper/sci-draft-v1`.
+- Approval state: `handoff/GPT_TO_CODEX.md` contained `APPROVED: true`, and the user explicitly requested only clean pig-audio provenance recovery.
+- Scope: local evidence first, then web/source recovery. No model experiment, inference, training/evaluation edit, paper-result edit, raw-audio edit, Data Availability edit, paper-claim edit, or deletion was performed.
+- Added `paper/reproducibility/PIG_AUDIO_SOURCE_RECOVERY_REPORT.md`.
+- Added `paper/reproducibility/PIG_AUDIO_SOURCE_AUDIT.csv` with 14 source rows and the requested provenance/right columns.
+- Added `paper/reproducibility/UNRESOLVED_DATA_SOURCES.md`.
+- Updated `handoff/CODEX_TO_GPT.md` and `handoff/CODEX_TO_GPT.json` for this round.
+- Verified current-mainline sources: `data/external/korea_raw/dry_cough` and `abdominal_cough` map to Smart Farm Korea / data.go.kr pig cough sound, high confidence; `data/raw/sow_call_dataset_labeled/*` maps to figshare Sow call dataset, CC BY 4.0, high confidence.
+- Korea cough source identified: yes, high confidence.
+- Verified non-current sources: SoundWel Zenodo 8252482, CC BY 4.0; aSwine GitHub, CC BY-NC 4.0; `data/raw/wu_pig_speech` is an exact local duplicate of figshare Sow call dataset.
+- Unresolved/highest-risk source: `data/raw/scream_cough_small`, likely Kaggle `titpigrecognition/porcine-scream-sounds-and-cough-sounds`, but Kaggle metadata reports license `Unknown`; classification `E. unresolved_do_not_submit_as_final`.
+- Current manifest audit metadata: 7,310 total cap3x fold/split rows; 3,812 unique paths; 0 blank md5; 0 blank source_id.
+- Fold0 leakage checks passed read-only: cross-split MD5 duplicate groups 0; exact path overlap 0; source_id overlap 0.
+- Final recommendation: `safe_only_after_source_citation_added`.
+- Paper usability: `paper_usable=true` for source-provenance audit; `submission_complete=false`; source citations, license wording, Data Availability wording, and third-party ethics/exemption language still require author/GPT Pro judgment.
+- Stop point: review the new source recovery files and decide citations/Data Availability wording. Do not start another paper or experiment stage without a new explicit `APPROVED: true`.

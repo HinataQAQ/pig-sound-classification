@@ -1,227 +1,119 @@
 {
   "status": "completed",
-  "task": "nature_citation_claim_segmentation_and_reference_audit",
+  "task": "clean_pig_audio_source_recovery_audit",
   "approval": {
     "gpt_to_codex_approved_true": true,
     "direct_user_request": true
   },
   "branch": "paper/sci-draft-v1",
-  "base_commit_sha": "1808464",
   "final_commit_sha": "see_final_codex_response_after_commit",
-  "skill_usage": {
-    "nature_citation_skill_loaded": true,
-    "manifest_loaded": true,
-    "always_load_files_loaded": [
-      "static/core/principles.md",
-      "static/core/chinese-mode.md",
-      "static/core/workflow.md"
-    ],
-    "on_demand_references_loaded": [
-      "references/search-strategy.md",
-      "references/script-usage.md"
-    ],
-    "scope": "nature-citation segmentation and conservative support grading; broader academic search allowed by user",
-    "search_date": "2026-07-09"
-  },
   "changed_files": [
-    "paper/references/references.bib",
-    "paper/references/citation_audit.csv",
-    "paper/references/missing_citations.md",
+    "paper/reproducibility/PIG_AUDIO_SOURCE_RECOVERY_REPORT.md",
+    "paper/reproducibility/PIG_AUDIO_SOURCE_AUDIT.csv",
+    "paper/reproducibility/UNRESOLVED_DATA_SOURCES.md",
     "handoff/CODEX_TO_GPT.md",
     "handoff/CODEX_TO_GPT.json",
     "handoff/HISTORY.md"
   ],
-  "citation_audit": {
-    "existing_reference_count_before": 6,
-    "new_references_added": 24,
-    "total_reference_count_after": 30,
-    "claim_rows": 32,
-    "csv_parse_passed": true,
-    "ascii_audit_passed": true,
-    "manuscript_body_modified": false,
-    "references_added_by_group": {
-      "pig_call_valence_context": [
-        "briefer2022pigcalls",
-        "tallet2013piglets",
-        "illmann2013signalneed",
-        "weary1995calling",
-        "manteuffel2004vocalization"
-      ],
-      "pig_cough_and_abnormal_vocalization": [
-        "ferrari2008cough",
-        "exadaktylos2008cough",
-        "yin2021pigcoughcnn",
-        "shen2022pigcoughfusion",
-        "xie2024abnormalpig"
-      ],
-      "noisy_pig_vocalization": [
-        "chung2025pvmc"
-      ],
-      "bioacoustic_livestock_background": [
-        "mcloughlin2019automated",
-        "coutant2024scoping",
-        "stowell2022computational"
-      ],
-      "animal_audio_features_and_classifiers": [
-        "acevedo2009animalcalls",
-        "huang2014anuran",
-        "kahl2021birdnet",
-        "cakir2017crnn_sed",
-        "hershey2017cnn_audio",
-        "gemmeke2017audioset"
-      ],
-      "pcen_specaugment": [
-        "lostanlen2019pcen",
-        "park2019specaugment"
-      ],
-      "hierarchical_and_prototype_interpretability": [
-        "silla2011hierarchical",
-        "heinrich2025audioprotopnet"
-      ]
-    },
-    "strongest_support": {
-      "pig_call_valence_context": [
-        "briefer2022pigcalls",
-        "tallet2013piglets",
-        "illmann2013signalneed",
-        "weary1995calling"
-      ],
-      "pig_cough_recognition": [
-        "ferrari2008cough",
-        "exadaktylos2008cough",
-        "yin2021pigcoughcnn",
-        "shen2022pigcoughfusion"
-      ],
-      "noisy_pig_vocalization_context": [
-        "chung2025pvmc",
-        "xie2024abnormalpig"
-      ],
-      "demand_noise_dataset": [
-        "demand2018"
-      ],
-      "crnn_audio_classification": [
-        "choi2017crnn",
-        "cakir2017crnn_sed"
-      ],
-      "pcen_specaugment": [
-        "lostanlen2019pcen",
-        "park2019specaugment"
-      ],
-      "prototypical_networks": [
-        "snell2017prototypical"
-      ],
-      "bioacoustic_prototype_interpretability": [
-        "heinrich2025audioprotopnet"
-      ],
-      "hierarchical_classification_sound_ontology": [
-        "silla2011hierarchical",
-        "gemmeke2017audioset"
-      ],
-      "selective_prediction": [
-        "geifman2017selective",
-        "fdshifts_riskcoverage"
-      ]
-    },
-    "remaining_missing_or_author_dependent": [
-      "Original pig-vocalization recording source, owner, license, access route and permission status.",
-      "Animal ethics approval authority and approval number or exemption statement.",
-      "Code release tag, archived DOI and software license.",
-      "Direct external source for exactly 2 s pig-vocalization processing as a general standard.",
-      "Formal spectral-gate denoising citation if retained as method provenance.",
-      "External definition/citation for MCTAFD if retained as an externally named method."
+  "verified_sources": {
+    "current_mainline": [
+      {
+        "local_root": "data/external/korea_raw/dry_cough",
+        "source": "Smart Farm Korea / data.go.kr pig cough sound",
+        "confidence": "high",
+        "classification": "A. verified_public_reusable"
+      },
+      {
+        "local_root": "data/external/korea_raw/abdominal_cough",
+        "source": "Smart Farm Korea / data.go.kr pig cough sound",
+        "confidence": "high",
+        "classification": "A. verified_public_reusable"
+      },
+      {
+        "local_root": "data/raw/sow_call_dataset_labeled/*",
+        "source": "figshare Sow call dataset",
+        "confidence": "high",
+        "license": "CC BY 4.0",
+        "classification": "A. verified_public_reusable"
+      }
     ],
-    "rejected_or_not_used": [
-      "ResearchGate, Google Scholar and aggregator pages as sole citation support.",
-      "Guarino et al. field-test cough-detection work because exact DOI/publisher metadata were not verified in this pass.",
-      "Generic environmental sound CNN papers less specific than the selected audio/animal references.",
-      "Additional overlapping pig cough fusion/monitoring papers beyond Yin 2021 and Shen 2022.",
-      "Reviews as support for specific numerical experimental claims.",
-      "DEMAND interpreted as real-farm validation.",
-      "Prototype learning as a claimed novelty."
+    "non_current": [
+      {
+        "local_root": "data/raw/soundwel and derived reviewed/processed roots",
+        "source": "Zenodo SoundWel",
+        "confidence": "high",
+        "license": "CC BY 4.0"
+      },
+      {
+        "local_root": "data/external/aswine and aswine-derived processed roots",
+        "source": "aSwine GitHub",
+        "confidence": "high",
+        "license": "CC BY-NC 4.0"
+      },
+      {
+        "local_root": "data/raw/wu_pig_speech",
+        "source": "duplicate of figshare Sow call dataset",
+        "confidence": "high"
+      }
     ]
   },
-  "metrics_preserved": {
-    "duration": {
-      "logmel_1s_macro_f1": 0.9226,
-      "logmel_2s_macro_f1": 0.9472,
-      "delta_2s_minus_1s": 0.0246,
-      "wilcoxon_p": 0.000162,
-      "logmel_3s_macro_f1_available_15_run": 0.9434
+  "unresolved_sources": [
+    {
+      "local_root": "data/raw/scream_cough_small",
+      "suspected_source": "Kaggle porcine scream sounds and cough sounds",
+      "reason": "Kaggle page license is Unknown",
+      "classification": "E. unresolved_do_not_submit_as_final"
     },
-    "hierarchical_auxiliary": {
-      "lambda_0_2_mean_macro_f1": 0.9505,
-      "lambda_0_5_mean_macro_f1": 0.9510,
-      "lambda_1_0_mean_macro_f1": 0.9515,
-      "lambda_0_5_std_macro_f1": 0.0124,
-      "hier_gain_over_2s_significant": false
-    },
-    "clean_prototype": {
-      "raw_softmax_macro_f1": 0.9510,
-      "main_prototype_macro_f1": 0.9519,
-      "hierarchical_prototype_macro_f1": 0.9540,
-      "hierarchical_minus_raw_wilcoxon_p": 0.058253,
-      "significant": false
-    },
-    "simulated_noise": {
-      "all_noisy_raw_macro_f1": 0.6173,
-      "all_noisy_main_prototype_macro_f1": 0.6230,
-      "all_noisy_hierarchical_prototype_macro_f1": 0.6200,
-      "main_prototype_minus_raw_delta": 0.005755,
-      "main_prototype_minus_raw_ci95": [
-        0.001606,
-        0.010894
-      ],
-      "main_prototype_minus_raw_wilcoxon_p": 0.010511,
-      "hierarchical_minus_raw_delta": 0.002710,
-      "hierarchical_minus_raw_wilcoxon_p": 0.312333,
-      "hierarchical_minus_main_delta": -0.003045,
-      "hierarchical_minus_main_wilcoxon_p": 0.000376,
-      "simulated_noise_only": true,
-      "real_farm_external_validation": false
+    {
+      "local_root": "data/external/kaggle_porcine; data/external/sow_call; data/korea_subtype/raw/*",
+      "reason": "empty placeholders in this audit"
     }
+  ],
+  "korea_cough_source_identified": true,
+  "highest_risk_dataset": {
+    "overall": "data/raw/scream_cough_small Kaggle license Unknown",
+    "current_mainline": "Korea pig cough because raw-audio redistribution terms should be checked once more"
+  },
+  "final_recommendation": "safe_only_after_source_citation_added",
+  "metrics": {
+    "model_metrics_changed": false,
+    "new_model_results_created": false,
+    "cap3x_manifest_total_rows": 7310,
+    "cap3x_unique_paths": 3812,
+    "blank_md5_rows": 0,
+    "blank_source_id_rows": 0
+  },
+  "leakage_audit": {
+    "fold0_hash_cross_split_duplicate_groups": 0,
+    "fold0_exact_path_overlap": 0,
+    "fold0_source_id_overlap": 0,
+    "test_set_tuning": false
   },
   "data_boundaries": {
-    "train_val_test_roles_changed": false,
-    "test_set_tuning": false,
-    "path_source_id_md5_disjointness_changed": false,
-    "raw_audio_read": false,
     "raw_audio_modified": false,
-    "demand_audio_modified": false,
-    "prediction_csv_modified": false,
-    "paper_table_csv_modified": false,
-    "appendix_csv_modified": false,
-    "report_csv_modified": false,
-    "new_model_results_created": false
-  },
-  "verification": {
-    "references_bib_count": 30,
-    "citation_audit_csv_rows": 32,
-    "citation_audit_csv_parse_passed": true,
-    "ascii_audit_passed": true,
-    "diff_reviewed": true,
-    "conda_activate_issue": "PowerShell conda activation failed once with GBK UnicodeEncodeError; direct environment Python was used for DOI metadata checks."
+    "raw_audio_deleted": false,
+    "training_scripts_modified": false,
+    "evaluation_scripts_modified": false,
+    "paper_results_modified": false,
+    "paper_claims_changed": false,
+    "data_availability_changed": false
   },
   "paper_usability": {
     "paper_usable": true,
     "submission_complete": false,
-    "new_results_created": false,
-    "source_csv_json_values_modified": false,
-    "simulated_noise_only": true,
-    "real_farm_external_validation": false
+    "source_citations_needed": true
   },
   "blockers": [
-    "Original pig-vocalization recording source, owner, license, access route and permission status remain unresolved.",
-    "Animal ethics approval authority and approval number or exemption statement remain unresolved.",
-    "Code release tag, archived DOI and software license remain unresolved.",
-    "No direct external source was found for exactly 2 s pig-vocalization processing as a general standard.",
-    "Spectral-gate denoising still lacks a formal citation if final manuscript needs method provenance.",
-    "MCTAFD needs an external citation or internal definition if retained."
+    "Add Korea and Sow call citations/license wording.",
+    "Decide Korea raw-audio redistribution route after final terms sanity check.",
+    "Exclude Kaggle scream/cough until license is resolved.",
+    "Add third-party-data ethics/exemption statement if required."
   ],
   "questions_for_gpt_pro": [
-    "Which of the new domain citations should be inserted into the final Related Work paragraph versus kept only in the bibliography?",
-    "Should inline citations be inserted now, or should authors first approve citation_audit.csv?",
-    "Can the authors provide clean pig-audio source, ethics and license details?",
-    "Should MCTAFD be cited externally, defined internally, or removed from final framing?"
+    "Cite Smart Farm Korea and data.go.kr together or use data.go.kr as formal catalog?",
+    "Redistribute raw audio or source-link with manifests/checksums?",
+    "Need separate animal ethics exemption statement?",
+    "Omit non-current SoundWel/aSwine/Kaggle from final Data Availability?"
   ],
-  "recommended_next_step": "Review citation_audit.csv and insert approved inline citations into the manuscript. Do not start new experiments without a new explicit APPROVED:true."
+  "recommended_next_step": "Review source recovery files and add approved source citations/Data Availability wording. Do not start another stage without explicit APPROVED:true."
 }

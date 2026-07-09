@@ -1,29 +1,23 @@
-# Codex to GPT Handoff - Nature Citation Audit
+# Codex to GPT Handoff - Pig Audio Source Recovery Audit
 
 ## Status
 
-Completed. The task was directly requested by the user and
-`handoff/GPT_TO_CODEX.md` contained `APPROVED: true`.
+Completed. The task was directly requested by the user and `handoff/GPT_TO_CODEX.md` contained `APPROVED: true`.
 
-This round used the installed `nature-citation` skill. I loaded `SKILL.md`,
-`manifest.yaml`, all manifest `always_load` files, and the relevant on-demand
-references for search strategy and long-article/script usage before auditing.
+Scope was limited to clean pig-audio data-source provenance recovery. No model experiment, model inference, checkpoint/prototype/calibration construction, threshold tuning, paper claim edit, paper-result edit, raw-audio edit, or file deletion was performed.
 
-No model training, model inference, checkpoint/prototype/calibration
-construction, threshold tuning, SNR/noise draw change, raw audio edit, or source
-result CSV/JSON modification was performed.
+Firecrawl was requested by the relevant skill but the `firecrawl` CLI was not installed in PATH and the referenced `firecrawl-search` skill directory was unavailable, so source recovery used local evidence plus built-in web search and direct page metadata reads.
 
 ## Branch
 
 - Branch: `paper/sci-draft-v1`
-- Base commit: `1808464`
 - Commit SHA: see final Codex response after commit/push
 
 ## Changed Files
 
-- Updated `paper/references/references.bib`
-- Added `paper/references/citation_audit.csv`
-- Added `paper/references/missing_citations.md`
+- Added `paper/reproducibility/PIG_AUDIO_SOURCE_RECOVERY_REPORT.md`
+- Added `paper/reproducibility/PIG_AUDIO_SOURCE_AUDIT.csv`
+- Added `paper/reproducibility/UNRESOLVED_DATA_SOURCES.md`
 - Updated `handoff/CODEX_TO_GPT.md`
 - Updated `handoff/CODEX_TO_GPT.json`
 - Updated `handoff/HISTORY.md`
@@ -31,206 +25,111 @@ result CSV/JSON modification was performed.
 ## Commands and Searches
 
 ```powershell
-Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\SKILL.md"
-Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\manifest.yaml"
-Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\static\core\principles.md"
-Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\static\core\chinese-mode.md"
-Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\static\core\workflow.md"
-Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\references\search-strategy.md"
-Get-Content -Raw -LiteralPath "$env:USERPROFILE\.codex\skills\nature-citation\references\script-usage.md"
-Get-Content -Raw -LiteralPath "handoff\GPT_TO_CODEX.md"
-git status --short --branch
-Get-ChildItem -LiteralPath paper\manuscript, paper\references, paper | Select-Object FullName, Length, LastWriteTime
-rg -n "^@" paper\references\references.bib
-rg -n "^#|^##|cite|@|citation|reference|claim|Claim|CLAIM" paper\manuscript\paper_en_full_story.md paper\CLAIMS_AND_EVIDENCE_v2.md
-Get-Content -Raw -LiteralPath paper\references\references.bib
-Get-Content -Raw -LiteralPath paper\CLAIMS_AND_EVIDENCE_v2.md
-Get-Content -Raw -LiteralPath paper\manuscript\paper_en_full_story.md
-Get-Content -Raw -LiteralPath paper\manuscript\paper_cn_full_story.md
-rg -n "\[@|Citation needed|References placeholder|DEMAND|Log-Mel|MFCC|SpecAugment|PCEN|prototype|hierarchical|selective|risk-coverage|pig|vocalization|noise" paper\manuscript\paper_en_full_story.md
-$env:PYTHONNOUSERSITE="1"; $env:PYTHONIOENCODING="utf-8"; @'<Crossref DOI metadata script>'@ | & C:\py\anaconda3\envs\pigsound-gpu\python.exe -
-(rg -n "^@" paper\references\references.bib | Measure-Object).Count
-Import-Csv -LiteralPath paper\references\citation_audit.csv
-rg -n "[^\x00-\x7F]" paper\references\references.bib paper\references\citation_audit.csv paper\references\missing_citations.md
-git diff -- paper\references\references.bib paper\references\citation_audit.csv paper\references\missing_citations.md
+Get-Content -Raw C:\Users\s1205\.codex\plugins\cache\openai-curated-remote\superpowers\6.1.1\skills\using-superpowers\SKILL.md
+Get-Content -Raw C:\Users\s1205\.codex\skills\firecrawl\SKILL.md
+Get-Content -Raw handoff\GPT_TO_CODEX.md
+firecrawl --status
+Get-ChildItem -Force data
+Get-ChildItem -Recurse -Directory data | Select-Object -First 200 FullName
+rg --files data | rg -i "manifest|csv|json|readme|license|source|note|download|zip|wav|mp3|flac"
+rg -n -i --hidden -g '!**/.git/**' -g '!**/*.wav' -g '!reports/**' "korea|korean|AI Hub|aihub|pig cough|dry cough|wet cough|abdominal cough|respiratory|pig audio|sow call|pig vocal|figshare|zenodo|kaggle|openslr|github|??|??|??|??|??|???|license|terms|doi|download|source|provenance" .
+Get-ChildItem -Recurse -File data -Include *.zip,*.tar,*.tar.gz,*.tgz,*.rar,*.7z,*.gz
+Select-String -Path (Get-PSReadLineOption).HistorySavePath -Pattern "korea|AI Hub|pig cough|dry cough|abdominal cough|sow call|figshare|zenodo|kaggle|openslr|wget|curl|download" -CaseSensitive:$false
+Get-ChildItem -Path $env:USERPROFILE\Downloads -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match "korea|aihub|pig|sow|cough|swine|porcine|figshare|zenodo|kaggle|openslr" }
+git log --all --name-only --pretty=format:'COMMIT %H %ad %s' --date=short -- data tools docs handoff paper README* LICENSE*
+Get-Content -Raw paper\reproducibility\DATA_SOURCE_AUDIT.csv
+Get-Content -Raw tools\build_pigvocal_4class_expanded_train_cv5.py
+Get-Content -Raw tools\build_pigvocal_4class_dedup_cv5.py
+Get-Content -Raw data\external\aswine\README.md
+Get-Content -TotalCount 80 data\external\aswine\LICENSE
+$env:PYTHONNOUSERSITE='1'; @'<audio metadata summary script using soundfile.info>'@ | C:\py\anaconda3\envs\pigsound-gpu\python.exe -
+$env:PYTHONNOUSERSITE='1'; @'<Edge/Chrome history targeted source-query script>'@ | C:\py\anaconda3\envs\pigsound-gpu\python.exe -
+$env:PYTHONNOUSERSITE='1'; C:\py\anaconda3\envs\pigsound-gpu\python.exe tools\check_manifest_hash_overlap.py --train data\manifests_pigvocal_4class_expanded_train_cv5_cap3x\fold0\train.csv --val data\manifests_pigvocal_4class_expanded_train_cv5_cap3x\fold0\val.csv --test data\manifests_pigvocal_4class_expanded_train_cv5_cap3x\fold0\test.csv
+$env:PYTHONNOUSERSITE='1'; C:\py\anaconda3\envs\pigsound-gpu\python.exe tools\check_manifest_source_overlap.py --train data\manifests_pigvocal_4class_expanded_train_cv5_cap3x\fold0\train.csv --val data\manifests_pigvocal_4class_expanded_train_cv5_cap3x\fold0\val.csv --test data\manifests_pigvocal_4class_expanded_train_cv5_cap3x\fold0\test.csv
 ```
 
-Web/metadata searches used English query families for:
+Web/source pages checked:
 
-- pig vocalization classification, emotional valence and production context
-- pig cough sound recognition and respiratory/sick-cough detection
-- noisy animal-farm pig vocalization recognition
-- Log-Mel/MFCC and animal-sound classification
-- CRNN audio and sound-event classification
-- prototypical networks and audio prototype interpretability
-- hierarchical sound labels/ontology
-- selective classification/risk-coverage
-- DEMAND environmental-noise dataset
-- PCEN and SpecAugment method provenance
+- Smart Farm Korea pig cough page: `https://www.smartfarmkorea.net/unstructuredDataset/pigCoughSound.do?menuId=M11040204`
+- data.go.kr pig cough listing: `https://www.data.go.kr/data/15117368/fileData.do`
+- MAFRA data listing: `https://data.mafra.go.kr/opendata/data/indexOpenDataDetail.do?data_id=20230727000000002375`
+- figshare Sow call dataset: `https://figshare.com/articles/dataset/Sow_call_dataset/16940389`
+- DOI: `https://doi.org/10.6084/m9.figshare.16940389`
+- Zenodo SoundWel: `https://zenodo.org/records/8252482`
+- DOI: `https://doi.org/10.5281/zenodo.8252482`
+- Kaggle porcine scream/cough: `https://www.kaggle.com/datasets/titpigrecognition/porcine-scream-sounds-and-cough-sounds`
+- aSwine GitHub: `https://github.com/andremsouza/aswine`
 
-Notes:
+## Source Recovery Results
 
-- `conda activate pigsound-gpu` failed once in this PowerShell session with a
-  conda GBK `UnicodeEncodeError`. DOI metadata checks were then run with
-  `C:\py\anaconda3\envs\pigsound-gpu\python.exe` and
-  `PYTHONNOUSERSITE=1`.
-- The `nature_citation.py` script was not used as the final search engine
-  because the user explicitly allowed broader academic search beyond the
-  default Nature/CNS scope. The skill workflow was used for segmentation,
-  conservative support grading, and audit structure.
+Verified current-mainline sources:
 
-## Citation Expansion Results
+- `data/external/korea_raw/dry_cough`: Smart Farm Korea / data.go.kr pig cough sound, high confidence, classification `A. verified_public_reusable` pending final terms sanity check before raw-audio redistribution.
+- `data/external/korea_raw/abdominal_cough`: same Korean source, high confidence, classification `A. verified_public_reusable` pending final terms sanity check.
+- `data/raw/sow_call_dataset_labeled/calm_grunt`, `feeding`, `frightened_stress`, `anxious_stress`: derived labeled copies of figshare Sow call dataset, high confidence, CC BY 4.0, classification `A. verified_public_reusable`.
 
-- Existing bibliography entries before audit: `6`.
-- New bibliography entries added: `24`.
-- Total bibliography entries after audit: `30`.
-- Claim-audit rows: `32`.
-- New files contain zero non-ASCII characters.
-- `citation_audit.csv` parsed successfully with PowerShell `Import-Csv`.
+Verified non-current or ablation sources:
 
-Added reference groups:
+- `data/raw/sow_call_dataset` and `data/raw/wu_pig_speech`: same figshare Sow call dataset; `wu_pig_speech` is an exact local duplicate of `sow_call_dataset` by 1,746 filenames and contents.
+- `data/raw/soundwel`, `data/processed/soundwel`, and `data/external_pig_other_reviewed`: SoundWel Zenodo record 8252482, CC BY 4.0, high confidence.
+- `data/external/aswine` and aSwine-derived processed cough roots: aSwine GitHub dataset, CC BY-NC 4.0, high confidence.
 
-- Pig call valence/context: Briefer 2022; Tallet 2013; Illmann 2013; Weary
-  1995; Manteuffel 2004.
-- Pig cough and pig abnormal-vocalization recognition: Ferrari 2008;
-  Exadaktylos 2008; Yin 2021; Shen 2022; Xie 2024.
-- Noisy pig-vocalization classification: Chung 2025 Scientific Reports.
-- Bioacoustic/livestock acoustic monitoring background: McLoughlin 2019;
-  Coutant 2024; Stowell 2022.
-- Animal/audio feature and classifier background: Acevedo 2009; Huang 2014;
-  Kahl 2021; Cakir 2017; Hershey 2017; Gemmeke 2017.
-- PCEN and SpecAugment: Lostanlen 2019; Park 2019.
-- Hierarchical/prototype interpretation background: Silla 2011; Heinrich 2025.
+Unresolved/high-risk:
 
-## Core Claim Support
+- `data/raw/scream_cough_small`: likely Kaggle `titpigrecognition/porcine-scream-sounds-and-cough-sounds`; Edge download record supports the match, but Kaggle JSON-LD says license `Unknown`. Classification `E. unresolved_do_not_submit_as_final`.
+- Empty placeholders: `data/external/kaggle_porcine`, `data/external/sow_call`, `data/korea_subtype/raw/*` contained no audio in this audit.
 
-- Pig call valence/context: strongest external support is
-  `@briefer2022pigcalls`, with additional primary support from
-  `@tallet2013piglets`, `@illmann2013signalneed`, and `@weary1995calling`.
-- Pig cough recognition: strongest external support is
-  `@ferrari2008cough`, `@exadaktylos2008cough`, `@yin2021pigcoughcnn`, and
-  `@shen2022pigcoughfusion`.
-- Noisy pig-vocalization/farm setting context: strongest external support is
-  `@chung2025pvmc` and `@xie2024abnormalpig`; these must not be used to claim
-  this paper has real-farm external validation.
-- 2 s Log-Mel CRNN mainline: strongest support remains internal
-  `paper/tables/table3_duration_comparison.csv` plus the paired-duration script.
-  No direct external standard for 2 s pig-vocalization windows was found.
-- CRNN audio classification: `@choi2017crnn` and `@cakir2017crnn_sed`.
-- Log-Mel/MFCC animal/audio classification: `@mcfee2015librosa`,
-  `@acevedo2009animalcalls`, `@huang2014anuran`, `@kahl2021birdnet`, and
-  `@hershey2017cnn_audio`.
-- PCEN and SpecAugment method provenance: `@lostanlen2019pcen` and
-  `@park2019specaugment`.
-- Prototypical networks: `@snell2017prototypical`.
-- Bioacoustic prototype interpretability: `@heinrich2025audioprotopnet`
-  provides analogical audio-prototype support, but it is a bird-sound paper,
-  not a pig-vocalization result.
-- Hierarchical classification/sound ontology: `@silla2011hierarchical` and
-  `@gemmeke2017audioset` provide background only.
-- Selective classification/risk-coverage: existing `@geifman2017selective` and
-  `@fdshifts_riskcoverage` remain appropriate.
-- DEMAND: existing `@demand2018` remains appropriate for public environmental
-  noise recordings.
+Korea cough source was identified: **yes, high confidence**.
 
-## Rejected or Not-Used Candidates
+## Metrics and Metadata
 
-- ResearchGate, Google Scholar, and aggregator pages were treated only as
-  discovery aids, not citation support.
-- Guarino et al. field-test cough-detection work was not added because exact
-  DOI/publisher metadata were not verified in this pass and the cough claim is
-  already covered by four verified primary papers.
-- Generic environmental sound CNN papers were omitted because the bibliography
-  was kept within the requested 25--35 entries and more relevant audio/animal
-  references were available.
-- Additional pig cough fusion/monitoring papers beyond Yin 2021 and Shen 2022
-  were not needed for the current claim set.
-- Reviews were not used as specific experimental-result support.
-- DEMAND-as-real-farm-validation was explicitly rejected as an interpretation.
-- Prototype learning as a claimed novelty was explicitly rejected.
+No scientific model metrics were produced or changed.
 
-## Metrics and Scientific Boundaries Preserved
+Audit metadata:
 
-No scientific result was changed. Key locked metrics remain:
-
-- 2 s Log-Mel clean mean Macro-F1 `0.9472`; 1 s Log-Mel `0.9226`; paired delta
-  `0.0246`; Wilcoxon p `0.000162`.
-- 3 s Log-Mel comparison `0.9434` remains a 15-run comparison.
-- Hierarchical lambda=1.0 highest mean Macro-F1 `0.9515`.
-- Lambda=0.5 balanced mean Macro-F1 `0.9510` and standard deviation `0.0124`.
-- Hierarchical gain over the 2 s baseline remains nonsignificant.
-- Clean hierarchical prototype mean Macro-F1 `0.9540`, but clean
-  hierarchical - raw Softmax p `0.058253` remains nonsignificant.
-- ALL_NOISY raw/main prototype/hierarchical prototype Macro-F1
-  `0.6173/0.6230/0.6200`.
-- ALL_NOISY main prototype - raw Softmax delta `0.005755`, 95% CI
-  `[0.001606, 0.010894]`, Wilcoxon p `0.010511`.
-- Hierarchical prototype - raw Softmax under ALL_NOISY remains nonsignificant
-  with delta `0.002710` and p `0.312333`.
-- Hierarchical prototype remains below main prototype under ALL_NOISY, delta
-  `-0.003045`, p `0.000376`.
-- 0 dB active-event SNR remains an extreme stress condition.
-- Cough recognition at 0 dB remains unreliable.
-- Prototype inference is not described as a universal uncertainty improvement.
-- DEMAND is simulated additive noise only.
-- Real-farm external validation was not performed.
+- Current cap3x manifests across five folds: 7,310 total rows; 3,812 unique paths; 0 blank md5; 0 blank source_id.
+- Per fold: 1,174 train, 120 validation, 168 test rows.
+- Korea dry: 5,440 files; 5,437 unique MD5; 44.1 kHz mono PCM16; median duration 0.468 s.
+- Korea abdominal: 12,397 files; 12,377 unique MD5; 44.1 kHz mono PCM16; median duration 0.419 s.
+- Sow calm: 560 files; 280 unique MD5; 48 kHz mono DOUBLE; median duration 2.016 s.
+- Sow feeding: 420 files; 210 unique MD5; 48 kHz mono DOUBLE; median duration 2.000 s.
+- Sow frightened: 1,500 files; 749 unique MD5; 48 kHz mono DOUBLE; median duration 2.000 s.
+- Sow anxious: 1,012 files; 504 unique MD5; 48 kHz mono DOUBLE; median duration 2.000 s.
 
 ## Data Boundaries and Leakage Audit
 
 - No training, validation, or test role was changed.
 - No test-set tuning was performed.
-- No new model, prototype, calibration, threshold, fusion, SNR, noise draw,
-  prediction, or checkpoint artifact was created.
-- No raw clean audio or DEMAND audio was read or modified.
-- No `paper/tables/*.csv`, `paper/appendix/*.csv`, prediction CSV/JSON, or
-  source result file was modified.
-- Path/source_id/MD5 disjointness is unchanged because this task only writes
-  citation audit documents.
-- Newly added citations do not justify any new deployment, real-farm, or
-  statistical-significance claim.
-
-## Verification
-
-- `references.bib` entry count: `30`.
-- `citation_audit.csv` row count: `32`.
-- `citation_audit.csv` parsed successfully with `Import-Csv`.
-- ASCII audit found zero non-ASCII characters in the three target reference
-  files.
-- Git diff was reviewed for the target reference files.
+- No model, prototype, calibration, threshold, fusion, SNR, noise draw, prediction, or checkpoint artifact was created.
+- No raw audio was modified or deleted.
+- No training/evaluation script was modified.
+- No `paper_results/` file was modified.
+- No paper claims or Data Availability text were changed.
+- Fold0 read-only leakage checks passed: cross-split MD5 duplicate groups 0; exact path overlap 0; source_id overlap 0.
 
 ## Paper Usability
 
-- `paper_usable`: true for citation expansion and audit.
+- `paper_usable`: true for source-provenance audit.
 - `submission_complete`: false.
 - `new_results_created`: false.
-- `source_csv_json_values_modified`: false.
-- `simulated_noise_only`: true.
-- `real_farm_external_validation`: false.
+- `paper_claims_changed`: false.
+- `data_availability_changed`: false.
+- Required final recommendation: `safe_only_after_source_citation_added`.
 
 ## Blockers
 
-- Original pig-vocalization recording source, owner, license, access route and
-  permission status remain unresolved.
-- Animal ethics approval authority and approval number or exemption statement
-  remain unresolved.
-- Code release tag, archived DOI and software license remain unresolved.
-- No direct external source was found for exactly 2 s pig-vocalization
-  processing as a general standard.
-- Spectral-gate denoising still lacks a formal citation if the final manuscript
-  needs method provenance beyond an implementation note.
+- Add formal dataset citations and license wording for Korea and Sow call before submission.
+- Decide whether raw Korea audio will be redistributed or only source-linked with manifests/checksums; data.go.kr says no usage restriction, but Smart Farm Korea terms should be checked once more.
+- Do not use Kaggle scream/cough in final claims until license/owner rights are resolved.
+- Add a third-party public-data ethics/exemption statement or obtain journal-specific guidance.
 
 ## Questions for GPT Pro
 
-- Which of the new domain citations should be inserted into the final Related
-  Work paragraph versus kept only in the bibliography?
-- Should the final manuscript add inline citations now, or should the authors
-  first approve the `citation_audit.csv` mapping?
-- Can the authors provide clean pig-audio source, ethics and license details?
-- Should MCTAFD be cited externally, defined internally, or removed from the
-  final related-work/method framing?
+- Should the final manuscript cite both Smart Farm Korea and data.go.kr for the Korea cough source, or cite data.go.kr as the formal public-data catalog and Smart Farm Korea as download page?
+- Should the Data Availability statement redistribute raw audio for CC BY/public sources, or avoid bundling audio and provide source URLs plus manifests/checksums?
+- Is a separate animal ethics exemption statement needed for reuse of public third-party pig-farm audio?
+- Should non-current sources SoundWel, aSwine, and Kaggle be omitted entirely from final paper data availability to keep the final clean-data story narrow?
 
 ## Recommended Next Step
 
-Review `paper/references/citation_audit.csv` and insert approved inline
-citations into the manuscript. Do not start new experiments or another paper
-stage without a new explicit `APPROVED: true`.
+Review the new source recovery files and add approved source citations/Data Availability wording. Do not start another stage without a new explicit `APPROVED: true`.
