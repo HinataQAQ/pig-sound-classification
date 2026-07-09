@@ -1,17 +1,28 @@
 {
   "status": "completed",
-  "task": "nature_figure_v2_generation",
+  "task": "nature_data_availability_code_ethics_reproducibility_package",
   "approval": {
     "gpt_to_codex_approved_true": true
   },
   "branch": "paper/sci-draft-v1",
-  "base_commit_sha": "d481d98916537d08340c841523fdbe299298201e",
+  "base_commit_sha": "855c9d721d639e80bde3c2ad2bb6cbb57a8195d4",
   "final_commit_sha": "see_final_codex_response_after_commit",
   "scope": {
-    "nature_figure_skill_loaded": true,
-    "backend": "python_matplotlib",
-    "openrouter_used": false,
-    "ai_schematic_generation_used": false,
+    "nature_data_skill_loaded": true,
+    "manifest_loaded": true,
+    "always_load_files_loaded": [
+      "static/core/stance.md",
+      "static/core/chinese-mode.md",
+      "static/core/workflow.md"
+    ],
+    "on_demand_references_loaded": [
+      "references/policy-principles.md",
+      "references/repository-and-identifiers.md",
+      "references/statement-patterns.md",
+      "references/fair-metadata-checklist.md",
+      "references/chinese-author-alignment.md",
+      "references/source-basis.md"
+    ],
     "model_training_started": false,
     "model_inference_started": false,
     "checkpoints_changed": false,
@@ -22,192 +33,97 @@
     "raw_audio_read": false,
     "raw_audio_modified": false,
     "source_result_csv_json_modified": false,
-    "figures_generated": 8
+    "figures_changed_final_diff": false
   },
   "changed_files": [
-    "tools/generate_paper_figures_v2.py",
-    "paper/figures_v2/figure_contracts.md",
-    "paper/figures_v2/figure1_overall_workflow.svg",
-    "paper/figures_v2/figure1_overall_workflow.pdf",
-    "paper/figures_v2/figure1_overall_workflow.png",
-    "paper/figures_v2/figure2_duration_ablation.svg",
-    "paper/figures_v2/figure2_duration_ablation.pdf",
-    "paper/figures_v2/figure2_duration_ablation.png",
-    "paper/figures_v2/figure3_hierarchical_supervision.svg",
-    "paper/figures_v2/figure3_hierarchical_supervision.pdf",
-    "paper/figures_v2/figure3_hierarchical_supervision.png",
-    "paper/figures_v2/figure4_clean_prototype_comparison.svg",
-    "paper/figures_v2/figure4_clean_prototype_comparison.pdf",
-    "paper/figures_v2/figure4_clean_prototype_comparison.png",
-    "paper/figures_v2/figure5_simulated_noise_robustness.svg",
-    "paper/figures_v2/figure5_simulated_noise_robustness.pdf",
-    "paper/figures_v2/figure5_simulated_noise_robustness.png",
-    "paper/figures_v2/figure6_active_event_snr_curve.svg",
-    "paper/figures_v2/figure6_active_event_snr_curve.pdf",
-    "paper/figures_v2/figure6_active_event_snr_curve.png",
-    "paper/figures_v2/figure7_per_class_failure.svg",
-    "paper/figures_v2/figure7_per_class_failure.pdf",
-    "paper/figures_v2/figure7_per_class_failure.png",
-    "paper/figures_v2/figure8_selective_prediction.svg",
-    "paper/figures_v2/figure8_selective_prediction.pdf",
-    "paper/figures_v2/figure8_selective_prediction.png",
+    "paper/reproducibility/DATA_AVAILABILITY.md",
+    "paper/reproducibility/CODE_AVAILABILITY.md",
+    "paper/reproducibility/ETHICS_STATEMENT.md",
+    "paper/reproducibility/REPRODUCIBILITY_CHECKLIST.md",
+    "paper/reproducibility/DATA_SOURCE_AUDIT.csv",
     "handoff/CODEX_TO_GPT.md",
     "handoff/CODEX_TO_GPT.json",
     "handoff/HISTORY.md"
   ],
-  "source_csvs_used_by_generator": [
-    "paper/tables/table1_dataset_and_leakage_free_protocol.csv",
-    "paper/tables/table3_duration_comparison.csv",
-    "paper/tables/table4_hierarchical_aux_weight_ablation.csv",
-    "paper/tables/table5_clean_softmax_main_prototype_hierarchical_prototype.csv",
-    "paper/tables/table6_simulated_noise_robustness_by_stratum.csv",
-    "paper/tables/table7_paired_statistics.csv",
-    "paper/tables/table8_per_class_noise_results_and_confusion_directions.csv",
-    "paper/tables/table9_selective_prediction_metrics_corrected_augrc.csv",
-    "reports/prototype_noise_demand_w05_final/final_summary.csv",
-    "reports/prototype_noise_demand_w05_final/final_per_class_summary.csv"
+  "data_source_audit_rows": [
+    "clean_pig_vocalization_audio",
+    "auxiliary_subtype_labels",
+    "cv_manifests_cap3x",
+    "model_checkpoints",
+    "prototype_artifacts",
+    "demand_noise_audio",
+    "demand_noise_metadata",
+    "generated_tables",
+    "generated_appendix_csv",
+    "generated_figures",
+    "code_repository",
+    "non_redistributed_audio_policy",
+    "sha_provenance"
   ],
-  "source_files_used_by_generator": [
-    "paper/CLAIMS_AND_EVIDENCE.md"
-  ],
-  "additional_allowed_csvs_inspected_only": [
-    "paper/tables/table2_clean_baseline_and_architecture_ablations.csv",
-    "paper/appendix/noise_25_run_summary.csv",
-    "paper/appendix/noise_25_run_per_class_summary.csv",
-    "reports/prototype_noise_demand_w05_final/final_selective_summary.csv",
-    "reports/prototype_noise_demand_w05_final/final_paired_stats.csv",
-    "reports/prototype_noise_demand_w05_final/final_aurc_augrc_summary.csv"
-  ],
-  "figure_contracts": {
-    "path": "paper/figures_v2/figure_contracts.md",
-    "figures": {
-      "figure1": {
-        "conclusion": "2 s Log-Mel CRNN plus hierarchical heads and train-only prototypes are evaluated under clean and simulated DEMAND noise settings.",
-        "not_to_claim": [
-          "real-farm external validation",
-          "prototype learning invented here",
-          "0 dB is no noise"
-        ]
-      },
-      "figure2": {
-        "conclusion": "2 s context is the clean-audio mainline by matched paired statistics over 1 s.",
-        "not_to_claim": [
-          "first use of 2 s context",
-          "overinterpret 3 s versus 2 s with unequal run counts"
-        ]
-      },
-      "figure3": {
-        "conclusion": "Auxiliary subtype supervision adds semantic structure; lambda=0.5 is stable and lambda=1.0 has the highest mean.",
-        "not_to_claim": [
-          "statistically significant hierarchy gain over the 2 s baseline",
-          "fused as the main innovation"
-        ]
-      },
-      "figure4": {
-        "conclusion": "Hierarchical prototype has the highest clean Macro-F1, while calibration metrics differ by method.",
-        "not_to_claim": [
-          "all prototype variants improve every metric",
-          "universal uncertainty improvement"
-        ]
-      },
-      "figure5": {
-        "conclusion": "Main-class prototype is the most stable aggregate option for MODERATE_NOISE and ALL_NOISY.",
-        "not_to_claim": [
-          "hierarchical prototype is best under noise",
-          "simulated DEMAND noise is real-farm external validation"
-        ]
-      },
-      "figure6": {
-        "conclusion": "Macro-F1 degrades from clean through 20, 10, and 0 dB active-event SNR.",
-        "not_to_claim": [
-          "0 dB is no noise",
-          "DEMAND simulated noise generalizes to external farm validation"
-        ]
-      },
-      "figure7": {
-        "conclusion": "Cough is the major noisy-condition risk and feeding/stress directions remain visible.",
-        "not_to_claim": [
-          "cough is reliable at 0 dB",
-          "unmeasured causal mechanisms from aggregate confusion counts"
-        ]
-      },
-      "figure8": {
-        "conclusion": "Prototype inference does not comprehensively improve uncertainty; raw Softmax ranks better by AURC/AUGRC.",
-        "not_to_claim": [
-          "prototype methods universally improve uncertainty",
-          "omit raw Softmax advantage on AURC/AUGRC"
-        ]
-      }
+  "formally_citable_now": [
+    {
+      "name": "DEMAND environmental noise dataset",
+      "doi": "10.5281/zenodo.1227121",
+      "url": "https://zenodo.org/records/1227121",
+      "note": "Cite DOI and Zenodo record; do not redistribute DEMAND audio in GitHub."
+    },
+    {
+      "name": "Code repository URL",
+      "url": "https://github.com/HinataQAQ/pig-sound-classification",
+      "note": "Release tag and archival software DOI remain unresolved."
     }
-  },
-  "metrics_represented": {
-    "duration_macro_f1": {
-      "1s": 0.9226,
-      "2s": 0.9472,
-      "3s": 0.9434,
+  ],
+  "unresolved_doi_license_fields": [
+    "clean pig-vocalization dataset DOI or stable URL",
+    "clean pig-vocalization dataset license and redistribution rights",
+    "clean pig-vocalization data owner and access-review route",
+    "auxiliary subtype label ownership and metadata license",
+    "processed source-data archive DOI and license",
+    "code release tag, archived software DOI, and software license confirmation",
+    "model checkpoint archive DOI and license if released",
+    "prototype artifact archive DOI and license if released"
+  ],
+  "ethics_authorization_blockers": [
+    "original clean audio source name and data owner",
+    "public/previously collected/collaborator/third-party status of clean audio",
+    "animal ethics approval authority and approval number if applicable",
+    "farm, institution, or data-owner permission statement if applicable",
+    "permission to reuse clean audio and auxiliary subtype labels",
+    "permission to redistribute or control-access raw clean audio, metadata, and subtype labels",
+    "data-use agreement, confidentiality, farm privacy, or commercial restriction terms"
+  ],
+  "required_ethics_sentence_included": "This manuscript uses previously collected or public audio data; the original collection ethics and permissions must be confirmed before submission.",
+  "metrics_preserved": {
+    "duration": {
+      "logmel_1s_macro_f1": 0.9226,
+      "logmel_2s_macro_f1": 0.9472,
       "delta_2s_minus_1s": 0.0246,
       "wilcoxon_p": 0.000162
     },
-    "hierarchical_aux_weights": {
-      "lambda_0_2_mean_macro_f1": 0.9505,
-      "lambda_0_5_mean_macro_f1": 0.951,
+    "hierarchical_auxiliary": {
+      "lambda_1_0_highest_mean_macro_f1": 0.9515,
+      "lambda_0_5_balanced_mean_macro_f1": 0.951,
       "lambda_0_5_std_macro_f1": 0.0124,
-      "lambda_1_0_mean_macro_f1": 0.9515
+      "hier_gain_over_2s_significant": false
     },
     "clean_prototype": {
-      "raw_softmax_macro_f1": 0.951,
-      "calibrated_softmax_macro_f1": 0.951,
-      "prototype_macro_f1": 0.9519,
       "hierarchical_macro_f1": 0.954,
-      "fused_macro_f1": 0.9535
+      "hierarchical_minus_raw_wilcoxon_p": 0.058253,
+      "significant": false
     },
-    "simulated_noise_macro_f1": {
-      "MODERATE_NOISE": {
-        "raw_softmax": 0.6472,
-        "prototype": 0.6534,
-        "hierarchical": 0.6522,
-        "prototype_minus_raw_delta": 0.006129,
-        "prototype_minus_raw_p": 0.001673
-      },
-      "EXTREME_STRESS": {
-        "raw_softmax": 0.5574,
-        "prototype": 0.5624,
-        "hierarchical": 0.5556
-      },
-      "ALL_NOISY": {
-        "raw_softmax": 0.6173,
-        "prototype": 0.623,
-        "hierarchical": 0.62,
-        "prototype_minus_raw_delta": 0.005755,
-        "prototype_minus_raw_p": 0.010511
-      }
-    },
-    "per_class_failure": {
-      "all_noisy_cough_f1_raw": 0.0867,
-      "all_noisy_cough_f1_prototype": 0.0974,
-      "all_noisy_cough_f1_hierarchical": 0.0957,
-      "zero_db_cough_recall_percent_range": "0.0-0.9"
-    },
-    "selective_prediction_all_noisy": {
-      "raw_softmax_aurc": 0.1775,
-      "raw_softmax_augrc": 0.1239,
-      "prototype_aurc": 0.2109,
-      "prototype_augrc": 0.1394,
-      "hierarchical_aurc": 0.2122,
-      "hierarchical_augrc": 0.1403,
-      "raw_softmax_frozen_threshold_selective_risk": 0.3024,
-      "prototype_frozen_threshold_selective_risk": 0.2988
+    "simulated_noise": {
+      "all_noisy_raw_macro_f1": 0.6173,
+      "all_noisy_prototype_macro_f1": 0.623,
+      "all_noisy_hierarchical_macro_f1": 0.62,
+      "prototype_minus_raw_delta": 0.005755,
+      "prototype_minus_raw_ci95": [
+        0.001606,
+        0.010894
+      ],
+      "prototype_minus_raw_wilcoxon_p": 0.010511,
+      "simulated_noise_only": true,
+      "real_farm_external_validation": false
     }
-  },
-  "verification": {
-    "help_passed": true,
-    "generation_passed": true,
-    "svg_pdf_png_exports_created": true,
-    "png_dimension_check_passed": true,
-    "png_nonblank_extrema_check_passed": true,
-    "visual_preview_inspected": true,
-    "layout_issues_found_and_corrected": true,
-    "runtime_warning": "pandas future optional pyarrow dependency warning only"
   },
   "data_boundaries": {
     "train_val_test_roles_changed": false,
@@ -219,7 +135,20 @@
     "prediction_csv_modified": false,
     "paper_table_csv_modified": false,
     "appendix_csv_modified": false,
-    "report_csv_modified": false
+    "report_csv_modified": false,
+    "final_diff_modifies_figures": false
+  },
+  "verification": {
+    "data_source_audit_import_csv_passed": true,
+    "data_source_audit_row_count": 13,
+    "keyword_audit_passed": true,
+    "non_ascii_count_all_new_files": 0,
+    "summarize_prototype_noise_robustness_help_passed": true,
+    "create_paper_package_true_help_available": false,
+    "create_paper_package_direct_execution_passed": true,
+    "create_paper_package_direct_execution_note": "Script produced package manifest summary rather than argparse help.",
+    "conda_wrapper_issue": "Parallel conda run hit temporary-file collision; later conda wrapper hit GBK UnicodeEncodeError for create_paper_package.py.",
+    "accidental_figure_regeneration_restored": true
   },
   "paper_usability": {
     "paper_usable": true,
@@ -229,11 +158,18 @@
     "new_results_created": false,
     "source_csv_json_values_modified": false
   },
-  "blockers": [],
-  "questions_for_gpt_pro": [
-    "Should the current figure typography and panel density be tuned for a specific journal template after target venue selection?",
-    "Should final captions repeat every boundary warning or defer some boundaries to Results/Limitations text?",
-    "Should a separate source-data archive be prepared from the same locked CSV inputs?"
+  "blockers": [
+    "clean pig audio DOI/URL/license/owner/access route unresolved",
+    "animal ethics and original collection permission unresolved",
+    "code release tag/software DOI/license unresolved",
+    "checkpoint/prototype artifact release plan unresolved",
+    "DEMAND license metadata conflict should be retained"
   ],
-  "recommended_next_step": "Review the exported figure package and integrate captions into the manuscript. Do not start new experiments without a new explicit APPROVED:true."
+  "questions_for_gpt_pro": [
+    "What is the final data-access route for clean pig audio: public repository, controlled access, third-party restricted, or institutional request route?",
+    "What are the exact animal ethics approval authority and approval number, or should the paper use a previously collected/public-data statement?",
+    "Should checkpoints and prototype NPZ artifacts be archived, or should code regeneration be the official route?",
+    "Which repository should host processed source data, figures, manifests, and the code release DOI?"
+  ],
+  "recommended_next_step": "Resolve clean-audio rights, ethics, and code/source-data archival DOI fields. Do not start new experiments without a new explicit APPROVED:true."
 }

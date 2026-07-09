@@ -533,3 +533,68 @@
 - Stop point: review generated figures and integrate final captions. Do not
   start new experiments or another paper stage without a new explicit
   `APPROVED: true`.
+
+## 2026-07-09 - Nature Data availability, code, ethics, and reproducibility package
+
+- Status: completed
+- Branch: `paper/sci-draft-v1`
+- Base: `855c9d7`
+- Approval state: `handoff/GPT_TO_CODEX.md` contained `APPROVED: true`.
+- Scope: used the installed `nature-data` skill, loaded `SKILL.md`,
+  `manifest.yaml`, all always-load files, and relevant on-demand references for
+  policy principles, repository/identifier strategy, statement patterns, FAIR
+  metadata, Chinese-author alignment, and source-basis mapping.
+- Added statements:
+  `paper/reproducibility/DATA_AVAILABILITY.md`,
+  `paper/reproducibility/CODE_AVAILABILITY.md`, and
+  `paper/reproducibility/ETHICS_STATEMENT.md`.
+- Added reproducibility files:
+  `paper/reproducibility/REPRODUCIBILITY_CHECKLIST.md` and
+  `paper/reproducibility/DATA_SOURCE_AUDIT.csv`.
+- DATA_SOURCE_AUDIT rows: clean pig vocalization audio, auxiliary subtype
+  labels, cap3x CV manifests, model checkpoints, prototype artifacts, DEMAND
+  noise audio, DEMAND noise metadata, generated tables, generated appendix
+  CSVs, generated figures, code repository, non-redistributed audio policy, and
+  SHA provenance.
+- Formally citable now: DEMAND DOI `10.5281/zenodo.1227121` and Zenodo record
+  `https://zenodo.org/records/1227121`; code repository URL
+  `https://github.com/HinataQAQ/pig-sound-classification`.
+- Still unresolved: clean pig audio DOI/URL/license/owner/access route,
+  auxiliary subtype label redistribution rights, source-data archive DOI and
+  license, code release tag/software DOI/license, checkpoint archive plan, and
+  prototype NPZ artifact archive plan.
+- Ethics blocker: original animal collection ethics and permissions remain
+  unresolved. The exact required fallback sentence is included:
+  "This manuscript uses previously collected or public audio data; the original
+  collection ethics and permissions must be confirmed before submission."
+- Required boundaries encoded: DEMAND audio should be cited through DOI/Zenodo
+  and not redistributed in GitHub; DEMAND license metadata conflict is retained;
+  simulated DEMAND additive noise is not real-farm external validation; 0 dB is
+  an extreme active-event SNR stress condition, not no noise.
+- Metrics preserved: 2 s Log-Mel Macro-F1 `0.9472`; 1 s `0.9226`; paired delta
+  `0.0246`; p `0.000162`; lambda=1.0 highest mean `0.9515`; lambda=0.5 std
+  `0.0124`; clean hierarchical prototype `0.9540` with p `0.058253`; ALL_NOISY
+  raw/prototype/hierarchical `0.6173/0.6230/0.6200`; prototype - raw delta
+  `0.005755`, CI95 `[0.001606, 0.010894]`, p `0.010511`.
+- Leakage audit: no training, inference, checkpoint, prototype, calibration,
+  threshold, SNR/noise draw, prediction, source result CSV/JSON, raw clean
+  audio, or DEMAND audio change was performed. Final diff does not modify
+  `paper/tables/*.csv`, `paper/appendix/*.csv`, `paper/figures/*`,
+  `paper/reproducibility/commands.md`, or
+  `paper/reproducibility/paper_package_manifest.json`.
+- Verification: `DATA_SOURCE_AUDIT.csv` parsed with 13 rows; keyword audit
+  found required unresolved fields, DEMAND DOI, ethics fallback, checkpoint,
+  prototype, SHA and MD5 language; all five new files contain zero non-ASCII
+  characters; `tools/summarize_prototype_noise_robustness.py --help` passed.
+  `create_paper_package.py --help` is not true argparse help and executed the
+  package script; accidental figure regeneration was restored to HEAD.
+- Paper usability: `paper_usable=true`; `new_results_created=false`;
+  `source_csv_json_values_modified=false`; `simulated_noise_only=true`;
+  `real_farm_external_validation=false`.
+- Questions for GPT Pro: decide final clean-audio access route, provide exact
+  ethics authority/approval number or confirm accepted fallback wording, decide
+  checkpoint/prototype artifact release policy, and choose repository/DOI route
+  for processed source data and code.
+- Stop point: resolve clean-audio rights, ethics, and archival DOI fields. Do
+  not start new experiments or another paper stage without a new explicit
+  `APPROVED: true`.
