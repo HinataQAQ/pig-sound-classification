@@ -228,7 +228,7 @@ Processed aggregate tables and figure source data supporting the results are ava
 
 ## Code Availability
 
-The code and reproducibility package will be made available at [GitHub release URL]. The release should include the scripts, command records, aggregate tables, figure source-data mappings, manifests, and leakage/provenance audit files needed to reproduce the reported analyses from the permitted inputs. No code DOI is claimed here. Model checkpoints, prototype artifacts, and raw third-party audio are not included unless released separately with provider-compatible terms, file hashes, and artifact-to-result mapping.
+The code and reproducibility package will be made available at https://github.com/HinataQAQ/pig-sound-classification/releases/tag/v0.1-paper-draft. The release should include the scripts, command records, aggregate tables, figure source-data mappings, manifests, and leakage/provenance audit files needed to reproduce the reported analyses from the permitted inputs. No code DOI is claimed here. Model checkpoints, prototype artifacts, and raw third-party audio are not included unless released separately with provider-compatible terms, file hashes, and artifact-to-result mapping.
 
 ## Ethics Statement
 
