@@ -778,3 +778,41 @@
 - Verification: placeholder grep checks returned no matches for the four requested placeholder phrases; exact boundary checks returned no matches for the two requested positive-claim phrases; the code-release URL placeholder appears once; no result CSV/JSON diffs; no Python/training/evaluation code diffs.
 - Paper usability: `paper_usable=true`; `submission_complete=conditional`; remaining blockers are final code release URL/tag, target-journal metadata, corresponding author/affiliations, funding, conflict of interest, checkpoint/prototype archival decision, and final Korea provider-terms check before any raw-audio archive.
 - Stop point: replace the single code-release placeholder after the final repository release exists. Do not start another stage without a new explicit `APPROVED: true`.
+
+## 2026-07-11 - Final journal figure package
+
+- Status: completed.
+- Branch: `paper/sci-draft-v1`.
+- Implementation commit: `e6a7f91579cc2fa128ae9e2dce2b154f55ea0774`.
+- Approval state: the user supplied `APPROVED: true` and restricted the round to
+  final figure generation plus read-only figure-to-claim review.
+- Scope: generated exactly 5 main figures and 3 supplementary figures from
+  locked paper-ready evidence; no training, inference, checkpoint loading,
+  feature extraction, result regeneration, manuscript rewrite, reference edit,
+  model-code edit, or audio edit was performed.
+- Added `tools/generate_journal_figure_package.py` and 10 unit tests in
+  `tests/test_generate_journal_figure_package.py`.
+- Added SVG/PDF/300 dpi PNG/600 dpi LZW TIFF exports under
+  `paper/figures_journal/` and `paper/supplementary/figures/`, all fixed at
+  183 mm width with SimSun-first editable SVG text.
+- Added bilingual legends, a final QA report, a 25-row source map, a 25-row
+  figure-to-claim matrix, and `paper/review/FINAL_FIGURE_AUDIT.md`.
+- ARS audit verdict: `PASS WITH NOTES`; 25/25 panels audited, zero blockers,
+  zero serious/medium integrity findings, and zero prohibited overclaims.
+- Key locked result boundaries preserved: 2 s - 1 s delta `0.024630891`, CI95
+  `[0.014112838, 0.035642072]`, P=`0.0001623034477`; hierarchy clean gains are
+  nonsignificant; moderate simulated-noise evidence is strongest; run-level
+  and fold-cluster P values are separated; raw Softmax retains the best
+  AURC/AUGRC; DEMAND simulation is not real-farm external validation.
+- Visual QA: all 8 PNGs inspected at original resolution; no clipping or
+  legend overlap remains; Figure 4 right margins are PNG 10 px and TIFF 21 px.
+- Integrity: 39 baseline result CSV/JSON files retained identical SHA-256;
+  generator pre/post source snapshots also passed; no test-set tuning occurred.
+- Paper usability: `paper_usable=true`, `figure_package_complete=true`;
+  submission remains conditional only on pre-existing manuscript/release
+  metadata and target-journal production requirements.
+- Remaining notes: SimSun is not embedded in SVG; local external PDF font
+  inspection is unavailable; 5-fold cluster sensitivity has low power; no
+  unavailable CI/P was invented.
+- Stop point: review the figure package. Do not modify the manuscript or start
+  another stage without a new explicit `APPROVED: true`.

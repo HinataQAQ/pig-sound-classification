@@ -1,305 +1,198 @@
-# Codex to GPT Handoff - Pre-Submission Statement Placeholder Fix
+# Codex to GPT Handoff - Final Journal Figure Package
 
 ## Status
 
-Completed. The user provided `APPROVED: true` and requested only
-pre-submission statement and citation-placeholder repair.
+Completed. The user supplied `APPROVED: true` and restricted this round to the
+final paper figure package. No model, training, inference, result regeneration,
+result CSV/JSON edit, or manuscript rewrite was performed.
 
-Scope was limited to manuscript/reproducibility text. No model experiment,
-training, inference, checkpoint/prototype/calibration construction, threshold
-tuning, evaluation-code edit, training-code edit, experimental result CSV/JSON
-edit, raw-audio edit, figure edit, or core scientific-conclusion change was
-performed.
-
-## Branch
+## Branch and Commit
 
 - Branch: `paper/sci-draft-v1`
-- Commit SHA: see final Codex response after commit
+- Base commit: `3c6bd7817095b9e2165624c1fae934db0fa39975`
+- Figure-package implementation commit:
+  `e6a7f91579cc2fa128ae9e2dce2b154f55ea0774`
+- Handoff commit: the delivery HEAD reported in the final Codex response
+
+## Skills and Review Route
+
+- `nature-figure`: Python/Matplotlib journal-figure contract, evidence-first
+  plotting, fixed export geometry, source mapping, and figure QA.
+- `academic-research-suite`: read-only integrity verification, claim alignment,
+  and methodology-reviewer figure-to-claim audit.
+- `karpathy-guidelines`, test-driven development, and verification-before-
+  completion were used for surgical implementation and regression checks.
+- PaperSpine was not run.
 
 ## Changed Files
 
-- Updated `paper/manuscript/paper_en_full_story_polished.md`
-- Updated `paper/manuscript/paper_en_full_story.md`
-- Updated `paper/manuscript/paper_cn_full_story.md`
-- Updated `paper/references/citation_audit.csv`
-- Added `paper/reproducibility/SUBMISSION_READINESS_CHECKLIST.md`
-- Updated `handoff/CODEX_TO_GPT.md`
-- Updated `handoff/CODEX_TO_GPT.json`
-- Updated `handoff/HISTORY.md`
+Implementation and tests:
 
-Inspected but not changed in this round:
+- `tools/generate_journal_figure_package.py`
+- `tests/test_generate_journal_figure_package.py`
 
-- `paper/references/references.bib`
-- `paper/reproducibility/DATA_AVAILABILITY.md`
-- `paper/reproducibility/ETHICS_STATEMENT.md`
-- `paper/reproducibility/SOURCE_CITATION_STATUS.md`
-- `paper/reproducibility/PIG_AUDIO_SOURCE_RECOVERY_REPORT.md`
-- `paper/CLAIMS_AND_EVIDENCE_v2.md`
+Main figure package:
 
-## Commands and Checks
+- `paper/figures_journal/figure1_overall_framework.{svg,pdf,png,tiff}`
+- `paper/figures_journal/figure2_duration_clean_ablations.{svg,pdf,png,tiff}`
+- `paper/figures_journal/figure3_hierarchical_clean_prototypes.{svg,pdf,png,tiff}`
+- `paper/figures_journal/figure4_simulated_noise_robustness.{svg,pdf,png,tiff}`
+- `paper/figures_journal/figure5_failure_selective_prediction.{svg,pdf,png,tiff}`
+- `paper/figures_journal/FIGURE_LEGENDS_CN.md`
+- `paper/figures_journal/FIGURE_LEGENDS_EN.md`
+- `paper/figures_journal/FIGURE_QA_REPORT.md`
+
+Supplementary package:
+
+- `paper/supplementary/figures/figure_s1_clean_ablations.{svg,pdf,png,tiff}`
+- `paper/supplementary/figures/figure_s2_demand_environment_snr.{svg,pdf,png,tiff}`
+- `paper/supplementary/figures/figure_s3_confusion_calibration_fold_deltas.{svg,pdf,png,tiff}`
+
+Trace and review outputs:
+
+- `paper/figure_source_data/FIGURE_SOURCE_MAP.csv`
+- `paper/figure_source_data/FIGURE_TO_CLAIM_MATRIX.csv`
+- `paper/review/FINAL_FIGURE_AUDIT.md`
+- `handoff/CODEX_TO_GPT.md`
+- `handoff/CODEX_TO_GPT.json`
+- `handoff/HISTORY.md`
+
+No manuscript, bibliography, paper-result table, appendix result, report result,
+model code, checkpoint, prediction, or audio file was changed.
+
+## Exact Commands
+
+Python was run only after activating the required environment:
 
 ```powershell
-Get-Content -Raw C:\Users\s1205\.codex\plugins\cache\openai-curated-remote\superpowers\6.1.1\skills\using-superpowers\SKILL.md
-Get-Content -Raw C:\Users\s1205\.codex\skills\nature-data\SKILL.md
-Get-Content -Raw C:\Users\s1205\.codex\skills\nature-data\manifest.yaml
-Get-Content -Raw C:\Users\s1205\.codex\skills\nature-data\static\core\stance.md
-Get-Content -Raw C:\Users\s1205\.codex\skills\nature-data\static\core\chinese-mode.md
-Get-Content -Raw C:\Users\s1205\.codex\skills\nature-data\static\core\workflow.md
-Get-Content -Raw C:\Users\s1205\.codex\plugins\cache\openai-curated-remote\superpowers\6.1.1\skills\verification-before-completion\SKILL.md
-Get-Content -Raw handoff\GPT_TO_CODEX.md
-rg -n --fixed-strings <citation-needed placeholder phrase> <target files>
-rg -n --fixed-strings <references-placeholder phrase> <target files>
-rg -n --fixed-strings <not-finalized phrase> <target files>
-rg -n --fixed-strings <author-completion phrase> <target files>
-rg -n --fixed-strings <positive-real-farm-validation phrase> <target files>
-rg -n --fixed-strings <open-raw-audio-redistribution phrase> <target files>
-rg -n "GitHub release URL|code DOI|Smart Farm Korea|citation_complete|citation_partial|Kaggle-like|real-farm external validation|raw third-party pig audio|redistributed" paper\manuscript\paper_en_full_story_polished.md paper\reproducibility\*.md
-git diff --name-only -- reports/**/*.csv reports/**/*.json paper/tables/**/*.csv paper/tables/**/*.json paper/appendix/**/*.csv paper/appendix/**/*.json paper/figures/**/*.csv paper/figures/**/*.json
-git diff --name-only -- *.py tools/** src/**
+$env:PYTHONUTF8="1"
+$env:PYTHONIOENCODING="utf-8"
+$env:PYTHONNOUSERSITE="1"
+conda activate pigsound-gpu
+cd C:\py\pigsound\pig-sound-classification
 ```
 
-## Text Updates
+Generation and validation:
 
-- Replaced the Related Work citation placeholder with verified citation keys
-  already present in `references.bib` and `citation_audit.csv`: pig-call
-  valence/context and welfare-monitoring references, pig-cough recognition
-  references, and noisy smart-farm pig-vocalisation references.
-- Applied the same placeholder cleanup to the older English manuscript draft,
-  and removed the remaining references-placeholder heading from the Chinese
-  manuscript draft.
-- Removed a non-result audit-note wording in `citation_audit.csv` that would
-  otherwise trigger the requested placeholder grep; citation keys and audit
-  conclusions were not changed.
-- Converted manuscript Data Availability wording to submission style:
-  processed aggregate tables and figure source data are available through the
-  repository/supplementary package; raw third-party pig audio is not
-  redistributed; Smart Farm Korea / data.go.kr, Sow Call Dataset, and DEMAND
-  are accessed through original providers; the unresolved Kaggle-like source is
-  excluded.
-- Converted Code Availability wording to submission style with a single
-  code-release URL placeholder; no code DOI is claimed; checkpoints,
-  prototype artifacts, and raw audio are excluded unless released separately.
-- Converted Ethics wording to submission style: no new animal experiment,
-  intervention, or prospective farm recording; computational reuse of public or
-  third-party audio; source-side permissions remain with providers; restrictions
-  are in Data Availability.
-- Added `SUBMISSION_READINESS_CHECKLIST.md` with remaining required items:
-  target journal, code release URL/tag, Korea provider terms final check,
-  corresponding author/affiliations, funding, conflict of interest, and whether
-  checkpoint/prototype artifacts will be archived.
+```powershell
+python tools/generate_journal_figure_package.py --help
+python tools/generate_journal_figure_package.py --root . --validate-only
+python -m unittest tests.test_generate_journal_figure_package -v
+python tools/generate_journal_figure_package.py --root .
+```
 
-## Metrics and Scientific Results
+Scope and source-integrity checks:
 
-No model metrics were produced or changed. No numerical result, abstract value,
-paper table, figure, source result CSV/JSON, or core conclusion was edited.
+```powershell
+git diff --name-only -- paper/manuscript paper/references paper/tables paper/appendix paper_results reports src tools/prototype_model_adapter.py
+Get-ChildItem paper\appendix,paper\tables,reports\prototype_noise_demand_w05_final -Recurse -File | Get-FileHash -Algorithm SHA256
+git diff --cached --check -- . ':(exclude)paper/figures_journal/*.svg' ':(exclude)paper/supplementary/figures/*.svg'
+```
 
-Relevant locked metrics remain unchanged:
+The generated Matplotlib SVGs contain normal trailing spaces in multiline path
+data, so the whitespace check excluded SVG artwork while checking all code,
+Markdown, and CSV deliverables.
 
-- 2 s Log-Mel CRNN mean Macro-F1 approximately `0.947237`.
-- Hierarchical lambda means remain approximately `0.950506`, `0.951050`, and
-  `0.951508` for lambda `0.2`, `0.5`, and `1.0`.
-- Hierarchical gain over the 2 s baseline remains nonsignificant.
-- DEMAND simulated-noise conclusions remain bounded and unchanged.
+Commit and delivery:
 
-## Data Boundaries and Leakage Audit
+```powershell
+git add -- tools/generate_journal_figure_package.py tests/test_generate_journal_figure_package.py paper/figures_journal paper/supplementary/figures paper/figure_source_data paper/review/FINAL_FIGURE_AUDIT.md
+git commit -m "feat: add final journal figure package"
+git add -- handoff/CODEX_TO_GPT.md handoff/CODEX_TO_GPT.json handoff/HISTORY.md
+git commit -m "docs: update final figure handoff"
+git push origin paper/sci-draft-v1
+```
 
-- Train/validation/test roles were not changed.
-- No test-set tuning was performed.
-- No fold or seed artifact was constructed.
-- No raw audio was modified, copied, redistributed, or deleted.
-- No training, evaluation, or model code was modified.
-- No experiment result CSV/JSON was modified.
-- Existing path/source_id/MD5 leakage-audit statements were preserved; no new
-  leakage-relevant data artifact was generated.
+## Deliverables and QA
 
-## Verification
+- Exactly 5 main figures and 3 supplementary figures.
+- Each figure has editable-text SVG, PDF, 300 dpi PNG, and 600 dpi LZW TIFF.
+- Every figure is fixed at 183 mm width; `bbox_inches='tight'` is not used.
+- Primary font is SimSun, with Arial and DejaVu Sans fallbacks recorded.
+- SVG uses text nodes and references SimSun; no SVG contains an embedded raster,
+  gradient, or filter.
+- White background; no shadows, 3D, dashboard cards, decorative icons, rainbow
+  palette, or table screenshots.
+- Macro-F1/recall axes retain 0-1 limits; only explicit delta panels use a
+  centered narrow axis.
+- Exact P values are printed without significance stars.
+- All eight 300 dpi PNGs were inspected at original resolution. No clipping or
+  legend/data overlap remains. Figure 4 right margins are PNG 10 px and TIFF
+  21 px.
+- Source map and claim matrix contain aligned entries for all 25 panels.
+- Unit tests: 10/10 passed.
+- Final programmatic package audit passed.
 
-- Placeholder grep checks returned no matches for the four requested placeholder
-  phrases.
-- Boundary grep checks returned no matches for the two requested positive-claim
-  phrases.
-- The code-release URL placeholder is present only once, in the manuscript Code
-  Availability section.
-- Smart Farm Korea remains `citation_partial`; it was not upgraded to
-  `citation_complete`.
-- The Kaggle-like source remains unresolved/excluded and is not included in the
-  main data description.
-- Diff checks for result CSV/JSON paths returned no changed files.
-- Diff checks for Python/training/evaluation code returned no changed files.
+## Locked Metrics Used in Figures
+
+No new metrics were produced. The package visualizes only locked evidence:
+
+- Duration: 1 s `0.9226` (n=25), 2 s `0.9472` (n=25), 3 s `0.9434`
+  (n=15).
+- Matched 2 s - 1 s delta: `0.024630891`, 95% CI
+  `[0.014112838, 0.035642072]`, Wilcoxon P=`0.0001623034477`.
+- Hierarchical weights: lambda 0.2/0.5/1.0 means
+  `0.950506/0.951050/0.951508`; all incremental clean paired CIs cross zero.
+- The 25 clean raw/main/hierarchical outputs in Figure 3c are directly traced
+  to one lambda=0.5 fold-seed checkpoint cohort.
+- Main prototype - raw under moderate/ALL_NOISY/extreme simulation has
+  run/fold P values `0.00167307/0.0625`, `0.0105108/0.3125`, and
+  `0.560171/1.0`.
+- Raw Softmax retains the best ALL_NOISY AURC/AUGRC; main prototype has only a
+  small frozen-threshold selective-risk advantage.
+
+## ARS Figure-to-Claim Audit
+
+- Final verdict: `PASS WITH NOTES`.
+- Blocking findings: 0.
+- Serious or medium integrity findings: 0.
+- Prohibited overclaims: 0.
+- Coverage: 25/25 panels.
+- The audit explicitly preserves these boundaries:
+  - simulated additive noise is not real-farm external validation;
+  - 0 dB is an extreme simulated-noise stress condition, not no-noise;
+  - hierarchical clean gains are not statistically significant;
+  - run-level and fold-cluster evidence are separate;
+  - Figure 4 stored Wilcoxon P values are unadjusted;
+  - pooled repeated decisions are not independent recordings;
+  - prototype inference does not universally improve uncertainty.
+
+## Leakage and Data Audit
+
+- No training, inference, feature extraction, checkpoint loading, prototype
+  construction, calibration, threshold fitting, or noise simulation ran.
+- No test-set tuning occurred.
+- Training-only prototype and validation-only calibration boundaries are shown
+  but were not recomputed.
+- A pre/post SHA-256 comparison passed for 39 locked result CSV/JSON files.
+- The generator's own pre/post snapshot also found no changed required source.
+- Train/validation/test roles, folds, seeds, predictions, and manifests are
+  unchanged.
 
 ## Paper Usability
 
-- `paper_usable`: true for pre-submission placeholder and statement repair.
-- `submission_complete`: conditional.
-- The manuscript is closer to submission, but still needs a final code release
-  URL/tag, target-journal metadata, corresponding-author/affiliation/funding/COI
-  metadata, and the Korean provider-terms check before any raw-audio archive.
+- `paper_usable`: true for the final figure package.
+- `figure_package_complete`: true.
+- `submission_complete`: conditional on existing manuscript/release metadata,
+  not on this figure task.
+- The figures are suitable for the current Chinese Word working draft and later
+  journal layout, subject to target-journal production preflight.
 
-## Blockers
+## Remaining Notes and Scientific-Judgment Questions
 
-- Target journal and article-type requirements.
-- Final public code release URL/tag; no code DOI is currently claimed.
-- Final Smart Farm Korea / data.go.kr provider-terms check; Korea remains
-  `citation_partial`, and raw Korean audio redistribution is not claimed.
-- Corresponding author, affiliations, funding, and conflict-of-interest
-  declarations.
-- Decision on checkpoint/prototype artifact archival.
-- Kaggle-like scream/cough source remains unresolved and excluded.
+- SimSun is referenced but not embedded in SVG. A system without SimSun may
+  substitute/reflow text; local PDF font inspection tooling is unavailable.
+- The fold-cluster sensitivity has only five folds and low power.
+- No environment-specific fold-cluster CI or selective-metric paired CI/P exists;
+  none was invented.
+- DEMAND controlled additive noise cannot replace real-farm external validation.
+- GPT Pro/editorial judgment is still needed on whether the final manuscript
+  should retain the stored unadjusted nine-comparison P display or apply and
+  report a prespecified multiplicity correction in a separate approved round.
+- The target journal should determine whether 600 dpi TIFF is required and what
+  final font-embedding preflight is needed.
 
-## Questions for GPT Pro
+## Stop Point
 
-- Should the final manuscript keep the code-release URL placeholder until the release is
-  minted, or should the authors provide the actual repository tag now?
-- Does the target journal require a formal exemption sentence for computational
-  reuse of third-party animal audio?
-- Should checkpoints/prototype NPZ artifacts be archived for review, or should
-  the paper rely on code regeneration plus aggregate result files?
-
-## Recommended Next Step
-
-Replace the single code-release placeholder after the final repository release
-exists. Do not start another stage without a new explicit `APPROVED: true`.
-
----
-
-# Previous Handoff - Source Citation and Statement Sync
-
-## Status
-
-Completed. The user provided `APPROVED: true` and requested only data-source
-citation completion and statement updates from the clean pig-audio provenance
-audit.
-
-Scope was limited to the paper submission package. No model experiment,
-training, inference, checkpoint/prototype/calibration construction, threshold
-tuning, evaluation-code edit, training-code edit, experimental result CSV/JSON
-edit, raw-audio edit, or paper core-claim change was performed.
-
-## Branch
-
-- Branch: `paper/sci-draft-v1`
-- Commit SHA: see final Codex response after commit/push
-
-## Changed Files
-
-- Updated `paper/references/references.bib`
-- Updated `paper/reproducibility/DATA_AVAILABILITY.md`
-- Updated `paper/reproducibility/ETHICS_STATEMENT.md`
-- Added `paper/reproducibility/SOURCE_CITATION_STATUS.md`
-- Updated `paper/manuscript/paper_en_full_story_polished.md`
-- Updated `paper/manuscript/paper_cn_full_story.md`
-- Updated `handoff/CODEX_TO_GPT.md`
-- Updated `handoff/CODEX_TO_GPT.json`
-- Updated `handoff/HISTORY.md`
-
-## Commands and Checks
-
-```powershell
-Get-Content -Raw C:\Users\s1205\.codex\plugins\cache\openai-curated-remote\superpowers\6.1.1\skills\using-superpowers\SKILL.md
-Get-Content -Raw C:\Users\s1205\.codex\skills\nature-data\SKILL.md
-Get-Content -Raw C:\Users\s1205\.codex\skills\nature-data\manifest.yaml
-Get-Content -Raw C:\Users\s1205\.codex\skills\nature-data\static\core\stance.md
-Get-Content -Raw C:\Users\s1205\.codex\skills\nature-data\static\core\chinese-mode.md
-Get-Content -Raw C:\Users\s1205\.codex\skills\nature-data\static\core\workflow.md
-Get-Content -Raw handoff\GPT_TO_CODEX.md
-Get-Content -Raw paper\reproducibility\PIG_AUDIO_SOURCE_RECOVERY_REPORT.md
-Get-Content -Raw paper\reproducibility\PIG_AUDIO_SOURCE_AUDIT.csv
-Get-Content -Raw paper\reproducibility\UNRESOLVED_DATA_SOURCES.md
-Get-Content -Raw paper\reproducibility\DATA_AVAILABILITY.md
-Get-Content -Raw paper\reproducibility\ETHICS_STATEMENT.md
-Get-Content -Raw paper\references\references.bib
-rg -n "Data Availability|Ethics|dataset|Sow|DEMAND|Korea|Korean|pig-cough|pig cough|clean pig" paper\manuscript\paper_en_full_story_polished.md
-rg -n "数据可用|伦理|数据集|母猪|韩国|猪咳嗽|DEMAND|Sow|Korea|pig" paper\manuscript\paper_cn_full_story.md
-git diff --name-only -- reports/**/*.csv reports/**/*.json paper/tables/**/*.csv paper/tables/**/*.json paper/appendix/**/*.csv paper/appendix/**/*.json paper/figures/**/*.csv paper/figures/**/*.json
-git diff --name-only -- *.py tools/** src/**
-<Python brace/key parser for paper/references/references.bib>
-<Python guard asserting DATA_AVAILABILITY DOI/URL values are limited to audited DEMAND, Sow Call, and Korea source URLs/DOIs>
-rg -n "Smart Farm Korea.*citation_complete|citation_complete.*Smart Farm|Kaggle.*verified|verified.*Kaggle|Kaggle-like.*citation_complete|unresolved_do_not_submit_until_fixed" paper\reproducibility paper\manuscript
-git diff --check
-```
-
-## Citation Results
-
-- DEMAND: `citation_complete`; existing BibTeX key `demand2018`; DOI
-  `10.5281/zenodo.1227121`.
-- Sow Call Dataset: `citation_complete`; added BibTeX key
-  `sow_call_dataset_2021`; DOI `10.6084/m9.figshare.16940389`; CC BY 4.0.
-- Smart Farm Korea / data.go.kr pig-cough voice dataset: `citation_partial`;
-  added BibTeX key `smartfarmkorea_pig_cough_voice`; exact data.go.kr and Smart
-  Farm Korea URLs came from the source audit; no DOI was fabricated; raw-audio
-  redistribution is not claimed and still needs a final provider-terms check
-  before any raw-audio archive.
-- Kaggle-like porcine scream/cough dataset: `unresolved_do_not_submit_until_fixed`;
-  no BibTeX entry was added; it remains excluded from final claims.
-- SoundWel, aSwine, and empty placeholder roots: `excluded_from_main_results`
-  for this paper-mainline sync; no new citations were added because they are not
-  part of the current clean cap3x mainline.
-
-## Metrics and Scientific Results
-
-No model metrics were produced or changed. No abstract numbers, table values,
-figure values, result CSV/JSON files, or core conclusions were edited.
-
-Relevant locked metrics remain unchanged:
-
-- 2 s Log-Mel CRNN mean Macro-F1 approximately `0.947237`.
-- Hierarchical lambda means remain approximately `0.950506`, `0.951050`, and
-  `0.951508` for lambda `0.2`, `0.5`, and `1.0`.
-- Hierarchical gain over the 2 s baseline remains nonsignificant.
-- DEMAND simulated-noise conclusions remain bounded and unchanged.
-
-## Data Boundaries and Leakage Audit
-
-- Train/validation/test roles were not changed.
-- No test-set tuning was performed.
-- No fold or seed artifact was constructed.
-- No raw audio was modified, copied, redistributed, or deleted.
-- No training, evaluation, or model code was modified.
-- No experiment result CSV/JSON was modified.
-- Existing path/source_id/MD5 leakage-audit statements were preserved; no new
-  leakage-relevant data artifact was generated.
-
-## Verification
-
-- `references.bib` parsed successfully with 32 entries and required dataset
-  keys present.
-- Data Availability DOI/URL guard passed; no fabricated DOI/URL was introduced.
-- Diff checks for result CSV/JSON paths returned no changed files.
-- Diff checks for Python/training/evaluation code returned no changed files.
-- Guardrail search confirmed Korea was not written as `citation_complete`, and
-  the Kaggle-like source remains unresolved/excluded.
-- `git diff --check` reported only line-ending warnings, no whitespace errors.
-
-## Paper Usability
-
-- `paper_usable`: true for citation and statement synchronization.
-- `submission_complete`: conditional.
-- The manuscript is safer for submission than before because the current
-  clean-source citations and third-party raw-audio non-redistribution statement
-  are now present.
-- Remaining condition: do not claim raw Korean cough audio redistribution until
-  the final Smart Farm Korea / data.go.kr provider-terms check is recorded.
-
-## Blockers
-
-- Final provider-terms screenshot or written confirmation for Korean raw-audio
-  redistribution, if the authors plan to archive raw audio.
-- Final repository release tag/DOI and licence for shareable code/results
-  package.
-- Target-journal decision on whether a no-new-animal-experiment statement is
-  sufficient for computational reuse of third-party public pig audio.
-- Kaggle-like scream/cough source remains unresolved and excluded.
-
-## Questions for GPT Pro
-
-- Should Korea be left as `citation_partial` in the final submission package, or
-  upgraded only after a saved provider-terms screenshot/check?
-- Should the final Data Availability statement mention only current mainline
-  sources, or include excluded non-current sources in an appendix-only note?
-- Is an explicit ethics-exemption sentence needed for public third-party pig
-  audio reuse in the target journal?
-
-## Recommended Next Step
-
-Review the synchronized citation/status wording. Do not start another stage
-without a new explicit `APPROVED: true`.
+The approved final-figure stage is complete. Do not modify the manuscript or
+start another paper/experiment stage without a new explicit `APPROVED: true`.

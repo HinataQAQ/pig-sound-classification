@@ -1,101 +1,166 @@
 {
   "status": "completed",
-  "task": "pre_submission_statement_placeholder_fix",
+  "task": "final_journal_figure_package",
   "approval": {
-    "gpt_to_codex_approved_true": true,
-    "direct_user_request": true
+    "approved_true": true,
+    "direct_user_request": true,
+    "models_authorized": false,
+    "manuscript_rewrite_authorized": false
   },
   "branch": "paper/sci-draft-v1",
-  "final_commit_sha": "see_final_codex_response_after_commit",
-  "changed_files": [
-    "paper/manuscript/paper_en_full_story_polished.md",
-    "paper/manuscript/paper_en_full_story.md",
-    "paper/manuscript/paper_cn_full_story.md",
-    "paper/references/citation_audit.csv",
-    "paper/reproducibility/SUBMISSION_READINESS_CHECKLIST.md",
-    "handoff/CODEX_TO_GPT.md",
-    "handoff/CODEX_TO_GPT.json",
-    "handoff/HISTORY.md"
+  "base_commit_sha": "3c6bd7817095b9e2165624c1fae934db0fa39975",
+  "implementation_commit_sha": "e6a7f91579cc2fa128ae9e2dce2b154f55ea0774",
+  "handoff_commit_sha": "see_final_codex_response",
+  "skills_used": [
+    "nature-figure",
+    "academic-research-suite: integrity verification",
+    "academic-research-suite: claim alignment",
+    "academic-research-suite: methodology reviewer",
+    "karpathy-guidelines",
+    "test-driven-development",
+    "verification-before-completion"
   ],
-  "inspected_unchanged_files": [
-    "paper/references/references.bib",
-    "paper/reproducibility/DATA_AVAILABILITY.md",
-    "paper/reproducibility/ETHICS_STATEMENT.md",
-    "paper/reproducibility/SOURCE_CITATION_STATUS.md",
-    "paper/reproducibility/PIG_AUDIO_SOURCE_RECOVERY_REPORT.md",
-    "paper/CLAIMS_AND_EVIDENCE_v2.md"
-  ],
-  "text_updates": {
-    "related_work_placeholder_replaced": true,
-    "older_english_manuscript_placeholder_cleanup": true,
-    "chinese_manuscript_references_heading_cleanup": true,
-    "citation_audit_placeholder_note_cleanup": true,
-    "related_work_citations_used_from_existing_bib_and_audit": [
-      "briefer2022pigcalls",
-      "mcloughlin2019automated",
-      "coutant2024scoping",
-      "ferrari2008cough",
-      "exadaktylos2008cough",
-      "yin2021pigcoughcnn",
-      "shen2022pigcoughfusion",
-      "xie2024abnormalpig",
-      "chung2025pvmc"
+  "paperspine_used": false,
+  "changed_files": {
+    "implementation": [
+      "tools/generate_journal_figure_package.py",
+      "tests/test_generate_journal_figure_package.py"
     ],
-    "data_availability_submission_wording": true,
-    "code_availability_submission_wording": true,
-    "ethics_submission_wording": true,
-    "single_github_release_placeholder": true,
-    "submission_readiness_checklist_added": true
+    "main_figures": [
+      "paper/figures_journal/figure1_overall_framework.{svg,pdf,png,tiff}",
+      "paper/figures_journal/figure2_duration_clean_ablations.{svg,pdf,png,tiff}",
+      "paper/figures_journal/figure3_hierarchical_clean_prototypes.{svg,pdf,png,tiff}",
+      "paper/figures_journal/figure4_simulated_noise_robustness.{svg,pdf,png,tiff}",
+      "paper/figures_journal/figure5_failure_selective_prediction.{svg,pdf,png,tiff}"
+    ],
+    "supplementary_figures": [
+      "paper/supplementary/figures/figure_s1_clean_ablations.{svg,pdf,png,tiff}",
+      "paper/supplementary/figures/figure_s2_demand_environment_snr.{svg,pdf,png,tiff}",
+      "paper/supplementary/figures/figure_s3_confusion_calibration_fold_deltas.{svg,pdf,png,tiff}"
+    ],
+    "documentation_and_audit": [
+      "paper/figures_journal/FIGURE_LEGENDS_CN.md",
+      "paper/figures_journal/FIGURE_LEGENDS_EN.md",
+      "paper/figures_journal/FIGURE_QA_REPORT.md",
+      "paper/figure_source_data/FIGURE_SOURCE_MAP.csv",
+      "paper/figure_source_data/FIGURE_TO_CLAIM_MATRIX.csv",
+      "paper/review/FINAL_FIGURE_AUDIT.md",
+      "handoff/CODEX_TO_GPT.md",
+      "handoff/CODEX_TO_GPT.json",
+      "handoff/HISTORY.md"
+    ]
   },
-  "citation_status_preserved": {
-    "demand": "citation_complete",
-    "sow_call_dataset": "citation_complete",
-    "smart_farm_korea_data_go_kr_pig_cough": "citation_partial",
-    "kaggle_like_scream_cough": "unresolved_do_not_submit_until_fixed",
-    "soundwel_aswine_empty_roots": "excluded_from_main_results"
+  "outputs": {
+    "main_figure_count": 5,
+    "supplementary_figure_count": 3,
+    "panel_trace_count": 25,
+    "formats_per_figure": [
+      "svg_editable_text",
+      "pdf",
+      "png_300_dpi",
+      "tiff_600_dpi_lzw"
+    ],
+    "fixed_width_mm": 183.0,
+    "primary_font": "SimSun",
+    "font_fallbacks": [
+      "Arial",
+      "DejaVu Sans"
+    ],
+    "svg_font_embedded": false,
+    "svg_text_nodes": true
   },
   "metrics": {
-    "model_metrics_changed": false,
-    "result_csv_json_changed": false,
-    "training_evaluation_code_changed": false,
-    "new_model_results_created": false,
-    "figures_changed": false,
-    "numerical_results_changed": false
+    "new_model_metrics_created": false,
+    "duration": {
+      "one_second_mean_macro_f1": 0.9226,
+      "one_second_n": 25,
+      "two_second_mean_macro_f1": 0.9472,
+      "two_second_n": 25,
+      "three_second_mean_macro_f1": 0.9434,
+      "three_second_n": 15,
+      "paired_two_minus_one_delta": 0.024630891,
+      "paired_ci95": [
+        0.014112838,
+        0.035642072
+      ],
+      "wilcoxon_p": 0.0001623034477
+    },
+    "hierarchical_means": {
+      "lambda_0_2": 0.950506,
+      "lambda_0_5": 0.95105,
+      "lambda_1_0": 0.951508,
+      "significant_incremental_clean_gain": false
+    },
+    "noise_main_minus_raw_run_fold_p": {
+      "moderate": [
+        0.00167307,
+        0.0625
+      ],
+      "all_noisy": [
+        0.0105108,
+        0.3125
+      ],
+      "extreme_0_db": [
+        0.560171,
+        1.0
+      ]
+    },
+    "uncertainty_boundary": "Raw Softmax has the best ALL_NOISY AURC/AUGRC; main prototype has only a small frozen-threshold risk advantage."
+  },
+  "ars_audit": {
+    "mode": "read_only_final_figure_to_claim",
+    "verdict": "PASS_WITH_NOTES",
+    "panels_audited": 25,
+    "blocking_findings": 0,
+    "serious_or_medium_integrity_findings": 0,
+    "prohibited_overclaims": 0,
+    "report": "paper/review/FINAL_FIGURE_AUDIT.md"
   },
   "data_boundaries": {
-    "train_val_test_roles_changed": false,
+    "training_run": false,
+    "inference_run": false,
+    "feature_extraction_run": false,
+    "checkpoint_loaded": false,
+    "prototype_or_calibration_rebuilt": false,
     "test_set_tuning": false,
+    "source_result_csv_json_modified": false,
+    "manuscript_modified": false,
+    "references_modified": false,
+    "model_code_modified": false,
     "raw_audio_modified": false,
-    "raw_audio_deleted": false,
-    "raw_audio_redistributed": false,
-    "korea_raw_audio_redistribution_claimed": false,
-    "paper_core_claims_changed": false
+    "real_farm_external_validation": false,
+    "simulated_noise_only": true
   },
   "verification": {
-    "placeholder_grep_citation_needed": "no_matches",
-    "placeholder_grep_references_placeholder": "no_matches",
-    "placeholder_grep_not_finalised": "no_matches",
-    "placeholder_grep_must_be_completed": "no_matches",
-    "boundary_grep_real_farm_external_validation_claim": "no_matches",
-    "boundary_grep_all_raw_audio_openly_redistributed": "no_matches",
-    "github_release_url_placeholder_count": 1,
-    "no_experiment_result_csv_json_changed": true,
-    "no_model_training_evaluation_code_changed": true,
-    "korea_not_written_as_citation_complete": true,
-    "kaggle_like_not_in_main_data_description": true
+    "unit_tests_passed": 10,
+    "validate_only_passed": true,
+    "programmatic_package_audit_passed": true,
+    "manual_png_visual_qa_count": 8,
+    "all_exports_nonempty": true,
+    "source_map_claim_matrix_aligned": true,
+    "baseline_result_sha256_files_unchanged": 39,
+    "figure4_png_right_margin_px": 10,
+    "figure4_tiff_right_margin_px": 21,
+    "no_significance_stars": true,
+    "run_and_fold_cluster_separated": true
   },
   "paper_usability": {
     "paper_usable": true,
-    "submission_complete": "conditional",
-    "safe_to_submit_after_updates": "not yet final; remaining blockers must be resolved before journal upload"
+    "figure_package_complete": true,
+    "submission_complete": "conditional_on_existing_manuscript_and_release_metadata",
+    "target": "Chinese Word working draft and later journal layout"
   },
-  "blockers": [
-    "Target journal and article type must be selected.",
-    "Final public code release URL/tag is needed; no code DOI is claimed.",
-    "Final Smart Farm Korea / data.go.kr provider-terms check is needed before any raw-audio archive.",
-    "Corresponding author, affiliations, funding, and conflict-of-interest declarations are needed.",
-    "Decision is needed on checkpoint/prototype artifact archival.",
-    "Kaggle-like source remains unresolved and excluded."
+  "blockers": [],
+  "notes": [
+    "SimSun is referenced but not embedded in SVG; recipients without it may see substitution or reflow.",
+    "Local external PDF font inspection tooling is unavailable.",
+    "Fold-cluster sensitivity has five folds and low power.",
+    "No environment-specific fold-cluster CI or selective-metric paired CI/P was available or invented.",
+    "DEMAND controlled additive noise is not real-farm external validation."
   ],
-  "recommended_next_step": "Replace the single code-release placeholder after the final repository release exists. Do not start another stage without explicit APPROVED:true."
+  "questions_for_gpt_pro": [
+    "Should a later approved manuscript round retain the stored unadjusted nine-comparison P display or apply a prespecified multiplicity correction?",
+    "What font-embedding and TIFF preflight does the selected target journal require?"
+  ],
+  "recommended_next_step": "Stop. Review the final figure package; do not modify the manuscript or start another experiment/paper stage without a new explicit APPROVED:true."
 }
