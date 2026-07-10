@@ -4,8 +4,9 @@ This statement was prepared from the manuscript draft, the paper table and
 appendix CSV files, the DEMAND provenance records, the noise-source decision
 note, and the reproducibility package manifest. It is suitable as a submission
 draft. Clean pig-audio source citations have been updated from the 2026-07-09
-source-recovery audit; release DOIs and raw-audio redistribution decisions still
-need final author confirmation before submission.
+source-recovery audit. The current package does not redistribute raw audio; any
+future archival DOI or provider-authorized redistribution would require separate
+confirmation before submission.
 
 ## Submission Draft
 
@@ -33,19 +34,17 @@ availability of the underlying audio.
 The original clean pig-vocalization recordings are third-party or public-source
 audio and are not redistributed in this repository. The current clean cap3x
 manifests draw from two recovered source families. The `dry_cough` and
-`abdominal_cough` files map to the Smart Farm Korea / data.go.kr pig-cough voice
-dataset, with the data.go.kr item at
-https://www.data.go.kr/data/15117368/fileData.do and the Smart Farm Korea source
-page at
-https://www.smartfarmkorea.net/unstructuredDataset/pigCoughSound.do?menuId=M11040204.
-The local source-recovery audit records the data.go.kr usage-permission range
-as no restriction, but raw Korean cough audio should still be obtained from the
-original provider portal rather than redistributed with this repository unless
-the authors complete a final provider-terms check. The `calm_grunt`, `feeding`,
-`frightened_stress`, and `anxious_stress` files derive from the Sow Call Dataset
-on figshare, DOI `10.6084/m9.figshare.16940389`, under CC BY 4.0. Local subtype
-labels for the Sow Call Dataset are documented as filename-suffix mappings in
-the source-recovery audit.
+`abdominal_cough` files map to the Ministry of Agriculture, Food and Rural
+Affairs data.go.kr item titled
+`농림축산식품부_양돈 기침 데이터 셋_20230727`, available at
+https://www.data.go.kr/data/15117368/fileData.do. The item has no DOI. Provider
+terms apply, and raw Korean cough audio should be obtained from the original
+provider rather than redistributed with this repository. The `calm_grunt`,
+`feeding`, `frightened_stress`, and `anxious_stress` files derive from Jie
+Liao's Sow Call Dataset, version 2 (2022-10-28), on figshare, DOI
+`10.6084/m9.figshare.16940389`, under CC BY 4.0. Local subtype labels for the Sow
+Call Dataset are documented as filename-suffix mappings in the source-recovery
+audit.
 
 Raw third-party pig audio is therefore outside the public repository package.
 Shareable materials include code, commands, aggregate tables, figures, source
@@ -60,17 +59,15 @@ resolved.
 
 The environmental noise data used for simulated additive-noise evaluation came
 from DEMAND: a collection of multi-channel recordings of acoustic noise in
-diverse environments. DEMAND is available from Zenodo at
-https://zenodo.org/records/1227121 with DOI `10.5281/zenodo.1227121`. This study
-used the selected DEMAND environments `DWASHING`, `TBUS`, and `STRAFFIC`, fixed
-to channel 1, with local provenance recorded in
+diverse environments. DEMAND version 1.0 (2013-06-09) is available from Zenodo
+at https://zenodo.org/records/1227121 with DOI
+`10.5281/zenodo.1227121`; the record licence text is CC BY-SA 3.0 Unported. This
+study used the selected DEMAND environments `DWASHING`, `TBUS`, and `STRAFFIC`,
+fixed to channel 1, with local provenance recorded in
 `data/noise_sources/demand/PROVENANCE.json` and
 `data/noise_sources/demand/NOISE_SOURCE_MANIFEST.csv`. The repository should
-cite the DEMAND DOI and Zenodo record and should not redistribute DEMAND audio.
-The local provenance records conflicting license metadata:
-`description_license=CC-BY-SA-3.0` and `zenodo_rights_license=cc-by-4.0`.
-Because of this conflict, strict redistribution should use links, checksums, and
-provenance rather than bundling DEMAND audio in GitHub.
+cite the DEMAND DOI and Zenodo record and should not redistribute DEMAND audio;
+readers should obtain it directly from Zenodo under the record licence.
 
 Model checkpoints are model artifacts rather than source data. The reviewed
 paper package does not provide a final public checkpoint archive or checkpoint
@@ -100,14 +97,14 @@ paper package.
 
 ## Formal Dataset Citations
 
-- Thiemann, J., Ito, N., and Vincent, E. (2018). DEMAND: a collection of
-  multi-channel recordings of acoustic noise in diverse environments. Zenodo.
-  https://doi.org/10.5281/zenodo.1227121
-- Sow call dataset. (2021). figshare.
+- Thiemann, J., Ito, N., and Vincent, E. (2013). DEMAND: a collection of
+  multi-channel recordings of acoustic noise in diverse environments, version
+  1.0. Zenodo. https://doi.org/10.5281/zenodo.1227121
+- Liao, J. (2022). Sow call dataset, version 2. figshare.
   https://doi.org/10.6084/m9.figshare.16940389
-- Smart Farm Korea and data.go.kr. Smart Farm Korea pig-cough voice dataset.
-  https://www.data.go.kr/data/15117368/fileData.do and
-  https://www.smartfarmkorea.net/unstructuredDataset/pigCoughSound.do?menuId=M11040204
+- Ministry of Agriculture, Food and Rural Affairs. (2023).
+  농림축산식품부_양돈 기침 데이터 셋_20230727. data.go.kr.
+  https://www.data.go.kr/data/15117368/fileData.do
 
 ## Repository and Citation Actions Before Submission
 
@@ -131,12 +128,13 @@ paper package.
 
 ## Missing Information and Risk Flags
 
-- CONFIRMED FOR CITATION: Sow Call Dataset DOI
-  `10.6084/m9.figshare.16940389`, figshare URL, and CC BY 4.0 licence.
-- CONFIRMED FOR CITATION WITH CAUTION: Smart Farm Korea / data.go.kr pig-cough
-  voice dataset exact URLs and data.go.kr no-restriction usage-permission range;
-  raw-audio redistribution is not claimed here and still needs a final
-  provider-terms check before any public raw-audio archive.
+- CONFIRMED FOR CITATION: Sow Call Dataset author Jie Liao, version 2 date
+  2022-10-28, DOI `10.6084/m9.figshare.16940389`, figshare URL, and CC BY 4.0
+  licence.
+- CONFIRMED FOR CITATION: Smart Farm Korea / data.go.kr pig-cough dataset exact
+  title, institutional provider, stable item URL, WAV format, and dry/abdominal
+  cough description. No DOI is listed. Provider terms apply, and raw-audio
+  redistribution is not claimed here.
 - UNRESOLVED: licence, owner rights, and ethics/permission status for the
   Kaggle-like `data/raw/scream_cough_small` source; it is excluded from current
   main results.
@@ -147,8 +145,7 @@ paper package.
   package.
 - UNRESOLVED: archival DOI and license for model checkpoints and prototype
   artifacts, if these are to be released.
-- CONFIRMED: DEMAND DOI `10.5281/zenodo.1227121` and Zenodo record
-  `https://zenodo.org/records/1227121`.
-- CONFIRMED WITH CAUTION: DEMAND local provenance and checksums are recorded,
-  but license metadata are conflicting and DEMAND audio should not be
-  redistributed in GitHub.
+- CONFIRMED: DEMAND authors, version 1.0 date 2013-06-09, DOI
+  `10.5281/zenodo.1227121`, Zenodo record
+  `https://zenodo.org/records/1227121`, and record licence text CC BY-SA 3.0
+  Unported. DEMAND audio is not redistributed in GitHub.
