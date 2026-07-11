@@ -1,202 +1,169 @@
 {
-  "status": "completed_planning_only",
-  "task": "hierarchical_acoustic_prototype_atlas_engineering_audit_and_fold0_debug_plan",
+  "status": "completed_research_audit_and_design_only",
+  "task": "prior_art_overlap_audit_and_fair_comparison_design",
+  "date": "2026-07-11",
   "approval": {
     "approved_true": true,
     "direct_user_request": true,
-    "implementation_authorized": false,
-    "full_cv_authorized": false,
-    "open_set_evaluation_authorized": false,
-    "manuscript_rewrite_authorized": false
+    "training_authorized": false,
+    "benchmark_execution_authorized": false,
+    "manuscript_rewrite_authorized": false,
+    "test_tuning_authorized": false
   },
-  "branch": "paper/sci-draft-v1",
-  "repository_primary_branch_from_agents_md": "current-mctafd-ablation",
-  "base_commit_sha": "a1a7a552e225522e021c9d14ef7a5136a6505e4c",
-  "planning_commit_sha": "83050e8d3e1bebdc7e67bd4ced3df779abb4d5d0",
+  "branch": "paper/prior-art-fair-benchmark",
+  "base_branch": "paper/sci-draft-v1",
+  "base_commit_sha": "b52a0f63539d544f27c57e29760384c0782e7f61",
+  "artifact_commit_sha": "36f950f020ed769a4fe297d48e460a10829e08fa",
   "handoff_commit_sha": "see_final_codex_response",
-  "skills_used": [
-    "superpowers:using-superpowers",
-    "superpowers:writing-plans",
-    "superpowers:dispatching-parallel-agents",
-    "superpowers:systematic-debugging",
-    "superpowers:verification-before-completion",
-    "academic-research-suite: experiment planning",
-    "firecrawl: unavailable_cli_fallback_to_primary_web",
-    "karpathy-guidelines"
-  ],
   "changed_files": [
-    "docs/superpowers/plans/2026-07-11-hierarchical-acoustic-prototype-atlas.md",
+    "paper/references/PRIOR_ART_OVERLAP_MATRIX.csv",
+    "paper/references/PUBLISHED_SCORE_COMPARABILITY.csv",
+    "paper/references/NOVELTY_CLAIM_GUARD.md",
+    "paper/benchmark/SOW_CALL_BENCHMARK_FEASIBILITY.md",
+    "paper/benchmark/SOW_CALL_SOURCE_AUDIT.csv",
+    "paper/benchmark/SOW_CALL_FAIR_BENCHMARK_PLAN.md",
+    "paper/benchmark/PROTOTYPE_PREDICTION_VALUE_PLAN.md",
     "handoff/CODEX_TO_GPT.md",
     "handoff/CODEX_TO_GPT.json",
     "handoff/HISTORY.md"
   ],
   "data_boundaries": {
     "training_run": false,
-    "inference_run": false,
+    "model_inference_run": false,
     "feature_extraction_run": false,
-    "prototype_or_atlas_built": false,
     "calibration_run": false,
-    "clean_test_evaluation_run": false,
-    "open_set_evaluation_run": false,
-    "demand_noise_run": false,
-    "full_cv_run": false,
+    "benchmark_run": false,
     "test_set_tuning": false,
-    "training_script_modified": false,
-    "clean_or_noise_result_modified": false,
-    "checkpoint_or_audio_modified": false,
-    "manuscript_modified": false
+    "manuscript_modified": false,
+    "training_or_adapter_script_modified": false,
+    "source_result_file_modified": false,
+    "manifest_modified": false,
+    "checkpoint_or_audio_modified": false
   },
-  "current_pipeline_capability": {
-    "status": "partial_semi_atlas",
-    "available": [
-      "train-only main and subtype centroids",
-      "q95 mean and std cosine dispersion",
-      "normalized Log-Mel mean and std",
-      "representative samples",
-      "validation-only calibration",
-      "top-2 labels distances margins hierarchy consistency and uncertainty",
-      "geometry and acoustic-map plots"
-    ],
-    "missing": [
-      "unified schema-versioned ten-node graph",
-      "stable node IDs and parent links",
-      "explicit medoids and unified cross-level nearest nodes",
-      "SHA-bound per-exemplar embeddings",
-      "exact consolidated query schema",
-      "unknown_candidate and ordered rejection_reason",
-      "five-baseline comparison",
-      "few-shot node insertion",
-      "rights-gated open-set evaluation"
+  "prior_art": {
+    "required_works_verified": 8,
+    "matrix_rows": 12,
+    "exact_pig_specific_route_match_found": false,
+    "route_match_qualification": "No exact match located in targeted publisher/preprint search through 2026-07-11; not proof of universal nonexistence.",
+    "highest_method_overlap": "HiSSNet for hierarchical supervision plus prototype inference",
+    "highest_posthoc_retrieval_overlap": "AudioProtoPNet for frozen-representation prototypes plus training-example retrieval",
+    "highest_pig_topology_overlap": "PVMC for modular coarse-to-fine pig classification",
+    "direct_external_score_comparisons": 0,
+    "briefer_doi": "10.1038/s41598-022-07174-8"
+  },
+  "sow_call_audit": {
+    "raw_files": 1746,
+    "unique_md5": 1743,
+    "class_inventory": {
+      "calm": {"files": 280, "unique_md5": 280, "suffix": 0},
+      "feeding": {"files": 210, "unique_md5": 210, "suffix": 1},
+      "frightened": {"files": 750, "unique_md5": 749, "suffix": 2},
+      "anxious": {"files": 506, "unique_md5": 504, "suffix": 3}
+    },
+    "filename_label_recovery": true,
+    "index_rows": 1746,
+    "unknown_labels": 0,
+    "manifest_rows_all": 7310,
+    "manifest_unique_identities_all": 3812,
+    "manifest_rows_sow": 4880,
+    "manifest_unique_identities_sow": 1637,
+    "missing_manifest_paths": 0,
+    "blank_source_ids": 0,
+    "blank_md5": 0,
+    "sow_rehash_mismatches": 0,
+    "within_fold_path_source_md5_overlap": 0,
+    "pairwise_test_fold_overlap": 0,
+    "test_union_all": 840,
+    "test_union_sow": 630,
+    "published_3200_800_recoverable": false,
+    "true_source_group_cv5_possible": false,
+    "source_id_limit": "parent_folder::filename_stem singleton identity; no animal/session/parent-recording lineage",
+    "current_main_task_directly_comparable": false,
+    "six_subtype_hard_prediction_diagnostic_possible": true,
+    "six_subtype_probability_evaluation_possible_from_stored_files": false
+  },
+  "benchmark_plan": {
+    "protocol_a_status": "blocked_missing_full_4000_and_exact_split_membership",
+    "protocol_b_status": "blocked_missing_true_source_lineage",
+    "clip_cv_fallback_status": "possible_only_if_labeled_md5_disjoint_clip_cv_and_not_source_generalization",
+    "transformercnn_status": "not_reproducible_without_assumptions",
+    "candidate_baselines": [
+      "Log-Mel CRNN",
+      "2 s hierarchical CRNN without prototype",
+      "kNN on frozen embeddings",
+      "main centroid prototype",
+      "hierarchical centroid prototype",
+      "TransformerCNN description-based reimplementation"
     ]
   },
-  "canonical_debug_cohort": {
-    "fold": 0,
-    "seed": 3407,
-    "aux_weight": 0.5,
-    "qualification": "training_exact",
-    "query_split": "clean_test_only",
-    "checkpoint": "checkpoints/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407.pt",
-    "checkpoint_sha256": "d6ec8dcdd6b16a6b3212a732e1d235428ba4c7c1f5702b5b1330ca9a3c449347",
-    "summary": "reports/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407/summary.json",
-    "summary_sha256": "b0e92e1a86081559e46eabea4719322f259b83ca58834106256f247fcacde4ec",
-    "canonical_prior_prototype_root": "reports/prototype_cv5_exact_w05_fold0_seed3407",
-    "prototype_bundle_sha256": "e2ad7e29735dcd88ca1e197c6a8ebdb0b4b75106594feeea96ee36617b2d18ee",
-    "prototype_calibration_sha256": "d27e0ea53487e8162cb6e7f7c1e5e8489ca13f53dab79d150cdaa54e0ccd279e",
-    "prototype_test_pred_sha256": "e672c334dec2c187f318ab357d7c948e0d8a2df06550a207d61127ee05a0508c",
-    "manifest_counts": {
-      "train": 1174,
-      "validation": 120,
-      "test": 168
+  "cumulative_25_pair_analysis": {
+    "coverage_complete": true,
+    "folds": [0, 1, 2, 3, 4],
+    "seeds": [42, 123, 777, 2024, 3407],
+    "missing_pairs": [],
+    "imputation_used": false,
+    "b2_cross_source_max_abs_difference": 0.0,
+    "stage_summary": {
+      "B0": {"mean_macro_f1": 0.922606467, "sd": 0.014540638},
+      "B1": {"mean_macro_f1": 0.947237358, "sd": 0.016763541},
+      "B2": {"mean_macro_f1": 0.951049673, "sd": 0.012393314},
+      "B3": {"mean_macro_f1": 0.953986214, "sd": 0.012003773}
     },
-    "manifest_sha256": {
-      "train": "33337bf683c9a07b8bdf9dc5a0020e53e6883716924c6deafc06af85720b005b",
-      "validation": "ed86bb19512f4b36d3ed4630251e5e15b9fe38d8d2d42119eb90058e6689dd79",
-      "test": "4c2eedb0766725c84da2a41b9ec0793b874f9a3d10a80a0a79f4ada7342c5e68"
-    }
-  },
-  "existing_metrics_read_only": {
-    "new_metrics_created": false,
-    "raw_softmax_macro_f1": 0.9463601533,
-    "hierarchical_prototype_main_macro_f1": 0.9522727273,
-    "auxiliary_subtype_prototype_macro_f1": 0.8355042017
-  },
-  "fewshot_protocol": {
-    "eligible_subtypes": [
-      "dry_cough",
-      "abdominal_cough",
-      "frightened_stress",
-      "anxious_stress"
+    "comparisons": [
+      {"name": "B1-B0", "n": 25, "mean_delta": 0.024630891, "sd_delta": 0.028534613, "ci95": [0.014112838, 0.035642072], "wilcoxon_p": 0.000162303, "wins": 21, "ties": 0, "losses": 4, "fold_cluster_ci95": [0.006577865, 0.048280218]},
+      {"name": "B2-B1", "n": 25, "mean_delta": 0.003812315, "sd_delta": 0.012940365, "ci95": [-0.001320423, 0.008726684], "wilcoxon_p": 0.170241396, "wins": 16, "ties": 1, "losses": 8, "fold_cluster_ci95": [-0.003406537, 0.010560902]},
+      {"name": "B3-B2", "n": 25, "mean_delta": 0.002936541, "sd_delta": 0.010335613, "ci95": [-0.000477565, 0.007294065], "wilcoxon_p": 0.058252952, "wins": 13, "ties": 8, "losses": 4, "fold_cluster_ci95": [-0.000219515, 0.008263370]},
+      {"name": "B3-B1", "n": 25, "mean_delta": 0.006748856, "sd_delta": 0.011611119, "ci95": [0.002388569, 0.011270120], "wilcoxon_p": 0.013808562, "wins": 18, "ties": 0, "losses": 7, "fold_cluster_ci95": [0.001295329, 0.010596604]},
+      {"name": "B3-B0", "n": 25, "mean_delta": 0.031379747, "sd_delta": 0.023102131, "ci95": [0.022821112, 0.040301488], "wilcoxon_p": 2.980232e-7, "wins": 24, "ties": 0, "losses": 1, "fold_cluster_ci95": [0.017174469, 0.049575547]}
     ],
-    "ineligible_single_child_subtypes": [
-      "calm_grunt",
-      "feeding"
-    ],
-    "k": [1, 3, 5, 10],
-    "complete_repeat_count": 20,
-    "debug_subtype": "dry_cough",
-    "debug_repeat": 0,
-    "support_source": "train_only",
-    "query_source": "frozen_full_clean_test",
-    "test_selects_k_or_threshold": false,
-    "claim_boundary": "frozen-representation node insertion; not genuinely unseen-backbone learning"
-  },
-  "open_set_audit": {
-    "evaluation_started": false,
-    "rights_confirmation_required_first": true,
-    "candidate_sources": [
-      {
-        "source": "SoundWel Zenodo 8252482",
-        "license": "CC BY 4.0",
-        "role": "external-known/domain-shift pig audio"
-      },
-      {
-        "source": "aSwine",
-        "license": "CC BY-NC 4.0",
-        "role": "conditional farm-background candidate"
-      },
-      {
-        "source": "SmartEars poultry farm",
-        "license": "CC BY 4.0",
-        "role": "far-OOD farm-background candidate"
-      },
-      {
-        "source": "Poultry Vocalization Dataset",
-        "license": "CC BY 4.0",
-        "role": "far-OOD noise candidate"
-      },
-      {
-        "source": "FSD50K/Freesound",
-        "license": "per-file; accept CC0 or CC BY only",
-        "role": "curated far-OOD pool"
-      },
-      {
-        "source": "ESC-50 pig",
-        "license": "CC BY-NC",
-        "role": "external-known pig audio; not unknown"
-      },
-      {
-        "source": "local Kaggle-like scream/cough archive",
-        "license": "unresolved",
-        "role": "blocked"
-      }
-    ],
-    "local_exact_md5_overlap_fold0": {
-      "soundwel_raw_6887_files": 0,
-      "aswine_raw_154_files": 0,
-      "kaggle_scream_cough_400_files": 0,
-      "soundwel_reviewed_300_files": 0
-    },
-    "md5_limit": "Exact-file overlap only; segment, source-study and acoustic-fingerprint overlap remain unaudited."
+    "statistical_guard": "B2-B1 and B3-B2 are nonsignificant. B3-B1 is unadjusted and does not pass Bonferroni alpha=0.01 across five contrasts."
   },
   "verification": {
-    "plan_diff_check_passed": true,
-    "placeholder_scan_passed": true,
-    "required_node_fields_present": 18,
-    "required_query_fields_present": 15,
-    "implementation_tests_run": false,
-    "reason_no_tests": "No implementation code was created or changed in this planning-only round."
+    "required_artifacts_present": 7,
+    "prior_art_rows": 12,
+    "external_score_rows": 40,
+    "source_audit_rows": 12,
+    "direct_comparison_rows": 0,
+    "required_matrix_columns_passed": true,
+    "comparability_enum_passed": true,
+    "cumulative_validator_passed": true,
+    "frozen_validator_source_files_unchanged": 200,
+    "immutable_required_inputs_checked": 50,
+    "immutable_required_input_mismatches": 0,
+    "scoped_diff_check_passed": true,
+    "conda_activation_passed": false,
+    "conda_activation_error": "GBK UnicodeEncodeError caused by invalid replacement character in PATH",
+    "fallback_environment_python": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe"
   },
   "paper_usability": {
-    "planning_artifact_usable": true,
-    "new_atlas_evidence_created": false,
-    "paper_main_result_usable": false,
-    "noise_results_role": "supplementary_or_deployment_boundary_only"
+    "prior_art_guard_usable": true,
+    "fair_comparison_design_usable": true,
+    "new_benchmark_evidence_created": false,
+    "paper_claim_change_authorized": false,
+    "recommended_action": "manuscript_only_revision"
   },
   "blockers": [
-    "implementation branch requires confirmation",
-    "additional core and validation-only calibrator files require approval",
-    "unknown ontology and exact rights-approved source pool require approval",
-    "few-shot experiment is pseudo-new node insertion because the backbone saw all six subtypes",
-    "SoundWel official 6888 versus local 6887 file discrepancy",
-    "Kaggle-like archive license unresolved and blocked",
-    "non-local candidate overlap audits not yet run"
+    "full official 4000-item Sow corpus unavailable locally",
+    "exact published 3200/800 item assignment and split seed unavailable",
+    "animal/session/parent-recording lineage unavailable",
+    "TransformerCNN exact reproduction requires undocumented assumptions",
+    "stored auxiliary predictions lack probabilities/logits for masked four-way evaluation"
   ],
   "questions_for_gpt_pro": [
-    "Approve the ten-file implementation map including the pure core and validation-only calibrator?",
-    "Implement on paper/sci-draft-v1 or move to current-mctafd-ablation?",
-    "Approve the proposed far-OOD versus external-known ontology and source pool?",
-    "Accept few-shot claims only as frozen-representation node insertion?",
-    "Keep manuscript reframing deferred until Atlas evidence exists?"
+    "Should the team acquire the full official Sow corpus and exact split before any benchmark claim?",
+    "Is a transparently labeled MD5-disjoint clip-CV diagnostic worth running despite unavailable lineage?",
+    "Should a description-based TransformerCNN implementation be authorized with an explicit assumption ledger?",
+    "Which targeted-search additions should enter Related Work in a separately approved manuscript-revision stage?"
   ],
-  "recommended_next_step": "Stop. GPT Pro/user reviews this audit and plan; do not implement or run the fold0 debug until a new explicit approved stage."
+  "skills_used": [
+    "superpowers:using-superpowers",
+    "superpowers:writing-plans",
+    "superpowers:dispatching-parallel-agents",
+    "superpowers:verification-before-completion",
+    "academic-research-suite",
+    "nature-academic-search",
+    "firecrawl_cli_unavailable_browser_fallback",
+    "github:yeet_scope_and_explicit_staging_only"
+  ],
+  "recommended_next_step": "Stop. Review audit/design. Do not run a benchmark, implement TransformerCNN, export new inference, or edit the manuscript without a new explicit APPROVED stage."
 }

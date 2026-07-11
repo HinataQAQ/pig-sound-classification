@@ -861,3 +861,26 @@
 - Stop point: GPT Pro/user must review the branch, implementation file map,
   few-shot claim boundary, unknown ontology, and data rights before approving a
   separate implementation/debug stage.
+
+## 2026-07-11 - Prior-art overlap audit and fair-comparison design
+
+- Status: completed as research audit/design only.
+- Branch: `paper/prior-art-fair-benchmark`, created from `paper/sci-draft-v1` at `b52a0f63539d544f27c57e29760384c0782e7f61`.
+- Audit/design commit: `36f950f020ed769a4fe297d48e460a10829e08fa`.
+- Approval state: the user supplied `APPROVED: true` and prohibited training, manuscript conclusion changes, test tuning, and direct cross-task accuracy/Macro-F1 ranking.
+- Added the required prior-art matrix, score-comparability table, novelty guard, Sow Call feasibility/source audit, two-protocol fair-benchmark plan, and prototype prediction-value plan.
+- Verified all eight required works from publisher, official proceedings, or official preprint sources; Briefer DOI is `10.1038/s41598-022-07174-8`.
+- Exact-route verdict: no exact pig-specific match was located for fixed 2 s input + shared main/subtype supervision + post-hoc train-only hierarchical prototypes + ranked candidates + representative retrieval. This is explicitly search-bounded and not an absolute first claim.
+- Closest precedents: Wu/Liao for fixed 2 s pig context, PVMC for pig coarse-to-fine topology, HiSSNet for hierarchical supervision plus prototype inference, and AudioProtoPNet for frozen-representation prototypes plus training-example retrieval.
+- External score verdict: zero direct comparisons after dataset/labels/split/metric/sample-unit/acoustic-condition/class-balance checks. Numerically larger accuracy/AUC values remain contextual only.
+- Sow Call canonical inventory: 1,746 files and 1,743 unique MD5; calm `280/280`, feeding `210/210`, frightened `750/749`, anxious `506/504` for file/unique-MD5 counts. Filename suffix labels are fully recoverable; the duplicate `wu_pig_speech` root is not independent.
+- Manifest audit: 7,310 rows and 3,812 unique identities across all 15 cap3x manifests; Sow subset 4,880/1,637. Missing paths, blank IDs/hashes, invalid hashes, rehash mismatches, within-fold split overlaps, and pairwise test-fold overlaps are all zero.
+- Leakage boundary: current `source_id` is a singleton filename identity without animal/session/parent-recording lineage. Exact duplicate leakage is preventable, but true source-grouped CV and claims of source independence are blocked.
+- Exact published 3,200/800 recovery is unavailable because the local corpus is not the reported 4,000 items and no official membership/seed is present. Protocol A and true grouped Protocol B are therefore blocked.
+- TransformerCNN status: `not_reproducible_without_assumptions`; no official code/exact split and incomplete optimizer/checkpoint/preprocessing contract were located.
+- Exact B0-B3 25-pair coverage passed with no imputation. Means are B0 `0.922606467`, B1 `0.947237358`, B2 `0.951049673`, B3 `0.953986214`. B2−B1 (`p=0.170241`) and B3−B2 (`p=0.058253`) remain nonsignificant.
+- Fresh validator reproduced all five planned contrasts and reported 200 frozen source files unchanged. A separate pre/post audit checked 50 required manuscript/result/script/manifest inputs with zero missing and zero SHA-256 mismatches.
+- Conda activation failed from a GBK/invalid-PATH-character error; validation used the exact `pigsound-gpu` environment Python executable. No dependency was installed.
+- No training, inference, feature extraction, calibration, benchmark, test-set tuning, manuscript edit, established result edit, manifest edit, checkpoint edit, or audio edit occurred.
+- Paper usability: the prior-art guard and fair-comparison design are usable; no new benchmark result is paper evidence. Recommendation is `manuscript_only_revision` until full corpus/split/lineage metadata are recovered.
+- Stop point: review the audit/design. Do not run the benchmark, implement TransformerCNN, export new predictions, or revise the manuscript without a new explicit `APPROVED: true` stage.
