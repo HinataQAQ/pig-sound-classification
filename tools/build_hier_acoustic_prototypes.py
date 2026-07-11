@@ -8,6 +8,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from nomenclature import (
+    build_model_metadata,
+    canonicalize_selection_protocol,
+    reconcile_selection_protocol,
+    validate_recorded_artifact_identity,
+)
 from prototype_model_adapter import (
     DEFAULT_AUX_LABELS,
     DEFAULT_MAIN_LABELS,
@@ -30,6 +36,7 @@ from prototype_model_adapter import (
     prototype_probabilities_from_bundle,
     prototype_sample_frame,
     require_file,
+    read_json,
     result_qualification_fields,
     save_prototype_bundle,
     training_exact_feature_config,
@@ -46,6 +53,16 @@ def resolve_device(device: str) -> str:
     import torch
 
     return "cuda" if torch.cuda.is_available() else "cpu"
+
+
+def selection_protocol_for_summary(
+    summary: dict[str, object], *, requested: str | None
+) -> str:
+    """Inherit explicit source provenance without inferring it from lambda."""
+
+    return reconcile_selection_protocol(
+        summary.get("selection_protocol"), requested=requested
+    )
 
 
 def parse_label_csv(text: str, *, name: str) -> list[str]:
@@ -92,6 +109,18 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--feature_backend", choices=["training_exact", "librosa", "numpy_logmel"], default="training_exact")
     ap.add_argument("--prototype_temperature", type=float, default=1.0)
     ap.add_argument("--hier_aux_prob_weight", type=float, default=0.5)
+    ap.add_argument(
+        "--selection_protocol",
+        type=lambda value: canonicalize_selection_protocol(
+            value, warn_on_legacy=True
+        ),
+        default=None,
+        help=(
+            "Canonical selection protocol for new metadata. Omitted inherits "
+            "the training summary, falling back to none only when absent; it "
+            "is never inferred from the lambda value."
+        ),
+    )
     ap.add_argument("--allow_overwrite", action="store_true")
     return ap.parse_args()
 
@@ -104,6 +133,25 @@ def main() -> None:
     test_manifest = require_file(args.test_manifest, "test manifest")
     ckpt = require_file(args.ckpt, "hierarchical checkpoint")
     summary_json = require_file(args.summary_json, "training summary JSON")
+    summary_payload = read_json(summary_json)
+    config = load_config(summary_path=summary_json)
+    try:
+        validate_recorded_artifact_identity(
+            summary_payload,
+            expected_model_family="hierarchical_supervision_crnn",
+            expected_training_stage=(
+                "b2_validation_selected_hierarchical_crnn"
+            ),
+            expected_context_seconds=float(config.dur_s),
+            context="training summary",
+        )
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid training summary nomenclature metadata: {exc}"
+        ) from exc
+    selection_protocol = selection_protocol_for_summary(
+        summary_payload, requested=args.selection_protocol
+    )
     out_root = Path(args.out_dir)
     artifacts_dir = prepare_stage_dir(out_root, "artifacts", args.allow_overwrite)
 
@@ -129,7 +177,6 @@ def main() -> None:
         },
     )
 
-    config = load_config(summary_path=summary_json)
     expected_main = parse_label_csv(args.expected_main_labels, name="expected_main_labels")
     expected_aux = parse_label_csv(args.expected_aux_labels, name="expected_aux_labels")
     validate_expected_config(
@@ -229,10 +276,17 @@ def main() -> None:
         leakage_audit_ok=bool(leakage.get("ok", False)),
     )
     created_at = datetime.now(timezone.utc).isoformat()
+    model_metadata = build_model_metadata(
+        model_family="hierarchical_supervision_crnn",
+        training_stage="b2_validation_selected_hierarchical_crnn",
+        context_seconds=float(config.dur_s),
+        selection_protocol=selection_protocol,
+    )
     metadata = {
         "artifact_type": "hier_acoustic_prototype_bundle",
         "prototype_created_at_utc": created_at,
         "created_at_utc": created_at,
+        **model_metadata,
         "fold": fold,
         "seed": seed,
         "inferred_fold_seed": inferred,
@@ -379,6 +433,7 @@ def main() -> None:
     run_manifest = {
         "artifact_type": "prototype_phase_run_manifest",
         "created_at_utc": created_at,
+        **model_metadata,
         "phase": "fold0_seed3407_debug" if (fold == 0 and seed == 3407) else "fold_seed_debug",
         "fold": fold,
         "seed": seed,

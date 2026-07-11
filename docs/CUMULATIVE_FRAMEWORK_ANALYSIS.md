@@ -1,14 +1,27 @@
-# Duration-Aware Hierarchical Prototype Inference Framework
+# Fixed-λ=0.5 Retrospective Cumulative Framework Analysis
 
 This analysis combines the four locked clean-audio stages without retraining or
-rerunning inference:
+rerunning inference. It is a retrospective fixed-λ analysis, not the
+validation-selected primary model definition:
 
-- B0: 1 s Log-Mel CRNN.
-- B1: 2 s Log-Mel CRNN.
-- B2: B1 plus hierarchical auxiliary supervision at lambda=0.5, evaluated with
-  its raw Softmax main output.
-- B3: the matched B2 backbone evaluated with post-hoc hierarchical acoustic
-  prototype prediction.
+- B0: `b0_1s_logmel_baseline`, evaluated through the Primary Softmax route
+  (Raw Softmax); `selection_protocol=none`.
+- B1: `b1_2s_logmel_mainline`, evaluated through the Primary Softmax route
+  (Raw Softmax); `selection_protocol=none`.
+- B2: `b2_validation_selected_hierarchical_crnn` as the canonical training-stage
+  ID, but this table uses the locked λ=0.5 cohort and the Primary Softmax route;
+  `selection_protocol=fixed_lambda_0_5_retrospective`.
+- B3: `b3_hierarchical_prototype_top1_ablation`, the hierarchical-prototype
+  Top-1 decision ablation on the same fixed-λ=0.5 cohort;
+  `selection_protocol=fixed_lambda_0_5_retrospective` and
+  `inference_route=hierarchical_prototype_candidate`.
+
+Architecture and inference route are separate concepts. B2 and B3 share the
+2-s hierarchical-supervision CRNN model family. The Primary Softmax route is
+the primary classifier; main-class and hierarchical prototype routes are
+parallel candidates, while B3 reports the hierarchical-prototype Top-1
+decision ablation. This fixed-λ=0.5 cohort must never be relabelled as
+`foldwise_validation_selected_lambda`.
 
 ## Reproduce
 
@@ -36,6 +49,38 @@ Checkpoint bytes are deliberately not read in this analysis; the validator
 checks the expected checkpoint path and internal agreement of its declared
 digest, while the linked B2 summary itself is byte-hash verified.
 
+## Nomenclature compatibility
+
+The generator reads historical route names through `tools/nomenclature.py`.
+Legacy `raw_softmax` and `hierarchical` values remain accepted, as do their
+canonical forms `primary_softmax` and
+`hierarchical_prototype_candidate`. Unknown route names fail with a clear
+validation error. Existing source files, filenames, stage keys (`B0`-`B3`),
+probability prefixes, and other historical schema columns are not renamed or
+rewritten.
+
+New stage-summary and case-study rows append the versioned canonical metadata
+fields defined by `pig_sound_nomenclature.v1`:
+
+```json
+{
+  "nomenclature_schema_version": "pig_sound_nomenclature.v1",
+  "model_family": "hierarchical_supervision_crnn",
+  "training_stage": "b3_hierarchical_prototype_top1_ablation",
+  "context_seconds": 2.0,
+  "selection_protocol": "fixed_lambda_0_5_retrospective",
+  "inference_route": "hierarchical_prototype_candidate",
+  "canonical_method_id": "b3_hierarchical_prototype_top1_ablation::fixed_lambda_0_5_retrospective::hierarchical_prototype_candidate",
+  "display_name_en": "Hierarchical prototype candidate route",
+  "display_name_zh": "层级原型候选路由",
+  "legacy_method_id": "hierarchical"
+}
+```
+
+Paired and fold-level comparison tables append canonical metadata for their
+`final_stage` plus prefixed baseline identity fields. Their existing
+`comparison`, `baseline_stage`, and `final_stage` machine columns are retained.
+
 ## Direct paired results
 
 All differences are computed directly from the 25 matched fold-seed rows. The
@@ -60,21 +105,26 @@ is only five and should be described as a sensitivity analysis.
 
 ## Tables
 
-- `paper/tables/cumulative_framework_runs.csv`: one row per matched fold-seed
+- `paper/tables/cumulative_framework_runs_nomenclature_v1.csv`: one row per matched fold-seed
   run, B0-B3 Macro-F1 values, lambda, and exact source paths.
-- `paper/tables/cumulative_framework_summary.csv`: n, mean, sample SD, minimum,
-  and maximum Macro-F1 for each stage.
-- `paper/tables/cumulative_framework_paired_stats.csv`: all five direct
+- `paper/tables/cumulative_framework_summary_nomenclature_v1.csv`: n, mean, sample SD, minimum,
+  and maximum Macro-F1 plus canonical method metadata for each stage.
+- `paper/tables/cumulative_framework_paired_stats_nomenclature_v1.csv`: all five direct
   contrasts, both stage means, delta statistics, run-level bootstrap CI,
-  Wilcoxon P, wins/ties/losses, all five fold means, and fold-cluster CI.
-- `paper/tables/cumulative_framework_fold_stats.csv`: one row for every
-  comparison-fold pair, with five-seed stage means and paired deltas.
-- `paper/tables/prototype_prediction_case_studies.csv`: seven deterministic
-  prediction cases and their complete trace fields.
+  Wilcoxon P, wins/ties/losses, all five fold means, fold-cluster CI, and
+  canonical final/baseline identities.
+- `paper/tables/cumulative_framework_fold_stats_nomenclature_v1.csv`: one row for every
+  comparison-fold pair, with five-seed stage means, paired deltas, and
+  canonical final/baseline identities.
+- `paper/tables/prototype_prediction_case_studies_nomenclature_v1.csv`: seven deterministic
+  prediction cases, complete trace fields, and B3 canonical metadata.
 
-Byte-identical paper-ready mirrors are archived under `paper_results/tables/`,
-and the generator is mirrored at
-`paper_results/scripts/generate_cumulative_framework_analysis.py`.
+Byte-identical paper-ready mirrors use the same `_nomenclature_v1` suffix under
+`paper_results/tables/`, and the generator is mirrored at
+`paper_results/scripts/generate_cumulative_framework_analysis_nomenclature_v1.py`.
+The pre-existing unsuffixed tables, figures, and script are historical artifacts
+and remain read-only. Generation refuses to overwrite any versioned target that
+already exists.
 
 All reported performance values are Macro-F1, not accuracy.
 
@@ -84,9 +134,10 @@ Cases come only from the lexicographically first validated model artifact,
 fold 0 seed 42. No cases or prototype artifacts are mixed across folds or
 seeds.
 
-- Four correct-class cases require raw Softmax, main prototype, and
-  hierarchical prototype all to be correct. The lower median raw-confidence
-  row is selected per class.
+- Four correct-class cases require the Primary Softmax route, main-class
+  prototype candidate route, and hierarchical prototype candidate route all
+  to be correct. The lower median Primary Softmax confidence row is selected
+  per class.
 - One true-feeding and one true-stress boundary error require feeding and
   stress-vocal as the relevant Top-2 pair and at least one incorrect main
   prediction route. The lower median raw Top-2 margin is selected in each
@@ -100,7 +151,8 @@ hierarchical main Top-2, prototype-subtype Top-2, all main and subtype cosine
 distances, hierarchical Top-1-minus-Top-2 probability margin, final hierarchy
 consistency, and path/source-ID/MD5 trace fields.
 
-The case-table Raw Softmax columns come from the same B3 evaluation
+The case-table legacy `raw_softmax_*` columns represent the Primary Softmax
+route and come from the same B3 evaluation
 `test_predictions.csv` as the prototype columns, so the four prediction routes
 remain exactly sample-aligned. Those values are a same-checkpoint B2 forward
 reproduction, not a copy of the original B2 `test_pred.csv`. The existing
@@ -125,8 +177,8 @@ existing-data-only constraint.
 
 ## Figures
 
-- `paper/figures_journal/figure_cumulative_framework.{svg,pdf,png}`
-- `paper/figures_journal/figure_prototype_prediction_cases.{svg,pdf,png}`
+- `paper/figures_journal/figure_cumulative_framework_nomenclature_v1.{svg,pdf,png}`
+- `paper/figures_journal/figure_prototype_prediction_cases_nomenclature_v1.{svg,pdf,png}`
 
 Both figures are 183 mm wide. SVG text remains editable, PDF uses TrueType
 font embedding, and PNG is exported at 300 dpi. In the case figure, `[C]` and

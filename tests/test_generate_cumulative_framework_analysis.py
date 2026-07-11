@@ -35,6 +35,137 @@ LOCAL_ARTIFACTS_AVAILABLE = all(
 
 
 class CumulativeFrameworkPureTests(unittest.TestCase):
+    def test_stage_reader_reconciles_canonical_family_and_context(self) -> None:
+        payload = {
+            "model_family": "hierarchical_supervision_crnn",
+            "feature_mode": "logmel",
+            "use_se": True,
+            "seed": 42,
+            "dur_s": 2.0,
+            "context_seconds": 2.0,
+            "hier_aux": True,
+            "hier_aux_weight": 0.5,
+            "rnn_type": "gru",
+            "pooling_type": "mean",
+            "test_macro_f1": 0.95,
+        }
+
+        self.assertAlmostEqual(
+            cumulative._validate_stage_summary(
+                payload,
+                path=Path("canonical-summary.json"),
+                stage="B2",
+                seed=42,
+            ),
+            0.95,
+        )
+
+        conflicting = {**payload, "context_seconds": 1.0}
+        with self.assertRaisesRegex(ValueError, "context_seconds=2.0"):
+            cumulative._validate_stage_summary(
+                conflicting,
+                path=Path("conflicting-summary.json"),
+                stage="B2",
+                seed=42,
+            )
+
+    def test_stage_metadata_keeps_fixed_lambda_retrospective_distinct(self) -> None:
+        b0 = cumulative.canonical_metadata_for_stage("B0")
+        b1 = cumulative.canonical_metadata_for_stage("b1_2s_logmel_mainline")
+        b2 = cumulative.canonical_metadata_for_stage("B2")
+        b3 = cumulative.canonical_metadata_for_stage("B3")
+
+        self.assertEqual(b0["selection_protocol"], "none")
+        self.assertEqual(b1["selection_protocol"], "none")
+        self.assertEqual(
+            b2["selection_protocol"], "fixed_lambda_0_5_retrospective"
+        )
+        self.assertEqual(
+            b3["selection_protocol"], "fixed_lambda_0_5_retrospective"
+        )
+        self.assertEqual(b2["inference_route"], "primary_softmax")
+        self.assertEqual(
+            b3["inference_route"], "hierarchical_prototype_candidate"
+        )
+        self.assertNotEqual(
+            b2["selection_protocol"], "foldwise_validation_selected_lambda"
+        )
+
+    def test_stage_metadata_rejects_unknown_stage_names_clearly(self) -> None:
+        with self.assertRaisesRegex(ValueError, "Unknown cumulative framework stage"):
+            cumulative.canonical_metadata_for_stage("B9")
+
+    def test_fixed_cohort_rejects_validation_selected_source_metadata(self) -> None:
+        self.assertEqual(
+            cumulative._validate_fixed_selection_protocol(
+                (
+                    ("bundle", {"selection_protocol": "none"}),
+                    (
+                        "metrics",
+                        {"selection_protocol": "fixed_lambda_0.5"},
+                    ),
+                )
+            ),
+            "fixed_lambda_0_5_retrospective",
+        )
+        with self.assertRaisesRegex(ValueError, "Conflicting selection_protocol"):
+            cumulative._validate_fixed_selection_protocol(
+                (
+                    (
+                        "metrics",
+                        {
+                            "selection_protocol": (
+                                "foldwise_validation_selected_lambda"
+                            )
+                        },
+                    ),
+                )
+            )
+
+    def test_stage_summary_appends_metadata_without_renaming_legacy_columns(self) -> None:
+        runs = pd.DataFrame(
+            [
+                {"fold": 0, "seed": 42, "B0": 0.8, "B1": 0.9, "B2": 0.91, "B3": 0.92},
+                {"fold": 0, "seed": 123, "B0": 0.81, "B1": 0.9, "B2": 0.92, "B3": 0.93},
+            ]
+        )
+        summary = cumulative.compute_stage_summary(runs)
+
+        self.assertEqual(
+            summary.columns[:7].tolist(),
+            [
+                "stage",
+                "stage_name",
+                "n",
+                "mean_macro_f1",
+                "std_macro_f1",
+                "min_macro_f1",
+                "max_macro_f1",
+            ],
+        )
+        self.assertTrue(set(cumulative.METHOD_METADATA_FIELDS).issubset(summary.columns))
+        protocols = summary.set_index("stage")["selection_protocol"].to_dict()
+        self.assertEqual(
+            protocols,
+            {
+                "B0": "none",
+                "B1": "none",
+                "B2": "fixed_lambda_0_5_retrospective",
+                "B3": "fixed_lambda_0_5_retrospective",
+            },
+        )
+        for row in summary.itertuples(index=False):
+            if row.stage == "B2":
+                self.assertNotIn("Validation-selected", row.stage_name)
+                self.assertIn("2-s hierarchical-supervision CRNN", row.stage_name)
+            else:
+                self.assertEqual(
+                    row.stage_name,
+                    cumulative.display_label(
+                        "training_stage", row.training_stage, language="en"
+                    ),
+                )
+
     def test_direct_statistics_use_the_same_synthetic_fold_seed_rows(self) -> None:
         rows = []
         for fold, seed in cumulative.EXPECTED_KEYS:
@@ -56,6 +187,17 @@ class CumulativeFrameworkPureTests(unittest.TestCase):
         self.assertEqual(int(direct["n"]), 25)
         self.assertAlmostEqual(float(direct["mean_delta"]), float(expected.mean()))
         self.assertEqual(folds[folds["comparison"] == "B3 - B0"].shape[0], 5)
+        self.assertTrue(set(cumulative.METHOD_METADATA_FIELDS).issubset(paired.columns))
+        self.assertTrue(set(cumulative.METHOD_METADATA_FIELDS).issubset(folds.columns))
+        self.assertEqual(
+            direct["selection_protocol"], "fixed_lambda_0_5_retrospective"
+        )
+        b1_b0 = paired.set_index("comparison").loc["B1 - B0"]
+        self.assertEqual(b1_b0["selection_protocol"], "none")
+        self.assertEqual(
+            direct["baseline_canonical_method_id"],
+            cumulative.canonical_metadata_for_stage("B0")["canonical_method_id"],
+        )
 
     def test_lower_median_rank_is_deterministic(self) -> None:
         frame = pd.DataFrame(
@@ -249,6 +391,50 @@ class CumulativeFrameworkPureTests(unittest.TestCase):
                 payload, path=Path("metrics.json"), fold=0, seed=42
             )
 
+    def test_prototype_metrics_accept_canonical_route_names_and_reject_unknowns(self) -> None:
+        payload = {
+            "artifact_type": "hier_acoustic_prototype_test_evaluation",
+            "fold": 0,
+            "seed": 42,
+            "labels": list(cumulative.MAIN_LABELS),
+            "aux_labels": list(cumulative.AUX_LABELS),
+            "input_role": "frozen_test",
+            "selection_method": "hierarchical_prototype_candidate",
+            "feature_backend": "training_exact",
+            "feature_pipeline_equivalent": True,
+            "run_scope": "fold_seed",
+            "eligible_for_cv_aggregation": True,
+            "leakage_audit_ok": True,
+            "manifest_sha_verified": True,
+            "test_used_for_parameter_selection": False,
+            "method_best_params": {
+                "hierarchical_prototype_candidate": {"hier_aux_prob_weight": 0.5}
+            },
+            "methods": {
+                "primary_softmax": {"macro_f1": 0.9},
+                "hierarchical_prototype_candidate": {"macro_f1": 0.91},
+            },
+        }
+        self.assertEqual(
+            cumulative._validate_prototype_metrics(
+                payload, path=Path("metrics.json"), fold=0, seed=42
+            ),
+            (0.9, 0.91),
+        )
+
+        payload["selection_method"] = "mystery_route"
+        with self.assertRaisesRegex(ValueError, "Unknown inference_route ID"):
+            cumulative._validate_prototype_metrics(
+                payload, path=Path("metrics.json"), fold=0, seed=42
+            )
+
+        payload["selection_method"] = "hierarchical_prototype_candidate"
+        payload["methods"]["mystery_route"] = {"macro_f1": 0.1}
+        with self.assertRaisesRegex(ValueError, "Unknown inference method"):
+            cumulative._validate_prototype_metrics(
+                payload, path=Path("metrics.json"), fold=0, seed=42
+            )
+
     def test_manifest_membership_rejects_validation_identity_leakage(self) -> None:
         train = pd.DataFrame(
             [
@@ -374,6 +560,11 @@ class LocalCumulativeFrameworkIntegrationTests(unittest.TestCase):
             }.issubset(self.summary.columns)
         )
         self.assertNotIn("accuracy", " ".join(self.summary.columns).lower())
+        protocols = self.summary.set_index("stage")["selection_protocol"].to_dict()
+        self.assertEqual(protocols["B0"], "none")
+        self.assertEqual(protocols["B1"], "none")
+        self.assertEqual(protocols["B2"], "fixed_lambda_0_5_retrospective")
+        self.assertEqual(protocols["B3"], "fixed_lambda_0_5_retrospective")
 
     def test_all_five_direct_paired_comparisons_are_reported(self) -> None:
         expected = ["B1 - B0", "B2 - B1", "B3 - B2", "B3 - B1", "B3 - B0"]
@@ -485,6 +676,17 @@ class LocalCumulativeFrameworkIntegrationTests(unittest.TestCase):
         self.assertTrue(required.issubset(self.cases.columns))
         self.assertEqual(set(self.cases["representative_split"]), {"train_only"})
         self.assertTrue(self.cases[list(required)].notna().all().all())
+        self.assertTrue(
+            set(cumulative.METHOD_METADATA_FIELDS).issubset(self.cases.columns)
+        )
+        self.assertEqual(
+            set(self.cases["selection_protocol"]),
+            {"fixed_lambda_0_5_retrospective"},
+        )
+        self.assertEqual(
+            set(self.cases["inference_route"]),
+            {"hierarchical_prototype_candidate"},
+        )
 
     def test_figure_builders_return_fixed_width_matplotlib_figures(self) -> None:
         first = cumulative.build_cumulative_figure(self.runs, self.summary, self.paired, self.folds)
@@ -508,8 +710,21 @@ class LocalCumulativeFrameworkIntegrationTests(unittest.TestCase):
             first.canvas.draw()
             self.assertIsNone(paired_axis.get_legend())
             architecture_text = {text.get_text() for text in architecture_axis.texts}
-            self.assertIn("Hierarchical\nembedding", architecture_text)
-            self.assertIn("Prototype\nprediction", architecture_text)
+            self.assertIn("Hierarchical-supervision\nCRNN", architecture_text)
+            self.assertIn("Parallel candidate\nroutes", architecture_text)
+            self.assertTrue(
+                any("Primary Softmax route (Raw Softmax)" in text for text in architecture_text)
+            )
+            route_legend = "\n".join(text.get_text() for text in second.texts)
+            self.assertIn("Primary Softmax route (Raw Softmax)", route_legend)
+            self.assertIn("Main-class prototype candidate route", route_legend)
+            self.assertIn("Hierarchical prototype candidate route", route_legend)
+            self.assertTrue(
+                all(
+                    label.get_text().endswith((" P", " M", " H"))
+                    for label in second.axes[0].get_yticklabels()
+                )
+            )
             self.assertTrue(all("\n" not in label.get_text() for label in trace_axis.get_yticklabels()))
             self.assertTrue(
                 all(label.get_text().endswith(("[C]", "[I]")) for label in trace_axis.get_yticklabels())
@@ -526,6 +741,19 @@ class LocalCumulativeFrameworkIntegrationTests(unittest.TestCase):
                     )
                     self.assertGreaterEqual(bounds.x0, 0.0)
                     self.assertLessEqual(bounds.x1, 1.0)
+            first.canvas.draw()
+            renderer = first.canvas.get_renderer()
+            canvas = first.bbox
+            b3_footers = [
+                text
+                for text in architecture_axis.texts
+                if "hierarchical-prototype Top-1 decision ablation"
+                in " ".join(text.get_text().split())
+            ]
+            self.assertEqual(len(b3_footers), 1)
+            footer_bounds = b3_footers[0].get_window_extent(renderer)
+            self.assertGreaterEqual(footer_bounds.x0, canvas.x0 - 1.0)
+            self.assertLessEqual(footer_bounds.x1, canvas.x1 + 1.0)
         finally:
             plt.close(first)
             plt.close(second)
@@ -533,17 +761,17 @@ class LocalCumulativeFrameworkIntegrationTests(unittest.TestCase):
     def test_required_outputs_are_limited_to_requested_new_paths(self) -> None:
         outputs = {path.relative_to(ROOT).as_posix() for path in cumulative.required_output_paths(ROOT)}
         expected = {
-            "paper/tables/cumulative_framework_runs.csv",
-            "paper/tables/cumulative_framework_summary.csv",
-            "paper/tables/cumulative_framework_paired_stats.csv",
-            "paper/tables/cumulative_framework_fold_stats.csv",
-            "paper/tables/prototype_prediction_case_studies.csv",
-            "paper/figures_journal/figure_cumulative_framework.svg",
-            "paper/figures_journal/figure_cumulative_framework.pdf",
-            "paper/figures_journal/figure_cumulative_framework.png",
-            "paper/figures_journal/figure_prototype_prediction_cases.svg",
-            "paper/figures_journal/figure_prototype_prediction_cases.pdf",
-            "paper/figures_journal/figure_prototype_prediction_cases.png",
+            "paper/tables/cumulative_framework_runs_nomenclature_v1.csv",
+            "paper/tables/cumulative_framework_summary_nomenclature_v1.csv",
+            "paper/tables/cumulative_framework_paired_stats_nomenclature_v1.csv",
+            "paper/tables/cumulative_framework_fold_stats_nomenclature_v1.csv",
+            "paper/tables/prototype_prediction_case_studies_nomenclature_v1.csv",
+            "paper/figures_journal/figure_cumulative_framework_nomenclature_v1.svg",
+            "paper/figures_journal/figure_cumulative_framework_nomenclature_v1.pdf",
+            "paper/figures_journal/figure_cumulative_framework_nomenclature_v1.png",
+            "paper/figures_journal/figure_prototype_prediction_cases_nomenclature_v1.svg",
+            "paper/figures_journal/figure_prototype_prediction_cases_nomenclature_v1.pdf",
+            "paper/figures_journal/figure_prototype_prediction_cases_nomenclature_v1.png",
         }
         self.assertEqual(outputs, expected)
 
@@ -552,22 +780,43 @@ class LocalCumulativeFrameworkIntegrationTests(unittest.TestCase):
         self.assertEqual(
             outputs,
             {
-                "paper_results/scripts/generate_cumulative_framework_analysis.py",
-                "paper_results/tables/cumulative_framework_runs.csv",
-                "paper_results/tables/cumulative_framework_summary.csv",
-                "paper_results/tables/cumulative_framework_paired_stats.csv",
-                "paper_results/tables/cumulative_framework_fold_stats.csv",
-                "paper_results/tables/prototype_prediction_case_studies.csv",
+                "paper_results/scripts/generate_cumulative_framework_analysis_nomenclature_v1.py",
+                "paper_results/tables/cumulative_framework_runs_nomenclature_v1.csv",
+                "paper_results/tables/cumulative_framework_summary_nomenclature_v1.csv",
+                "paper_results/tables/cumulative_framework_paired_stats_nomenclature_v1.csv",
+                "paper_results/tables/cumulative_framework_fold_stats_nomenclature_v1.csv",
+                "paper_results/tables/prototype_prediction_case_studies_nomenclature_v1.csv",
             },
         )
 
+    def test_versioned_outputs_refuse_overwrite(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = cumulative.required_output_paths(root)[0]
+            target.parent.mkdir(parents=True)
+            target.write_text("historical", encoding="utf-8")
+            with self.assertRaisesRegex(FileExistsError, "Refusing to overwrite"):
+                cumulative.refuse_existing(
+                    (*cumulative.required_output_paths(root), *cumulative.archive_output_paths(root))
+                )
+
     def test_exported_svgs_keep_editable_text_without_embedded_rasters(self) -> None:
-        for stem in ("figure_cumulative_framework", "figure_prototype_prediction_cases"):
-            text = (ROOT / "paper" / "figures_journal" / f"{stem}.svg").read_text(
-                encoding="utf-8"
+        with tempfile.TemporaryDirectory() as tmp:
+            figures = (
+                cumulative.build_cumulative_figure(
+                    self.runs, self.summary, self.paired, self.folds
+                ),
+                cumulative.build_case_figure(self.cases),
             )
-            self.assertIn("<text", text)
-            self.assertNotIn("<image", text)
+            for figure, relative_stem in zip(
+                figures, cumulative.FIGURE_STEMS, strict=True
+            ):
+                exported = cumulative._export_figure(
+                    figure, Path(tmp) / Path(relative_stem).name
+                )
+                text = exported[0].read_text(encoding="utf-8")
+                self.assertIn("<text", text)
+                self.assertNotIn("<image", text)
 
 
 if __name__ == "__main__":

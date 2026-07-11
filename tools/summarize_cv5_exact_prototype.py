@@ -9,6 +9,21 @@ import numpy as np
 import pandas as pd
 from scipy.stats import wilcoxon
 
+from nomenclature import (
+    METHOD_METADATA_FIELDS,
+    MODEL_METADATA_FIELDS,
+    NOMENCLATURE_SCHEMA_VERSION,
+    build_method_metadata,
+    build_model_metadata,
+    canonicalize_inference_route,
+    canonicalize_model_family,
+    canonicalize_selection_protocol,
+    display_label,
+    reconcile_selection_protocol,
+    resolve_inference_method,
+    validate_method_metadata,
+    validate_model_metadata,
+)
 from prototype_model_adapter import read_json, require_file, write_json
 
 REQUIRED_FOLDS = (0, 1, 2, 3, 4)
@@ -358,9 +373,203 @@ def _resolve_confusion_path(metrics_path: Path, metrics: Mapping[str, Any]) -> s
     return str(output_path) if output_path else str(default_path)
 
 
+def _populated(record: Mapping[str, Any], field: str) -> bool:
+    value = record.get(field)
+    return value is not None and bool(str(value).strip())
+
+
+def _context_from_record(record: Mapping[str, Any]) -> float | None:
+    values: dict[str, float] = {}
+    for field in ("dur_s", "context_seconds"):
+        if not _populated(record, field):
+            continue
+        value = record[field]
+        if isinstance(value, bool):
+            raise ValueError(f"{field} must be a positive finite number")
+        try:
+            context = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"{field} must be a positive finite number, got {value!r}"
+            ) from exc
+        if not np.isfinite(context) or context <= 0:
+            raise ValueError(
+                f"{field} must be a positive finite number, got {value!r}"
+            )
+        values[field] = context
+    if len(values) == 2 and not np.isclose(
+        values["dur_s"], values["context_seconds"], rtol=0.0, atol=1e-12
+    ):
+        raise ValueError(
+            "Conflicting dur_s/context_seconds provenance: "
+            f"dur_s={values['dur_s']}, "
+            f"context_seconds={values['context_seconds']}."
+        )
+    if not values:
+        return None
+    return next(iter(values.values()))
+
+
+def _source_nomenclature(record: Mapping[str, Any]) -> dict[str, object]:
+    """Validate explicit metadata or preserve populated legacy provenance."""
+
+    context = _context_from_record(record)
+    if _populated(record, "nomenclature_schema_version"):
+        route_fields = set(METHOD_METADATA_FIELDS) - set(MODEL_METADATA_FIELDS)
+        present_route_fields = route_fields & set(record)
+        if set(METHOD_METADATA_FIELDS).issubset(record):
+            metadata = validate_method_metadata(record)
+        elif not present_route_fields and set(MODEL_METADATA_FIELDS).issubset(
+            record
+        ):
+            metadata = validate_model_metadata(record)
+        else:
+            missing = sorted(set(METHOD_METADATA_FIELDS) - set(record))
+            raise ValueError(
+                "Incomplete nomenclature schema-v1 metadata: "
+                f"missing {missing}"
+            )
+        if context is not None and not np.isclose(
+            context,
+            float(metadata["context_seconds"]),
+            rtol=0.0,
+            atol=1e-12,
+        ):
+            raise ValueError(
+                "Conflicting dur_s/context_seconds provenance: "
+                f"dur_s={record.get('dur_s')!r}, "
+                f"context_seconds={metadata['context_seconds']!r}."
+            )
+        return metadata
+
+    metadata: dict[str, object] = {}
+    if _populated(record, "model_family"):
+        metadata["model_family"] = canonicalize_model_family(
+            str(record["model_family"])
+        )
+    if context is not None:
+        metadata["context_seconds"] = context
+    if _populated(record, "selection_protocol"):
+        metadata["selection_protocol"] = canonicalize_selection_protocol(
+            str(record["selection_protocol"])
+        )
+    return metadata
+
+
+def _method_identity(storage_id: str, route: str | None) -> str:
+    return route if route is not None else f"legacy:{storage_id}"
+
+
+def _normalise_method_block(
+    raw_key: str,
+    block: Mapping[str, Any],
+    *,
+    storage_id: str,
+    route: str | None,
+    source: Mapping[str, object],
+) -> dict[str, Any]:
+    normalised = dict(block)
+    if _populated(block, "nomenclature_schema_version"):
+        route_fields = set(METHOD_METADATA_FIELDS) - set(MODEL_METADATA_FIELDS)
+        populated_route_fields = {
+            field for field in route_fields if _populated(block, field)
+        }
+        if route is None and populated_route_fields:
+            raise ValueError(
+                f"Schema-v1 compatibility method {raw_key!r} must use a "
+                "model-only metadata block; unexpected populated route "
+                f"metadata fields: {sorted(populated_route_fields)}."
+            )
+        validated = (
+            validate_method_metadata(block)
+            if route is not None
+            else validate_model_metadata(block)
+        )
+        normalised.update(validated)
+        nested_source: Mapping[str, object] = validated
+    else:
+        nested_source = _source_nomenclature(block)
+        normalised.update(nested_source)
+
+    key_identity = _method_identity(storage_id, route)
+    for field in ("method", "selection_method", "legacy_method_id"):
+        if not _populated(block, field):
+            continue
+        nested_storage, nested_route = resolve_inference_method(str(block[field]))
+        if _method_identity(nested_storage, nested_route) != key_identity:
+            raise ValueError(
+                f"Nested {field}={block[field]!r} does not match methods key "
+                f"{raw_key!r}."
+            )
+        normalised[field] = nested_storage
+    if _populated(block, "inference_route"):
+        nested_route = canonicalize_inference_route(
+            str(block["inference_route"])
+        )
+        if route != nested_route:
+            raise ValueError(
+                f"Nested inference_route={block['inference_route']!r} does "
+                f"not match methods key {raw_key!r}."
+            )
+        normalised["inference_route"] = nested_route
+
+    for field in ("model_family", "context_seconds", "selection_protocol"):
+        if field not in source or field not in nested_source:
+            continue
+        left = source[field]
+        right = nested_source[field]
+        matches = (
+            bool(
+                np.isclose(
+                    float(left), float(right), rtol=0.0, atol=1e-12
+                )
+            )
+            if field == "context_seconds"
+            else left == right
+        )
+        if not matches:
+            raise ValueError(
+                f"Conflicting nested {field} provenance for methods key "
+                f"{raw_key!r}: top-level={left!r}, nested={right!r}."
+            )
+    return normalised
+
+
+def _normalise_methods(
+    methods: Any, *, source: Mapping[str, object]
+) -> Mapping[str, Any] | None:
+    if methods is None:
+        return None
+    if not isinstance(methods, Mapping):
+        raise ValueError("metrics.methods must be an object")
+    normalised: dict[str, Any] = {}
+    aliases: dict[str, str] = {}
+    for raw_key, block in methods.items():
+        storage_id, route = resolve_inference_method(str(raw_key))
+        if storage_id in normalised:
+            raise ValueError(
+                "metrics.methods contains duplicate aliases for "
+                f"{storage_id!r}: {aliases[storage_id]!r} and {raw_key!r}."
+            )
+        if not isinstance(block, Mapping):
+            raise ValueError(
+                f"metrics.methods[{raw_key!r}] must be an object"
+            )
+        normalised[storage_id] = _normalise_method_block(
+            str(raw_key),
+            block,
+            storage_id=storage_id,
+            route=route,
+            source=source,
+        )
+        aliases[storage_id] = str(raw_key)
+    return normalised
+
+
 def record_from_metrics(metrics_json: str | Path) -> dict[str, Any]:
     metrics_path = require_file(metrics_json, "metrics JSON")
     metrics = read_json(metrics_path)
+    source_nomenclature = _source_nomenclature(metrics)
     record: dict[str, Any] = {
         "metrics_json": str(metrics_path),
         "fold": metrics.get("fold"),
@@ -372,9 +581,12 @@ def record_from_metrics(metrics_json: str | Path) -> dict[str, Any]:
         "leakage_audit_ok": metrics.get("leakage_audit_ok"),
         "manifest_sha_verified": metrics.get("manifest_sha_verified"),
         "softmax_reproduction_passed": metrics.get("softmax_reproduction_passed"),
-        "methods": metrics.get("methods"),
+        "methods": _normalise_methods(
+            metrics.get("methods"), source=source_nomenclature
+        ),
         "confusion_matrices_json": _resolve_confusion_path(metrics_path, metrics),
     }
+    record.update(source_nomenclature)
 
     metadata_path = metrics_path.parent / "prediction_metadata.json"
     if metadata_path.exists():
@@ -421,9 +633,77 @@ def flatten_run_record(record: Mapping[str, Any]) -> dict[str, Any]:
     return row
 
 
+def resolve_aggregate_nomenclature(
+    records: Sequence[Mapping[str, Any]],
+    *,
+    requested_selection_protocol: str | None = None,
+) -> dict[str, object]:
+    """Inherit homogeneous source metadata, with legacy-safe fallbacks."""
+
+    if not records:
+        raise ValueError("Cannot resolve aggregate nomenclature without records")
+    sources = [_source_nomenclature(record) for record in records]
+    model_families = {
+        canonicalize_model_family(
+            str(source.get("model_family", "hierarchical_supervision_crnn"))
+        )
+        for source in sources
+    }
+    if len(model_families) > 1:
+        raise ValueError(
+            "Conflicting model_family values in aggregate inputs: "
+            f"{sorted(model_families)}"
+        )
+    model_family = next(iter(model_families))
+
+    contexts: set[float] = set()
+    for source in sources:
+        value = source.get("context_seconds", 2.0)
+        context = float(value)
+        if not np.isfinite(context) or context <= 0:
+            raise ValueError(
+                f"Invalid context_seconds in aggregate input: {value!r}"
+            )
+        contexts.add(context)
+    if len(contexts) > 1:
+        raise ValueError(
+            "Conflicting context_seconds values in aggregate inputs: "
+            f"{sorted(contexts)}"
+        )
+    context_seconds = next(iter(contexts))
+
+    protocols = {
+        reconcile_selection_protocol(
+            str(record.get("selection_protocol") or "none"),
+            requested=requested_selection_protocol,
+            warn_on_legacy=bool(requested_selection_protocol),
+        )
+        for record in sources
+    }
+    if len(protocols) > 1:
+        raise ValueError(
+            "Conflicting selection_protocol values in aggregate inputs: "
+            f"{sorted(protocols)}"
+        )
+    selection_protocol = next(iter(protocols))
+    return {
+        "model_family": model_family,
+        "context_seconds": context_seconds,
+        "selection_protocol": selection_protocol,
+    }
+
+
 def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser(
-        description="Summarize exact hierarchical prototype CV runs with aggregate-only paper result provenance."
+        description=(
+            "Summarize exact "
+            + display_label(
+                "training_stage",
+                "b3_hierarchical_prototype_top1_ablation",
+                language="en",
+            )
+            + " CV runs with aggregate-only paper result provenance."
+        )
     )
     ap.add_argument("--metrics_json", nargs="+", required=True, help="Per-run evaluation metrics.json files.")
     ap.add_argument(
@@ -436,6 +716,18 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--expected_lambda", type=float, default=None)
     ap.add_argument("--bootstrap_samples", type=int, default=10000)
     ap.add_argument("--bootstrap_seed", type=int, default=3407)
+    ap.add_argument(
+        "--selection_protocol",
+        type=lambda value: canonicalize_selection_protocol(
+            value, warn_on_legacy=True
+        ),
+        default=None,
+        help=(
+            "Canonical selection protocol for new metadata. Omitted inherits "
+            "homogeneous source metadata, falling back to none; it is never "
+            "inferred from --expected_lambda."
+        ),
+    )
     ap.add_argument("--allow_overwrite", action="store_true")
     return ap.parse_args()
 
@@ -461,6 +753,10 @@ def _check_overwrite(paths: Mapping[str, Path], *, allow_overwrite: bool) -> Non
 def main() -> None:
     args = parse_args()
     records = [record_from_metrics(path) for path in args.metrics_json]
+    nomenclature = resolve_aggregate_nomenclature(
+        records,
+        requested_selection_protocol=args.selection_protocol or None,
+    )
     aggregate = validate_aggregate_records(
         records,
         expected_folds=parse_int_csv(args.expected_folds, name="expected_folds"),
@@ -472,6 +768,13 @@ def main() -> None:
     _check_overwrite(outputs, allow_overwrite=args.allow_overwrite)
 
     runs = [flatten_run_record(record) for record in records]
+    for row in runs:
+        row.update(
+            {
+                "nomenclature_schema_version": NOMENCLATURE_SCHEMA_VERSION,
+                **nomenclature,
+            }
+        )
     summary = aggregate_method_metrics(records)
     paired = paired_macro_f1_statistics(
         records,
@@ -479,9 +782,46 @@ def main() -> None:
         random_seed=args.bootstrap_seed,
     )
     confusion = aggregate_confusion_matrices(records)
+
+    def metadata_for_method(method: str) -> dict[str, object]:
+        storage_id, route = resolve_inference_method(method)
+        training_stage = (
+            "b3_hierarchical_prototype_top1_ablation"
+            if route == "hierarchical_prototype_candidate"
+            else "b2_validation_selected_hierarchical_crnn"
+        )
+        common = build_model_metadata(
+            model_family=str(nomenclature["model_family"]),
+            training_stage=training_stage,
+            context_seconds=float(nomenclature["context_seconds"]),
+            selection_protocol=str(nomenclature["selection_protocol"]),
+        )
+        if route is None:
+            return common
+        return build_method_metadata(
+            model_family=str(nomenclature["model_family"]),
+            training_stage=training_stage,
+            context_seconds=float(nomenclature["context_seconds"]),
+            selection_protocol=str(nomenclature["selection_protocol"]),
+            inference_route=route,
+            legacy_method_id=storage_id,
+        )
+
+    for row in summary:
+        row.update(metadata_for_method(str(row["method"])))
+    for row in confusion:
+        row.update(metadata_for_method(str(row["method"])))
+    canonical_methods = [
+        metadata_for_method(method)
+        for method in SUMMARY_METHODS
+        if resolve_inference_method(method)[1] is not None
+    ]
     provenance = {
         "artifact_type": "cv5_exact_prototype_aggregate_provenance",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        "nomenclature_schema_version": NOMENCLATURE_SCHEMA_VERSION,
+        **nomenclature,
+        "canonical_methods": canonical_methods,
         **aggregate,
         "methods": list(SUMMARY_METHODS),
         "paired_comparisons": [f"{left} - {right}" for left, right in PAIRED_COMPARISONS],
@@ -498,6 +838,10 @@ def main() -> None:
     pd.DataFrame(paired).to_csv(outputs["paired_stats_csv"], index=False, encoding="utf-8-sig")
     pd.DataFrame(confusion).to_csv(outputs["confusion_summary_csv"], index=False, encoding="utf-8-sig")
     write_json(outputs["provenance_json"], provenance)
+    print(
+        "[INFO] canonical inference routes -> "
+        + "; ".join(str(item["display_name_en"]) for item in canonical_methods)
+    )
     print(f"[OK] wrote aggregate {mode} summary files with prefix {args.out_prefix}")
 
 

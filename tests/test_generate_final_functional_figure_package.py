@@ -350,25 +350,29 @@ class PackageContractTests(unittest.TestCase):
             if path.endswith((".svg", ".pdf", ".png", ".tiff"))
         }
         self.assertTrue(
-            all(path.startswith("paper/figures_final/") for path in figure_outputs)
+            all(
+                path.startswith("paper/figures_final_nomenclature_v1/")
+                for path in figure_outputs
+            )
         )
         self.assertTrue(
             {
-                "paper/figures_final/FIGURE_LEGENDS_CN.md",
-                "paper/figures_final/FIGURE_LEGENDS_EN.md",
-                "paper/figures_final/FIGURE_SOURCE_MAP.csv",
-                "paper/figures_final/FIGURE_TO_CLAIM_MATRIX.csv",
-                "paper/figures_final/FIGURE_QA_REPORT.md",
+                "paper/figures_final_nomenclature_v1/FIGURE_LEGENDS_CN.md",
+                "paper/figures_final_nomenclature_v1/FIGURE_LEGENDS_EN.md",
+                "paper/figures_final_nomenclature_v1/FIGURE_SOURCE_MAP.csv",
+                "paper/figures_final_nomenclature_v1/FIGURE_TO_CLAIM_MATRIX.csv",
+                "paper/figures_final_nomenclature_v1/FIGURE_QA_REPORT.md",
             }.issubset(paths)
         )
         self.assertEqual(
             {
                 path
                 for path in paths
-                if path.startswith("paper/final_validation/")
+                if path.startswith("paper/final_validation_nomenclature_v1/")
             },
             {
-                f"paper/final_validation/{name}" for name in DERIVED_TABLE_FILENAMES
+                f"paper/final_validation_nomenclature_v1/{name}"
+                for name in DERIVED_TABLE_FILENAMES
             },
         )
 
@@ -436,6 +440,24 @@ class PackageContractTests(unittest.TestCase):
             sources["figure"].eq("Figure 1") & sources["panel"].eq("c")
         ].iloc[0]
         self.assertIn("calibration/val_predictions.csv", figure1c["source_path"])
+        figure1d_source = sources[
+            sources["figure"].eq("Figure 1") & sources["panel"].eq("d")
+        ].iloc[0]
+        figure1d_claim = claims[
+            claims["figure"].eq("Figure 1") & claims["panel"].eq("d")
+        ].iloc[0]
+        canonical_b3 = "B3 — Hierarchical-prototype Top-1 decision ablation"
+        self.assertIn(canonical_b3, figure1d_source["transformation"])
+        self.assertIn(canonical_b3, figure1d_claim["claim"])
+        figure4a_source = sources[
+            sources["figure"].eq("Figure 4") & sources["panel"].eq("a")
+        ].iloc[0]
+        for route_label in (
+            "Primary Softmax route (Raw Softmax)",
+            "Main-class prototype candidate route",
+            "Hierarchical prototype candidate route",
+        ):
+            self.assertIn(route_label, figure4a_source["transformation"])
 
     def test_sha_audit_inventory_includes_every_loaded_frozen_source(self) -> None:
         source_map = build_source_map_rows(ROOT, self.analysis)
@@ -483,7 +505,7 @@ class PackageContractTests(unittest.TestCase):
             stage_figures.mkdir(parents=True)
             stage_validation.mkdir(parents=True)
             (stage_figures / "figure.svg").write_text("figure", encoding="utf-8")
-            final_validation = root / "paper" / "final_validation"
+            final_validation = root / "paper" / "final_validation_nomenclature_v1"
             final_validation.mkdir(parents=True)
             table_pairs = []
             for name in DERIVED_TABLE_FILENAMES:
@@ -510,7 +532,9 @@ class PackageContractTests(unittest.TestCase):
                         staged_figure_dir=stage_figures,
                         table_pairs=tuple(table_pairs),
                     )
-            self.assertFalse((root / "paper" / "figures_final").exists())
+            self.assertFalse(
+                (root / "paper" / "figures_final_nomenclature_v1").exists()
+            )
             self.assertTrue(
                 all(not (final_validation / name).exists() for name in DERIVED_TABLE_FILENAMES)
             )
@@ -527,10 +551,25 @@ class PackageContractTests(unittest.TestCase):
             "deployable",
             "label-aware",
             "does not establish",
-            "B3 does not improve Top-1",
+            "B3 — Hierarchical-prototype Top-1 decision ablation does not improve Top-1",
+            "B3 — Hierarchical-prototype Top-1 decision ablation; Fixed "
+            "λ=0.5 retrospective",
             "a training sample closest to the predicted class prototype",
         ):
             self.assertIn(token, english)
+        for route_label in (
+            "Primary Softmax route (Raw Softmax)",
+            "Main-class prototype candidate route",
+            "Hierarchical prototype candidate route",
+        ):
+            self.assertIn(route_label, english)
+        figure1_legend = english.split("## Figure 2", maxsplit=1)[0]
+        for route_label in (
+            "Primary Softmax route (Raw Softmax)",
+            "Main-class prototype candidate route",
+            "Hierarchical prototype candidate route",
+        ):
+            self.assertIn(route_label, figure1_legend)
         self.assertIn("Holm", chinese)
         for token in ("可部署", "标签感知", "不证明"):
             self.assertIn(token, chinese)
@@ -568,9 +607,14 @@ class PackageContractTests(unittest.TestCase):
             self.assertGreaterEqual(point_count, 25 * 4)
             comparison_text = " ".join(
                 tick.get_text() for tick in panel_b.get_yticklabels()
-            ).replace(" ", "")
-            for comparison in ("B1-B0", "B2-B1", "B3-B2"):
-                self.assertIn(comparison, comparison_text)
+            )
+            compact_comparisons = comparison_text.replace(" ", "").replace("\n", "")
+            for comparison in ("B1-B0", "B2-B1"):
+                self.assertIn(comparison, compact_comparisons)
+            self.assertIn(
+                "B3 — Hierarchical-prototype Top-1 decision ablation",
+                " ".join(comparison_text.split()),
+            )
             annotations = " ".join(text.get_text() for text in panel_b.texts)
             self.assertIn("P=", annotations)
             self.assertIn("Holm", annotations)
@@ -581,6 +625,19 @@ class PackageContractTests(unittest.TestCase):
                 if hasattr(collection, "get_offsets")
             )
             self.assertGreaterEqual(selected_points, 5)
+            figure.canvas.draw()
+            renderer = figure.canvas.get_renderer()
+            canvas = figure.bbox
+            b3_notes = [
+                text
+                for text in panel_c.texts
+                if "Hierarchical-prototype Top-1 decision ablation"
+                in " ".join(text.get_text().split())
+            ]
+            self.assertEqual(len(b3_notes), 1)
+            note_bounds = b3_notes[0].get_window_extent(renderer)
+            self.assertGreaterEqual(note_bounds.x0, canvas.x0 - 1.0)
+            self.assertLessEqual(note_bounds.x1, canvas.x1 + 1.0)
         finally:
             for figure in figures.values():
                 plt.close(figure)
@@ -616,11 +673,12 @@ class PackageContractTests(unittest.TestCase):
                     *(axis.get_title(loc="left") for axis in figure.axes),
                 ]
             ).lower()
+            visible = " ".join(visible.split())
             for token in (
                 "2 s",
                 "log-mel",
                 "shared hierarchical crnn",
-                "primary raw softmax",
+                "primary softmax route (raw softmax)",
                 "frozen embedding",
                 "train-only",
                 "main prototypes",
@@ -630,8 +688,17 @@ class PackageContractTests(unittest.TestCase):
                 "predicted top-1/top-2 distance margin",
                 "hierarchy consistency",
                 "prototype representative",
+                "main-class prototype candidate route",
+                "hierarchical prototype candidate route",
+                "b3 — hierarchical-prototype top-1 decision ablation",
             ):
                 self.assertIn(token, visible)
+            route_labels = [text.get_text() for text in figure.axes[3].texts]
+            self.assertTrue(
+                any("\n" in label and "Main-class" in label for label in route_labels)
+            )
+            self.assertEqual(route_labels.count("Candidate"), 2)
+            self.assertEqual(route_labels.count("Ablation"), 1)
         finally:
             for figure in figures.values():
                 plt.close(figure)
@@ -669,7 +736,9 @@ class PackageContractTests(unittest.TestCase):
             ),
         )
         conclusion = " ".join(disagreements["interpretation"].dropna()).lower()
-        self.assertIn("hierarchical prototype harmed more", conclusion)
+        self.assertIn(
+            "hierarchical prototype candidate route harmed more", conclusion
+        )
 
     def test_functional_figure_uses_the_requested_four_panel_evidence_logic(self) -> None:
         figures = build_all_figures(ROOT, self.analysis)
@@ -720,11 +789,12 @@ class PackageContractTests(unittest.TestCase):
                     ),
                 ]
             ).lower()
+            visible = " ".join(visible.split())
             for token in (
                 "true class",
-                "softmax top-2",
-                "main prototype top-2",
-                "subtype prototype top-2",
+                "primary softmax route (raw softmax) top-2",
+                "main-class prototype candidate route top-2",
+                "hierarchical prototype candidate route subtype top-2",
                 "distances",
                 "predicted margin",
                 "hierarchy consistency",
@@ -736,9 +806,39 @@ class PackageContractTests(unittest.TestCase):
             self.assertIn(
                 "a training sample closest to the predicted class prototype", visible
             )
+            header_texts = [
+                cell.get_text().get_text()
+                for table in figure.axes[0].tables
+                for (row_index, _), cell in table.get_celld().items()
+                if row_index == 0
+            ]
+            self.assertTrue(any("\n" in text for text in header_texts))
         finally:
             for figure in figures.values():
                 plt.close(figure)
+
+    def test_case_selection_rules_use_canonical_route_display_name(self) -> None:
+        selection_rules = " ".join(self.analysis["cases"]["selection_rule"])
+        self.assertIn(
+            "Primary Softmax route (Raw Softmax) confidence", selection_rules
+        )
+        self.assertIn(
+            "Primary Softmax route (Raw Softmax) Top-2 margin", selection_rules
+        )
+        self.assertNotIn("raw Softmax", selection_rules)
+        self.assertNotIn("raw Top-2", selection_rules)
+
+    def test_package_documentation_uses_canonical_route_and_b3_labels(self) -> None:
+        documentation = (
+            ROOT / "docs/FINAL_FUNCTIONAL_FIGURE_PACKAGE.md"
+        ).read_text(encoding="utf-8")
+        for label in (
+            "Primary Softmax route (Raw Softmax)",
+            "Main-class prototype candidate route",
+            "Hierarchical prototype candidate route",
+            "B3 — Hierarchical-prototype Top-1 decision ablation",
+        ):
+            self.assertIn(label, documentation)
 
     def test_supplements_show_all_fixed_lambda_runs_and_all_demand_environments(self) -> None:
         figures = build_all_figures(ROOT, self.analysis)
@@ -750,6 +850,18 @@ class PackageContractTests(unittest.TestCase):
             self.assertEqual(
                 sum("P=" in text.get_text() for text in retrospective.axes[1].texts),
                 len(self.analysis["cumulative_paired"]),
+            )
+            retrospective_labels = " ".join(
+                [
+                    *(tick.get_text() for tick in retrospective.axes[0].get_xticklabels()),
+                    *(tick.get_text() for tick in retrospective.axes[1].get_yticklabels()),
+                ]
+            )
+            retrospective_labels = " ".join(retrospective_labels.split())
+            self.assertIn(
+                "B3 — Hierarchical-prototype Top-1 decision ablation; "
+                "Fixed λ=0.5 retrospective",
+                retrospective_labels,
             )
             demand = figures["figure_s5_demand_simulated_noise"]
             visible = " ".join(

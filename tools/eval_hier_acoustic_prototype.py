@@ -8,6 +8,15 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import confusion_matrix
 
+from nomenclature import (
+    build_method_metadata,
+    build_model_metadata,
+    reconcile_selection_protocol,
+    resolve_inference_method,
+    resolve_inference_method_fields,
+    validate_recorded_artifact_identity,
+    validate_recorded_nomenclature_metadata,
+)
 from prototype_model_adapter import (
     calibration_metrics,
     config_from_summary,
@@ -124,6 +133,88 @@ def _require_sha_match(path: Path, expected: Any, description: str) -> None:
         raise RuntimeError(f"{description} SHA256 mismatch: expected {expected}, got {actual}")
 
 
+def validate_evaluation_input_nomenclature(
+    prediction: dict[str, Any], calibration: dict[str, Any] | None
+) -> None:
+    """Reconcile explicit schema identities across evaluation inputs."""
+
+    try:
+        validate_recorded_nomenclature_metadata(prediction)
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid prediction nomenclature metadata: {exc}"
+        ) from exc
+    if calibration is None:
+        return
+    try:
+        validate_recorded_nomenclature_metadata(calibration)
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid calibration nomenclature metadata: {exc}"
+        ) from exc
+    try:
+        config = config_from_summary(calibration["model_config"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError(
+            "Calibration is missing a valid model_config."
+        ) from exc
+    calibration_method, calibration_route = resolve_inference_method_fields(
+        calibration
+    )
+    prediction_method, prediction_route = resolve_inference_method_fields(
+        prediction
+    )
+    if (calibration_method, calibration_route) != (
+        prediction_method,
+        prediction_route,
+    ):
+        raise ValueError(
+            "Conflicting inference method provenance between calibration and "
+            "prediction metadata: "
+            f"{(calibration_method, calibration_route)!r} != "
+            f"{(prediction_method, prediction_route)!r}."
+        )
+    expected_stage = (
+        "b3_hierarchical_prototype_top1_ablation"
+        if calibration_route == "hierarchical_prototype_candidate"
+        else "b2_validation_selected_hierarchical_crnn"
+    )
+    try:
+        validated_calibration = validate_recorded_artifact_identity(
+            calibration,
+            expected_model_family="hierarchical_supervision_crnn",
+            expected_training_stage=expected_stage,
+            expected_context_seconds=float(config.dur_s),
+            context="calibration",
+        )
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid calibration nomenclature metadata: {exc}"
+        ) from exc
+    try:
+        validated_prediction = validate_recorded_artifact_identity(
+            prediction,
+            expected_model_family="hierarchical_supervision_crnn",
+            expected_training_stage=expected_stage,
+            expected_context_seconds=float(config.dur_s),
+            context="prediction",
+        )
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid prediction nomenclature metadata: {exc}"
+        ) from exc
+    if (
+        validated_calibration is not None
+        and validated_prediction is not None
+        and "selection_protocol" in validated_calibration
+        and "selection_protocol" in validated_prediction
+    ):
+        reconcile_selection_protocol(
+            str(validated_calibration["selection_protocol"]),
+            requested=str(validated_prediction["selection_protocol"]),
+        )
+
+
 def load_and_validate_prediction_metadata(
     pred_csv: str | Path,
     calibration_json: str | Path,
@@ -136,6 +227,7 @@ def load_and_validate_prediction_metadata(
     if not meta_path.exists():
         raise FileNotFoundError(f"Missing prediction_metadata.json: {meta_path}")
     metadata = read_json(meta_path)
+    validate_evaluation_input_nomenclature(metadata, calibration)
 
     input_role = str(metadata.get("input_role", ""))
     if input_role != "frozen_test":
@@ -187,6 +279,52 @@ def main() -> None:
     config = config_from_summary(calibration["model_config"])
     labels = config.main_labels
     aux_labels = config.aux_labels
+    selected_method, selected_route = resolve_inference_method_fields(
+        calibration, warn_on_legacy=True
+    )
+    prediction_method, prediction_route = resolve_inference_method_fields(
+        prediction_metadata, warn_on_legacy=True
+    )
+    if (prediction_method, prediction_route) != (
+        selected_method,
+        selected_route,
+    ):
+        raise ValueError(
+            "Conflicting inference method provenance between calibration and "
+            "prediction metadata: "
+            f"{(selected_method, selected_route)!r} != "
+            f"{(prediction_method, prediction_route)!r}."
+        )
+    selection_protocol = reconcile_selection_protocol(
+        prediction_metadata.get("selection_protocol"),
+        requested=calibration.get("selection_protocol"),
+    )
+
+    def output_metadata_for_method(method: str) -> dict[str, object]:
+        storage_id, route = resolve_inference_method(method)
+        training_stage = (
+            "b3_hierarchical_prototype_top1_ablation"
+            if route == "hierarchical_prototype_candidate"
+            else "b2_validation_selected_hierarchical_crnn"
+        )
+        common = build_model_metadata(
+            model_family="hierarchical_supervision_crnn",
+            training_stage=training_stage,
+            context_seconds=float(config.dur_s),
+            selection_protocol=selection_protocol,
+        )
+        if route is None:
+            return common
+        return build_method_metadata(
+            model_family="hierarchical_supervision_crnn",
+            training_stage=training_stage,
+            context_seconds=float(config.dur_s),
+            selection_protocol=selection_protocol,
+            inference_route=route,
+            legacy_method_id=storage_id,
+        )
+
+    selected_route_metadata = output_metadata_for_method(selected_method)
 
     out_dir = prepare_evaluation_dir(Path(args.out_dir), args.allow_overwrite)
 
@@ -199,6 +337,16 @@ def main() -> None:
 
     probs_by_method = {method: method_probs(df, method, labels) for method in METHODS}
     metrics = method_metrics_table(y_true, probs_by_method, labels, n_bins=args.ece_bins)
+    method_metadata = pd.DataFrame(
+        [
+            output_metadata_for_method(str(method))
+            for method in metrics["method"]
+        ]
+    )
+    metrics = pd.concat(
+        [metrics.reset_index(drop=True), method_metadata.reset_index(drop=True)],
+        axis=1,
+    )
     metrics.to_csv(out_dir / "metrics_by_method_test.csv", index=False, encoding="utf-8-sig")
 
     aux_prototype_probs = aux_probs(df, aux_labels)
@@ -268,7 +416,6 @@ def main() -> None:
     consistency["prototype_main_aux_inconsistent_rate"] = float(df["hierarchy_inconsistent"].astype(bool).mean())
     write_json(out_dir / "hierarchy_consistency.json", consistency)
 
-    selected_method = str(calibration["selection_method"])
     selected_probs = probs_by_method[selected_method]
     selected_cal = calibration_metrics(y_true, selected_probs, n_bins=args.ece_bins)
     selected_metrics = metrics[metrics["method"] == selected_method].iloc[0].to_dict()
@@ -278,6 +425,7 @@ def main() -> None:
     }
     metrics_json = {
         "artifact_type": "hier_acoustic_prototype_test_evaluation",
+        **selected_route_metadata,
         "prediction_csv": str(pred_csv.resolve()),
         "calibration_json": str(calibration_json.resolve()),
         "fold": calibration.get("fold"),
@@ -326,6 +474,10 @@ def main() -> None:
     }
     write_json(out_dir / "metrics.json", metrics_json)
 
+    print(
+        "[INFO] selected inference method -> "
+        f"{selected_route_metadata.get('display_name_en', selected_method)}"
+    )
     print(f"[OK] wrote test metrics -> {out_dir / 'metrics.json'}")
     print(f"[OK] wrote coverage-risk -> {out_dir / 'coverage_risk.csv'}")
     print(f"[OK] wrote confusion matrices -> {out_dir / 'confusion_matrices.json'}")

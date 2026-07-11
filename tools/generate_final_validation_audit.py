@@ -11,6 +11,7 @@ import argparse
 import json
 import hashlib
 import math
+import textwrap
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
@@ -25,6 +26,39 @@ import pandas as pd
 from matplotlib.patches import Patch
 from sklearn.metrics import roc_auc_score
 from scipy.stats import wilcoxon
+
+try:  # Package import under unittest.
+    from tools.nomenclature import (
+        METHOD_METADATA_FIELDS,
+        NOMENCLATURE_SCHEMA_VERSION,
+        build_method_metadata,
+        build_model_metadata,
+        canonicalize_inference_route,
+        canonicalize_model_family,
+        canonicalize_selection_protocol,
+        canonicalize_training_stage,
+        display_label,
+        reconcile_selection_protocol,
+        resolve_inference_method,
+        resolve_inference_method_fields,
+        validate_recorded_nomenclature_metadata,
+    )
+except ModuleNotFoundError:  # Direct ``python tools/<script>.py`` execution.
+    from nomenclature import (  # type: ignore[no-redef]
+        METHOD_METADATA_FIELDS,
+        NOMENCLATURE_SCHEMA_VERSION,
+        build_method_metadata,
+        build_model_metadata,
+        canonicalize_inference_route,
+        canonicalize_model_family,
+        canonicalize_selection_protocol,
+        canonicalize_training_stage,
+        display_label,
+        reconcile_selection_protocol,
+        resolve_inference_method,
+        resolve_inference_method_fields,
+        validate_recorded_nomenclature_metadata,
+    )
 
 
 EXPECTED_FOLDS = tuple(range(5))
@@ -53,6 +87,24 @@ AUX_TO_MAIN = {
     "anxious_stress": "stress_vocal",
 }
 
+METHOD_DISPLAY_LABELS = {
+    "raw_softmax": display_label(
+        "inference_route", "primary_softmax", language="en"
+    ),
+    "prototype": display_label(
+        "inference_route", "main_class_prototype_candidate", language="en"
+    ),
+    "main_prototype": display_label(
+        "inference_route", "main_class_prototype_candidate", language="en"
+    ),
+    "hierarchical": display_label(
+        "inference_route", "hierarchical_prototype_candidate", language="en"
+    ),
+    "hierarchical_prototype": display_label(
+        "inference_route", "hierarchical_prototype_candidate", language="en"
+    ),
+}
+
 TABLE_FILENAMES = (
     "lambda_selection_by_fold.csv",
     "validation_selected_framework_runs.csv",
@@ -67,6 +119,7 @@ TABLE_FILENAMES = (
 )
 PROVENANCE_FILENAME = "lambda_selection_provenance.json"
 REPORT_FILENAME = "FINAL_VALIDATION_REPORT.md"
+DEFAULT_OUTPUT_DIR = Path("paper/final_validation_audit_nomenclature_v1")
 FIGURE_STEMS = (
     "lambda_selection_by_fold",
     "validation_selected_cumulative_framework",
@@ -107,6 +160,147 @@ def _read_json(path: Path) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError(f"JSON source must contain an object: {path}")
     return payload
+
+
+def _canonical_route_from_record(
+    record: Mapping[str, Any], *, context: str
+) -> str:
+    """Resolve legacy/canonical route fields and reject ambiguous records."""
+
+    try:
+        validate_recorded_nomenclature_metadata(record)
+        _, route = resolve_inference_method_fields(record)
+    except ValueError as exc:
+        raise ValueError(f"{context}: {exc}") from exc
+    if route is None:
+        raise ValueError(
+            f"{context}: selected method is not a canonical inference route."
+        )
+    return route
+
+
+def _method_payload_for_route(
+    methods: Any,
+    *,
+    route: str,
+    context: str,
+) -> Mapping[str, Any]:
+    """Find one method payload by route without rewriting its stored key."""
+
+    canonical_route = canonicalize_inference_route(route)
+    if not isinstance(methods, Mapping):
+        raise ValueError(f"{context} must be an object.")
+    matches: list[tuple[str, Mapping[str, Any]]] = []
+    for method_name, payload in methods.items():
+        try:
+            _, resolved_route = resolve_inference_method(str(method_name))
+        except ValueError as exc:
+            raise ValueError(f"{context}: {exc}") from exc
+        if resolved_route != canonical_route:
+            continue
+        if not isinstance(payload, Mapping):
+            raise ValueError(
+                f"{context}[{method_name!r}] must be an object."
+            )
+        matches.append((str(method_name), payload))
+    if not matches:
+        raise ValueError(
+            f"{context} has no method for canonical route "
+            f"{canonical_route!r}."
+        )
+    if len(matches) > 1:
+        aliases = [name for name, _ in matches]
+        raise ValueError(
+            f"{context} contains duplicate aliases for canonical route "
+            f"{canonical_route!r}: {aliases}"
+        )
+    return matches[0][1]
+
+
+def _recorded_selection_protocol(
+    records: Sequence[tuple[str, Mapping[str, Any]]],
+) -> str:
+    """Resolve concrete source protocols while treating absent/none as unknown."""
+
+    concrete: dict[str, str] = {}
+    for name, record in records:
+        try:
+            validate_recorded_nomenclature_metadata(record)
+        except ValueError as exc:
+            raise ValueError(f"{name}: {exc}") from exc
+        value = record.get("selection_protocol")
+        if value is None or not str(value).strip():
+            continue
+        try:
+            protocol = canonicalize_selection_protocol(str(value))
+        except ValueError as exc:
+            raise ValueError(f"{name}: {exc}") from exc
+        if protocol != "none":
+            concrete[name] = protocol
+    unique = set(concrete.values())
+    if len(unique) > 1:
+        detail = ", ".join(
+            f"{name}={protocol!r}" for name, protocol in concrete.items()
+        )
+        raise ValueError(
+            f"Conflicting selection_protocol provenance: {detail}"
+        )
+    return next(iter(unique), "none")
+
+
+def _metadata_value_is_present(value: Any) -> bool:
+    if value is None:
+        return False
+    try:
+        if bool(pd.isna(value)):
+            return False
+    except (TypeError, ValueError):
+        pass
+    return bool(str(value).strip())
+
+
+def _assert_existing_metadata_compatible(
+    record: Mapping[str, Any],
+    expected: Mapping[str, Any],
+    *,
+    prefix: str = "",
+) -> None:
+    """Reject provenance conflicts before an adapter appends canonical fields."""
+
+    for field in METHOD_METADATA_FIELDS:
+        key = f"{prefix}{field}"
+        value = record.get(key)
+        if not _metadata_value_is_present(value):
+            continue
+        expected_value = expected.get(field)
+        if expected_value is None:
+            raise ValueError(
+                f"Existing metadata field {key!r}={value!r} is not applicable."
+            )
+        if field == "model_family":
+            actual = canonicalize_model_family(str(value))
+        elif field == "training_stage":
+            actual = canonicalize_training_stage(str(value))
+        elif field == "selection_protocol":
+            actual = canonicalize_selection_protocol(str(value))
+        elif field == "inference_route":
+            actual = canonicalize_inference_route(str(value))
+        elif field == "context_seconds":
+            actual = float(value)
+        else:
+            actual = value
+        matches = (
+            math.isclose(
+                float(actual), float(expected_value), abs_tol=1e-12, rel_tol=0.0
+            )
+            if field == "context_seconds"
+            else actual == expected_value
+        )
+        if not matches:
+            raise ValueError(
+                f"Existing metadata field {key!r} conflicts with canonical "
+                f"provenance: {value!r} != {expected_value!r}."
+            )
 
 
 def _relative(root: Path, path: Path) -> str:
@@ -194,15 +388,33 @@ def _validate_hierarchical_summary(
     seed: int,
     candidate: float,
 ) -> None:
+    try:
+        validate_recorded_nomenclature_metadata(payload)
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid hierarchical summary nomenclature metadata for {path}: {exc}"
+        ) from exc
+    try:
+        recorded_family = canonicalize_model_family(
+            str(payload.get("model_family"))
+        )
+    except ValueError:
+        recorded_family = None
+    recorded_context = payload.get("context_seconds")
+    context_matches = (
+        not _metadata_value_is_present(recorded_context)
+        or math.isclose(float(recorded_context), 2.0, abs_tol=1e-12)
+    )
     checks = {
-        "model_family=hier_longcontext_crnn": payload.get("model_family")
-        == "hier_longcontext_crnn",
+        "model_family=hierarchical_supervision_crnn": recorded_family
+        == "hierarchical_supervision_crnn",
         "feature_mode=logmel": payload.get("feature_mode") == "logmel",
         "use_se=true": payload.get("use_se") is True,
         f"seed={seed}": int(payload.get("seed", -1)) == seed,
         "dur_s=2.0": math.isclose(
             float(payload.get("dur_s", -1)), 2.0, abs_tol=1e-12
         ),
+        "context_seconds=2.0 when present": context_matches,
         "hier_aux=true": payload.get("hier_aux") is True,
         f"hier_aux_weight={candidate}": math.isclose(
             float(payload.get("hier_aux_weight", -1)), candidate, abs_tol=1e-12
@@ -228,14 +440,40 @@ def _validate_baseline_summary(
     stage: str,
     seed: int,
 ) -> None:
+    try:
+        validate_recorded_nomenclature_metadata(payload)
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid baseline summary nomenclature metadata for {path}: {exc}"
+        ) from exc
     expected_duration = 1.0 if stage == "B0" else 2.0
+    recorded_context = payload.get("context_seconds")
+    context_matches = (
+        not _metadata_value_is_present(recorded_context)
+        or math.isclose(
+            float(recorded_context), expected_duration, abs_tol=1e-12
+        )
+    )
+    recorded_family = payload.get("model_family")
+    if _metadata_value_is_present(recorded_family):
+        try:
+            family_matches = (
+                canonicalize_model_family(str(recorded_family))
+                == "logmel_crnn"
+            )
+        except ValueError:
+            family_matches = False
+    else:
+        family_matches = True
     checks = {
+        "model_family=logmel_crnn when present": family_matches,
         "feature_mode=logmel": payload.get("feature_mode") == "logmel",
         "use_se=true": payload.get("use_se") is True,
         f"seed={seed}": int(payload.get("seed", -1)) == seed,
         f"dur_s={expected_duration}": math.isclose(
             float(payload.get("dur_s", -1)), expected_duration, abs_tol=1e-12
         ),
+        f"context_seconds={expected_duration} when present": context_matches,
     }
     failed = [label for label, passed in checks.items() if not passed]
     if failed:
@@ -444,6 +682,40 @@ def validate_prototype_run(
     calibration = _read_json(paths["calibration"])
     prediction_metadata = _read_json(paths["prediction_metadata"])
     metrics = _read_json(paths["metrics"])
+    recorded_selection_protocol = _recorded_selection_protocol(
+        (
+            ("prototype metadata", metadata),
+            ("calibration", calibration),
+            ("prediction metadata", prediction_metadata),
+            ("evaluation metrics", metrics),
+        )
+    )
+    expected_selection_route = "hierarchical_prototype_candidate"
+    calibration_selection_route = _canonical_route_from_record(
+        calibration, context=f"calibration {paths['calibration']}"
+    )
+    prediction_selection_route = _canonical_route_from_record(
+        prediction_metadata,
+        context=f"prediction metadata {paths['prediction_metadata']}",
+    )
+    metrics_selection_route = _canonical_route_from_record(
+        metrics, context=f"evaluation metrics {paths['metrics']}"
+    )
+    best_hierarchical = _method_payload_for_route(
+        metrics.get("method_best_params", {}),
+        route=expected_selection_route,
+        context=f"evaluation metrics method_best_params {paths['metrics']}",
+    )
+    raw_method_metrics = _method_payload_for_route(
+        metrics.get("methods", {}),
+        route="primary_softmax",
+        context=f"evaluation metrics methods {paths['metrics']}",
+    )
+    hierarchical_method_metrics = _method_payload_for_route(
+        metrics.get("methods", {}),
+        route=expected_selection_route,
+        context=f"evaluation metrics methods {paths['metrics']}",
+    )
     checkpoint = checkpoint_path(root, fold, seed, expected_lambda)
     reference_prediction = raw_prediction_path(
         root, fold, seed, expected_lambda
@@ -488,7 +760,8 @@ def validate_prototype_run(
         "artifact_type": calibration.get("artifact_type") == "hier_acoustic_prototype_calibration",
         "fold": int(calibration.get("fold", -1)) == fold,
         "seed": int(calibration.get("seed", -1)) == seed,
-        "selection_method": calibration.get("selection_method") == "hierarchical",
+        "selection_method": calibration_selection_route
+        == expected_selection_route,
         "training_exact": calibration.get("feature_backend") == "training_exact",
         "eligible": calibration.get("eligible_for_cv_aggregation") is True,
         "test_not_used": calibration.get("test_used_for_calibration") is False,
@@ -525,7 +798,8 @@ def validate_prototype_run(
         == "hier_acoustic_prototype_frozen_predictions",
         "fold": int(prediction_metadata.get("fold", -1)) == fold,
         "seed": int(prediction_metadata.get("seed", -1)) == seed,
-        "selection_method": prediction_metadata.get("selection_method") == "hierarchical",
+        "selection_method": prediction_selection_route
+        == expected_selection_route,
         "input_role": prediction_metadata.get("input_role") == "frozen_test",
         "training_exact": prediction_metadata.get("feature_backend") == "training_exact",
         "eligible": prediction_metadata.get("eligible_for_cv_aggregation") is True,
@@ -547,13 +821,12 @@ def validate_prototype_run(
         prediction_checks[f"{split}_manifest"] = _path_matches(
             root, prediction_paths.get(f"{split}_manifest"), manifest
         )
-    best_hierarchical = metrics.get("method_best_params", {}).get("hierarchical", {})
     metrics_checks = {
         "artifact_type": metrics.get("artifact_type")
         == "hier_acoustic_prototype_test_evaluation",
         "fold": int(metrics.get("fold", -1)) == fold,
         "seed": int(metrics.get("seed", -1)) == seed,
-        "selection_method": metrics.get("selection_method") == "hierarchical",
+        "selection_method": metrics_selection_route == expected_selection_route,
         "input_role": metrics.get("input_role") == "frozen_test",
         "training_exact": metrics.get("feature_backend") == "training_exact",
         "eligible": metrics.get("eligible_for_cv_aggregation") is True,
@@ -712,12 +985,13 @@ def validate_prototype_run(
     hash_links_verified = verify_recorded_sha256_links(hash_links)
 
     summary_payload = _read_json(summary_source)
-    raw_macro = float(metrics["methods"]["raw_softmax"]["macro_f1"])
-    hierarchical_macro = float(metrics["methods"]["hierarchical"]["macro_f1"])
+    raw_macro = float(raw_method_metrics["macro_f1"])
+    hierarchical_macro = float(hierarchical_method_metrics["macro_f1"])
     expected_raw = float(summary_payload["test_macro_f1"])
     if raw_macro != expected_raw:
         raise ValueError(
-            "Exact prototype Raw Softmax does not reproduce its matched summary "
+            "Exact prototype Primary Softmax route (Raw Softmax) does not "
+            "reproduce its matched summary "
             f"at fold={fold}, seed={seed}, lambda={expected_lambda}: "
             f"{raw_macro} != {expected_raw}"
         )
@@ -845,6 +1119,7 @@ def validate_prototype_run(
         "predictions": frame,
         "predictions_path": paths["predictions"],
         "metrics_path": paths["metrics"],
+        "recorded_selection_protocol": recorded_selection_protocol,
         "source_paths": source_paths,
         "softmax_probability_max_abs_diff": recomputed_probability_drift,
         "softmax_probability_within_advisory_tolerance": probability_within_tolerance,
@@ -915,7 +1190,12 @@ def load_validation_selected_runs(
             candidate=0.5,
         )
 
-        def get_prototype(weight: float, summary: Path) -> dict[str, Any]:
+        def get_prototype(
+            weight: float,
+            summary: Path,
+            *,
+            selection_protocol: str,
+        ) -> dict[str, Any]:
             cache_key = (fold, seed, weight)
             if cache_key not in prototype_cache:
                 prototype_cache[cache_key] = validate_prototype_run(
@@ -926,10 +1206,23 @@ def load_validation_selected_runs(
                     expected_lambda=weight,
                     summary_source=summary,
                 )
-            return prototype_cache[cache_key]
+            prototype = prototype_cache[cache_key]
+            reconcile_selection_protocol(
+                str(prototype["recorded_selection_protocol"]),
+                requested=selection_protocol,
+            )
+            return prototype
 
-        selected_prototype = get_prototype(candidate, paths["B2_valsel"])
-        fixed_prototype = get_prototype(0.5, paths["B2_fixed_w05"])
+        selected_prototype = get_prototype(
+            candidate,
+            paths["B2_valsel"],
+            selection_protocol="foldwise_validation_selected_lambda",
+        )
+        fixed_prototype = get_prototype(
+            0.5,
+            paths["B2_fixed_w05"],
+            selection_protocol="fixed_lambda_0_5_retrospective",
+        )
         source_paths.update(selected_prototype["source_paths"])
         source_paths.update(fixed_prototype["source_paths"])
         predictions[(fold, seed)] = selected_prototype["predictions"]
@@ -1034,13 +1327,315 @@ def load_validation_selected_runs(
     return frame, predictions, tuple(sorted(source_paths, key=str))
 
 
+_FRAMEWORK_STAGE_SPECS = {
+    "B0": {
+        "model_family": "logmel_crnn",
+        "training_stage": "b0_1s_logmel_baseline",
+        "context_seconds": 1.0,
+        "selection_protocol": "none",
+        "inference_route": "primary_softmax",
+        "legacy_method_id": "raw_softmax",
+    },
+    "B1": {
+        "model_family": "logmel_crnn",
+        "training_stage": "b1_2s_logmel_mainline",
+        "context_seconds": 2.0,
+        "selection_protocol": "none",
+        "inference_route": "primary_softmax",
+        "legacy_method_id": "raw_softmax",
+    },
+    "B2_valsel": {
+        "model_family": "hierarchical_supervision_crnn",
+        "training_stage": "b2_validation_selected_hierarchical_crnn",
+        "context_seconds": 2.0,
+        "selection_protocol": "foldwise_validation_selected_lambda",
+        "inference_route": "primary_softmax",
+        "legacy_method_id": "raw_softmax",
+    },
+    "B3_valsel": {
+        "model_family": "hierarchical_supervision_crnn",
+        "training_stage": "b3_hierarchical_prototype_top1_ablation",
+        "context_seconds": 2.0,
+        "selection_protocol": "foldwise_validation_selected_lambda",
+        "inference_route": "hierarchical_prototype_candidate",
+        "legacy_method_id": "hierarchical_prototype",
+    },
+    "B2_fixed_w05": {
+        "model_family": "hierarchical_supervision_crnn",
+        "training_stage": "b2_validation_selected_hierarchical_crnn",
+        "context_seconds": 2.0,
+        "selection_protocol": "fixed_lambda_0_5_retrospective",
+        "inference_route": "primary_softmax",
+        "legacy_method_id": "raw_softmax",
+    },
+    "B3_fixed_w05": {
+        "model_family": "hierarchical_supervision_crnn",
+        "training_stage": "b3_hierarchical_prototype_top1_ablation",
+        "context_seconds": 2.0,
+        "selection_protocol": "fixed_lambda_0_5_retrospective",
+        "inference_route": "hierarchical_prototype_candidate",
+        "legacy_method_id": "hierarchical_prototype",
+    },
+}
+
+
+def canonical_metadata_for_framework_stage(stage: str) -> dict[str, object]:
+    """Return canonical metadata without rewriting a historical stage key."""
+
+    try:
+        spec = _FRAMEWORK_STAGE_SPECS[stage]
+    except KeyError as exc:
+        allowed = ", ".join(_FRAMEWORK_STAGE_SPECS)
+        raise ValueError(
+            f"Unknown framework stage {stage!r}; expected one of: {allowed}."
+        ) from exc
+    return build_method_metadata(**spec)
+
+
+def add_canonical_method_metadata(
+    frame: pd.DataFrame,
+    *,
+    method_column: str = "method",
+    selection_protocol: str = "foldwise_validation_selected_lambda",
+) -> pd.DataFrame:
+    """Append route metadata while retaining legacy method columns verbatim."""
+
+    if method_column not in frame.columns:
+        raise ValueError(f"Method frame is missing column: {method_column}")
+    requested_protocol = canonicalize_selection_protocol(selection_protocol)
+    enriched = frame.copy()
+    if enriched.empty:
+        for field in METHOD_METADATA_FIELDS:
+            enriched[field] = pd.Series(dtype=object)
+        return enriched
+    rows: list[dict[str, object]] = []
+    for source_record in enriched.to_dict(orient="records"):
+        legacy_method = str(source_record[method_column])
+        recorded_protocol = (
+            str(source_record["selection_protocol"])
+            if _metadata_value_is_present(
+                source_record.get("selection_protocol")
+            )
+            else "none"
+        )
+        protocol = reconcile_selection_protocol(
+            recorded_protocol,
+            requested=requested_protocol,
+        )
+        if legacy_method == "prototype_geometry":
+            route = None
+        else:
+            _, route = resolve_inference_method(legacy_method)
+        if route is None:
+            component_metadata = build_model_metadata(
+                model_family="hierarchical_supervision_crnn",
+                training_stage="b2_validation_selected_hierarchical_crnn",
+                context_seconds=2.0,
+                selection_protocol=protocol,
+            )
+            component_metadata.update(
+                {
+                    "inference_route": None,
+                    "canonical_method_id": None,
+                    "display_name_en": None,
+                    "display_name_zh": None,
+                    "legacy_method_id": None,
+                }
+            )
+            _assert_existing_metadata_compatible(
+                source_record, component_metadata
+            )
+            rows.append(component_metadata)
+            continue
+        training_stage = (
+            "b3_hierarchical_prototype_top1_ablation"
+            if route == "hierarchical_prototype_candidate"
+            else "b2_validation_selected_hierarchical_crnn"
+        )
+        method_metadata = build_method_metadata(
+            model_family="hierarchical_supervision_crnn",
+            training_stage=training_stage,
+            context_seconds=2.0,
+            selection_protocol=protocol,
+            inference_route=route,
+            legacy_method_id=legacy_method,
+        )
+        _assert_existing_metadata_compatible(source_record, method_metadata)
+        rows.append(method_metadata)
+    metadata = pd.DataFrame(rows, index=enriched.index)
+    for field in METHOD_METADATA_FIELDS:
+        enriched[field] = metadata[field]
+    return enriched
+
+
+def add_canonical_stage_metadata(
+    frame: pd.DataFrame,
+    *,
+    stage_column: str = "stage",
+    selection_protocol: str | None = None,
+) -> pd.DataFrame:
+    """Append metadata without guessing how bare B2/B3 rows were selected."""
+
+    if stage_column not in frame.columns:
+        raise ValueError(f"Stage frame is missing column: {stage_column}")
+    enriched = frame.copy()
+    if enriched.empty:
+        for field in METHOD_METADATA_FIELDS:
+            enriched[field] = pd.Series(dtype=object)
+        return enriched
+    requested_protocol = (
+        canonicalize_selection_protocol(selection_protocol)
+        if selection_protocol is not None
+        else None
+    )
+    unambiguous_stages = {
+        "B0": "B0",
+        "B1": "B1",
+        "B2_valsel": "B2_valsel",
+        "B3_valsel": "B3_valsel",
+        "B2_fixed_w05": "B2_fixed_w05",
+        "B3_fixed_w05": "B3_fixed_w05",
+    }
+    rows: list[dict[str, object]] = []
+    for source_record in enriched.to_dict(orient="records"):
+        legacy_stage = str(source_record[stage_column])
+        if legacy_stage in {"B2", "B3"}:
+            if requested_protocol in {None, "none"}:
+                raise ValueError(
+                    f"Bare stage {legacy_stage!r} requires explicit "
+                    "selection_protocol; use foldwise_validation_selected_lambda "
+                    "or fixed_lambda_0_5_retrospective."
+                )
+            suffix = {
+                "foldwise_validation_selected_lambda": "valsel",
+                "fixed_lambda_0_5_retrospective": "fixed_w05",
+            }.get(requested_protocol)
+            if suffix is None:
+                raise ValueError(
+                    f"Unsupported selection_protocol {requested_protocol!r} "
+                    f"for bare stage {legacy_stage!r}."
+                )
+            canonical_stage = f"{legacy_stage}_{suffix}"
+        else:
+            try:
+                canonical_stage = unambiguous_stages[legacy_stage]
+            except KeyError as exc:
+                raise ValueError(f"Unknown framework stage {legacy_stage!r}") from exc
+            recorded_protocol = str(
+                _FRAMEWORK_STAGE_SPECS[canonical_stage]["selection_protocol"]
+            )
+            if (
+                legacy_stage not in {"B0", "B1"}
+                and requested_protocol is not None
+                and requested_protocol != recorded_protocol
+            ):
+                raise ValueError(
+                    f"Stage {legacy_stage!r} records selection_protocol "
+                    f"{recorded_protocol!r}, not {requested_protocol!r}."
+                )
+        stage_metadata = canonical_metadata_for_framework_stage(canonical_stage)
+        _assert_existing_metadata_compatible(source_record, stage_metadata)
+        rows.append(stage_metadata)
+    metadata = pd.DataFrame(rows, index=enriched.index)
+    for field in METHOD_METADATA_FIELDS:
+        enriched[field] = metadata[field]
+    return enriched
+
+
+def add_canonical_comparison_metadata(frame: pd.DataFrame) -> pd.DataFrame:
+    """Append final/baseline identities without replacing comparison keys."""
+
+    required = {"comparison", "final_stage", "baseline_stage"}
+    missing = sorted(required - set(frame.columns))
+    if missing:
+        raise ValueError(
+            f"Comparison frame is missing columns: {missing}"
+        )
+    enriched = frame.copy()
+    if enriched.empty:
+        for field in METHOD_METADATA_FIELDS:
+            enriched[field] = pd.Series(dtype=object)
+            enriched[f"baseline_{field}"] = pd.Series(dtype=object)
+        return enriched
+    source_records = enriched.to_dict(orient="records")
+    final_metadata = []
+    baseline_metadata = []
+    for source_record in source_records:
+        final = canonical_metadata_for_framework_stage(
+            str(source_record["final_stage"])
+        )
+        baseline = canonical_metadata_for_framework_stage(
+            str(source_record["baseline_stage"])
+        )
+        _assert_existing_metadata_compatible(source_record, final)
+        _assert_existing_metadata_compatible(
+            source_record, baseline, prefix="baseline_"
+        )
+        final_metadata.append(final)
+        baseline_metadata.append(baseline)
+    for field in METHOD_METADATA_FIELDS:
+        enriched[field] = [metadata[field] for metadata in final_metadata]
+        enriched[f"baseline_{field}"] = [
+            metadata[field] for metadata in baseline_metadata
+        ]
+    return enriched
+
+
+def canonical_nomenclature_provenance() -> dict[str, object]:
+    """Return JSON-safe metadata for this multi-stage analysis."""
+
+    return {
+        "nomenclature_schema_version": NOMENCLATURE_SCHEMA_VERSION,
+        "framework_stages": {
+            stage: canonical_metadata_for_framework_stage(stage)
+            for stage in _FRAMEWORK_STAGE_SPECS
+        },
+        "validation_selected_routes": {
+            method: build_method_metadata(
+                model_family="hierarchical_supervision_crnn",
+                training_stage=(
+                    "b3_hierarchical_prototype_top1_ablation"
+                    if canonicalize_inference_route(method)
+                    == "hierarchical_prototype_candidate"
+                    else "b2_validation_selected_hierarchical_crnn"
+                ),
+                context_seconds=2.0,
+                selection_protocol="foldwise_validation_selected_lambda",
+                inference_route=method,
+                legacy_method_id=method,
+            )
+            for method in (
+                "raw_softmax",
+                "main_prototype",
+                "hierarchical_prototype",
+            )
+        },
+    }
+
+
 FRAMEWORK_STAGE_DESCRIPTIONS = {
-    "B0": "1-s Log-Mel CRNN",
-    "B1": "2-s Log-Mel CRNN",
-    "B2_valsel": "2-s Log-Mel CRNN + fold-wise validation-selected hierarchy, Raw Softmax",
-    "B3_valsel": "B2_valsel + hierarchical prototype candidate inference",
-    "B2_fixed_w05": "Fixed-lambda-0.5 B2, Raw Softmax",
-    "B3_fixed_w05": "Fixed-lambda-0.5 B3 hierarchical prototype",
+    "B0": display_label(
+        "training_stage", "b0_1s_logmel_baseline", language="en"
+    ),
+    "B1": display_label(
+        "training_stage", "b1_2s_logmel_mainline", language="en"
+    ),
+    "B2_valsel": display_label(
+        "training_stage",
+        "b2_validation_selected_hierarchical_crnn",
+        language="en",
+    ),
+    "B3_valsel": display_label(
+        "training_stage",
+        "b3_hierarchical_prototype_top1_ablation",
+        language="en",
+    ),
+    "B2_fixed_w05": "B2 — 2-s hierarchical-supervision CRNN",
+    "B3_fixed_w05": display_label(
+        "training_stage",
+        "b3_hierarchical_prototype_top1_ablation",
+        language="en",
+    ),
 }
 FRAMEWORK_COMPARISONS = (
     ("B2_valsel", "B1"),
@@ -1051,6 +1646,48 @@ FRAMEWORK_COMPARISONS = (
     ("B3_valsel", "B0"),
     ("B3_fixed_w05", "B3_valsel"),
 )
+
+
+def framework_stage_display(stage: str) -> str:
+    """Render a stage key without changing the stored stage value."""
+
+    aliases = {"B2": "B2_valsel", "B3": "B3_valsel"}
+    key = aliases.get(stage, stage)
+    try:
+        label = FRAMEWORK_STAGE_DESCRIPTIONS[key]
+    except KeyError as exc:
+        raise ValueError(f"Unknown framework stage {stage!r}") from exc
+    protocol = str(_FRAMEWORK_STAGE_SPECS[key]["selection_protocol"])
+    if protocol != "none":
+        label += "; " + display_label(
+            "selection_protocol", protocol, language="en"
+        )
+    return label
+
+
+def framework_comparison_display(comparison: str) -> str:
+    """Render a stored ``left - right`` comparison using canonical labels."""
+
+    parts = comparison.split(" - ", 1)
+    if len(parts) != 2:
+        raise ValueError(f"Malformed framework comparison {comparison!r}")
+    return (
+        f"{framework_stage_display(parts[0])} − "
+        f"{framework_stage_display(parts[1])}"
+    )
+
+
+def _wrapped_display(value: str, *, width: int = 27) -> str:
+    """Wrap long canonical labels only at the plotting boundary."""
+
+    return "\n".join(
+        textwrap.wrap(
+            value,
+            width=width,
+            break_long_words=False,
+            break_on_hyphens=False,
+        )
+    )
 
 
 def compute_framework_summary(runs: pd.DataFrame) -> pd.DataFrame:
@@ -1070,6 +1707,7 @@ def compute_framework_summary(runs: pd.DataFrame) -> pd.DataFrame:
                 "sd_macro_f1": float(values.std(ddof=1)),
                 "min_macro_f1": float(values.min()),
                 "max_macro_f1": float(values.max()),
+                **canonical_metadata_for_framework_stage(stage),
             }
         )
     return pd.DataFrame(rows)
@@ -1125,7 +1763,7 @@ def aggregate_functional_metrics(
             {f"fold_{fold}_mean": fold_means[fold] for fold in EXPECTED_FOLDS}
         )
         rows.append(row)
-    return pd.DataFrame(rows)
+    return add_canonical_method_metadata(pd.DataFrame(rows))
 
 
 def add_margin_aggregates(
@@ -1185,7 +1823,9 @@ def add_margin_aggregates(
         overall_rows.append(overall)
     output.append(pd.DataFrame(fold_rows))
     output.append(pd.DataFrame(overall_rows))
-    return pd.concat(output, ignore_index=True, sort=False)
+    return add_canonical_method_metadata(
+        pd.concat(output, ignore_index=True, sort=False)
+    )
 
 
 def add_disagreement_aggregates(
@@ -1249,10 +1889,17 @@ def add_disagreement_aggregates(
         ):
             overall[f"repeated_run_total_{column}"] = int(group[column].sum())
         overall_rows.append(overall)
-    return pd.concat(
-        [run_disagreements, pd.DataFrame(fold_rows), pd.DataFrame(overall_rows)],
-        ignore_index=True,
-        sort=False,
+    return add_canonical_method_metadata(
+        pd.concat(
+            [
+                run_disagreements,
+                pd.DataFrame(fold_rows),
+                pd.DataFrame(overall_rows),
+            ],
+            ignore_index=True,
+            sort=False,
+        ),
+        method_column="prototype_method",
     )
 
 
@@ -1473,14 +2120,20 @@ def compute_convergence_tables(
     return pd.DataFrame(epoch_rows), pd.DataFrame(gap_rows), log_audit
 
 
-def _export_figure(fig: plt.Figure, stem: Path) -> tuple[Path, Path, Path]:
+def _export_figure(
+    fig: plt.Figure,
+    stem: Path,
+    *,
+    preserve_canvas: bool = False,
+) -> tuple[Path, Path, Path]:
     stem.parent.mkdir(parents=True, exist_ok=True)
     svg = stem.with_suffix(".svg")
     pdf = stem.with_suffix(".pdf")
     png = stem.with_suffix(".png")
-    fig.savefig(svg, bbox_inches="tight", facecolor="white")
-    fig.savefig(pdf, bbox_inches="tight", facecolor="white")
-    fig.savefig(png, bbox_inches="tight", dpi=300, facecolor="white")
+    bbox_inches = None if preserve_canvas else "tight"
+    fig.savefig(svg, bbox_inches=bbox_inches, facecolor="white")
+    fig.savefig(pdf, bbox_inches=bbox_inches, facecolor="white")
+    fig.savefig(png, bbox_inches=bbox_inches, dpi=300, facecolor="white")
     plt.close(fig)
     return svg, pdf, png
 
@@ -1577,7 +2230,15 @@ def build_framework_figure(
         label="Fixed λ=0.5 sensitivity",
         zorder=4,
     )
-    axes[0].set_xticks(x, ["B0", "B1", "B2\nval-selected", "B3\nval-selected"])
+    axes[0].set_xticks(
+        x,
+        [
+            _wrapped_display(FRAMEWORK_STAGE_DESCRIPTIONS[stage], width=22)
+            for stage in primary
+        ],
+        rotation=16,
+        ha="right",
+    )
     axes[0].set_ylabel("Test Macro-F1")
     axes[0].set_ylim(max(0.88, float(means.min() - 0.03)), 0.98)
     axes[0].grid(axis="y", color="#D9DEE5", linewidth=0.5)
@@ -1596,7 +2257,13 @@ def build_framework_figure(
         axes[1].plot([run_low[index], run_high[index]], [y[index], y[index]], color="#2E6F8E", lw=1.5)
         axes[1].plot(delta[index], y[index], "o", color="#2E6F8E", ms=4)
     axes[1].axvline(0.0, color="#555D6B", lw=0.8, linestyle="--")
-    axes[1].set_yticks(y, plot["comparison"])
+    axes[1].set_yticks(
+        y,
+        [
+            _wrapped_display(framework_comparison_display(str(value)), width=38)
+            for value in plot["comparison"]
+        ],
+    )
     axes[1].set_xlabel("Paired test Macro-F1 difference")
     axes[1].grid(axis="x", color="#D9DEE5", linewidth=0.5)
     axes[1].text(
@@ -1626,7 +2293,10 @@ def _functional_value(
 def build_functional_figure(summary: pd.DataFrame) -> plt.Figure:
     fig, axes = plt.subplots(2, 2, figsize=(183 / 25.4, 112 / 25.4))
     methods = ("raw_softmax", "main_prototype", "hierarchical_prototype")
-    labels = ("Raw", "Main proto", "Hier proto")
+    labels = tuple(
+        _wrapped_display(METHOD_DISPLAY_LABELS[method], width=22)
+        for method in methods
+    )
     colors = ("#6D8FA3", "#8A9D70", "#2E6F8E")
     x = np.arange(len(methods))
     width = 0.32
@@ -1679,7 +2349,10 @@ def build_margin_figure(margins: pd.DataFrame) -> plt.Figure:
     runs = margins[margins["record_type"] == "run"].copy()
     fig, axes = plt.subplots(2, 2, figsize=(183 / 25.4, 112 / 25.4))
     methods = ("raw_softmax", "main_prototype", "hierarchical_prototype")
-    labels = ("Raw", "Main proto", "Hier proto")
+    labels = tuple(
+        _wrapped_display(METHOD_DISPLAY_LABELS[method], width=22)
+        for method in methods
+    )
     colors = ("#6D8FA3", "#8A9D70", "#2E6F8E")
     for row, level in enumerate(("main", "subtype")):
         subset = runs[runs["level"] == level]
@@ -1727,11 +2400,28 @@ def build_margin_figure(margins: pd.DataFrame) -> plt.Figure:
 def build_convergence_figure(
     epochs: pd.DataFrame, gaps: pd.DataFrame
 ) -> plt.Figure:
-    fig, axes = plt.subplots(1, 3, figsize=(183 / 25.4, 72 / 25.4))
+    fig, axes = plt.subplots(
+        1,
+        3,
+        figsize=(183 / 25.4, 112 / 25.4),
+    )
+    fig.subplots_adjust(
+        left=0.075,
+        right=0.94,
+        top=0.86,
+        bottom=0.33,
+        wspace=0.52,
+    )
     stages = ("B0", "B1", "B2", "B3")
+    stage_labels = stages
     colors = ("#555D6B", "#6D8FA3", "#8A9D70", "#2E6F8E")
     epoch_values = [epochs.loc[epochs["stage"] == stage, "best_epoch"].to_numpy(float) for stage in stages]
-    boxes = axes[0].boxplot(epoch_values, tick_labels=stages, patch_artist=True, showfliers=False)
+    boxes = axes[0].boxplot(
+        epoch_values,
+        tick_labels=stage_labels,
+        patch_artist=True,
+        showfliers=False,
+    )
     for patch, color in zip(boxes["boxes"], colors, strict=True):
         patch.set_facecolor(color)
         patch.set_alpha(0.75)
@@ -1740,19 +2430,24 @@ def build_convergence_figure(
     axes[0].set_ylabel("Best epoch")
     axes[0].grid(axis="y", color="#D9DEE5", linewidth=0.5)
     axes[0].text(
-        0.52,
-        1.035,
-        "B3 inherits B2 checkpoint epoch",
+        0.5,
+        0.98,
+        "B3 inherits B2\ncheckpoint epoch",
         transform=axes[0].transAxes,
         ha="center",
-        va="bottom",
+        va="top",
         color="#555D6B",
-        fontsize=7,
+        fontsize=6,
     )
     _panel_label(axes[0], "a")
 
     gap_values = [gaps.loc[gaps["stage"] == stage, "validation_minus_test_gap"].to_numpy(float) for stage in stages]
-    boxes = axes[1].boxplot(gap_values, tick_labels=stages, patch_artist=True, showfliers=False)
+    boxes = axes[1].boxplot(
+        gap_values,
+        tick_labels=stage_labels,
+        patch_artist=True,
+        showfliers=False,
+    )
     for patch, color in zip(boxes["boxes"], colors, strict=True):
         patch.set_facecolor(color)
         patch.set_alpha(0.75)
@@ -1779,15 +2474,32 @@ def build_convergence_figure(
     axes[2].set_ylabel("Test Macro-F1")
     axes[2].grid(color="#D9DEE5", linewidth=0.5)
     axes[2].legend(
-        ncol=4,
-        loc="lower center",
-        bbox_to_anchor=(0.5, 1.01),
+        ncol=2,
+        loc="lower right",
         frameon=False,
+        fontsize=6,
         handletextpad=0.35,
         columnspacing=0.7,
     )
     _panel_label(axes[2], "c")
-    fig.tight_layout(rect=(0, 0, 1, 0.92), pad=1.1)
+    key_positions = (
+        (0.015, 0.205),
+        (0.515, 0.205),
+        (0.015, 0.075),
+        (0.515, 0.075),
+    )
+    for stage, (x_position, y_position) in zip(
+        stages, key_positions, strict=True
+    ):
+        fig.text(
+            x_position,
+            y_position,
+            _wrapped_display(framework_stage_display(stage), width=47),
+            ha="left",
+            va="center",
+            fontsize=5.4,
+            color="#20242A",
+        )
     return fig
 
 
@@ -1924,6 +2636,7 @@ def build_final_report(
     acceptance: str,
     acceptance_evidence: Mapping[str, Any],
     source_file_count: int,
+    output_directory: str,
 ) -> str:
     selection_rows = [
         (
@@ -1938,7 +2651,10 @@ def build_final_report(
     ]
     stage_rows = [
         (
-            row.stage,
+            FRAMEWORK_STAGE_DESCRIPTIONS[str(row.stage)],
+            display_label(
+                "selection_protocol", str(row.selection_protocol), language="en"
+            ),
             row.n,
             _format_float(row.mean_macro_f1),
             _format_float(row.sd_macro_f1),
@@ -1949,7 +2665,7 @@ def build_final_report(
     ]
     paired_rows = [
         (
-            row.comparison,
+            framework_comparison_display(str(row.comparison)),
             row.n,
             _format_float(row.mean_delta),
             f"[{_format_float(row.bootstrap_ci95_low)}, {_format_float(row.bootstrap_ci95_high)}]",
@@ -1972,7 +2688,7 @@ def build_final_report(
     )
     functional_rows = [
         (
-            row.method,
+            METHOD_DISPLAY_LABELS.get(str(row.method), str(row.method)),
             row.metric,
             row.n_runs_available,
             _format_float(row.mean),
@@ -2006,7 +2722,7 @@ def build_final_report(
     ]
     margin_rows = [
         (
-            row.method,
+            METHOD_DISPLAY_LABELS.get(str(row.method), str(row.method)),
             row.level,
             _format_float(row.correct_margin_median),
             _format_float(row.error_margin_median),
@@ -2018,7 +2734,9 @@ def build_final_report(
     ]
     disagreement_rows = [
         (
-            row.prototype_method,
+            METHOD_DISPLAY_LABELS.get(
+                str(row.prototype_method), str(row.prototype_method)
+            ),
             _format_float(row.disagreement_rate),
             int(row.repeated_run_total_n_disagreements),
             int(row.repeated_run_total_raw_correct_prototype_wrong),
@@ -2044,6 +2762,7 @@ def build_final_report(
         epoch_rows.append(
             (
                 stage,
+                framework_stage_display(stage),
                 _format_float(first["stage_mean"], 2),
                 _format_float(first["stage_sd"], 2),
                 _format_float(first["stage_median"], 1),
@@ -2057,6 +2776,7 @@ def build_final_report(
         gap_rows.append(
             (
                 stage,
+                framework_stage_display(stage),
                 _format_float(first["stage_gap_mean"]),
                 _format_float(first["stage_gap_sd"]),
                 _format_float(first["stage_gap_median"]),
@@ -2069,6 +2789,14 @@ def build_final_report(
         "framework_functional_only": "B. framework_functional_only",
         "prototype_claim_should_be_reduced": "C. prototype_claim_should_be_reduced",
     }[acceptance]
+    b1_display = framework_stage_display("B1")
+    b2_display = framework_stage_display("B2")
+    b3_display = framework_stage_display("B3")
+    softmax_display = METHOD_DISPLAY_LABELS["raw_softmax"]
+    main_candidate_display = METHOD_DISPLAY_LABELS["main_prototype"]
+    hierarchical_candidate_display = METHOD_DISPLAY_LABELS[
+        "hierarchical_prototype"
+    ]
     return f"""# Final Validation Report
 
 ## Material Passport
@@ -2093,13 +2821,13 @@ Every one of the 75 source validation summaries is recorded with its SHA256 in `
 
 ## Validation-selected framework results
 
-{_markdown_table(("Stage", "n", "Mean Macro-F1", "SD", "Min", "Max"), stage_rows)}
+{_markdown_table(("Stage", "Selection protocol", "n", "Mean Macro-F1", "SD", "Min", "Max"), stage_rows)}
 
 {_markdown_table(("Comparison", "n", "Mean Δ", "Run bootstrap 95% CI", "Wilcoxon raw P", "Holm P", "W/T/L", "Fold-cluster 95% CI"), paired_rows)}
 
 Holm adjustment is applied once across the seven requested validation-selected/fixed-sensitivity comparisons. Seeds are not treated as independent test cohorts: five fold-mean deltas and a five-fold cluster bootstrap are reported separately.
 
-## Prototype functional value
+## Canonical inference-route functional value
 
 {_markdown_table(("Method", "Metric", "Available runs", "Mean", "SD", "Fold-cluster 95% CI"), functional_rows)}
 
@@ -2109,29 +2837,29 @@ Holm adjustment is applied once across the seven requested validation-selected/f
 
 {_markdown_table(("Method", "Level", "Median margin if correct", "Median margin if error", "Error AUROC", "AUROC fold-cluster 95% CI"), margin_rows)}
 
-### Raw/prototype disagreements
+### {softmax_display}/prototype-candidate disagreements
 
-{_markdown_table(("Prototype method", "Mean disagreement rate", "Repeated-run disagreements", "Raw correct / prototype wrong", "Prototype correct / Raw wrong", "Both wrong", "Rate fold-cluster 95% CI"), disagreement_rows)}
+{_markdown_table(("Prototype candidate route", "Mean disagreement rate", "Repeated-run disagreements", "Primary Softmax correct / candidate wrong", "Candidate correct / Primary Softmax wrong", "Both wrong", "Rate fold-cluster 95% CI"), disagreement_rows)}
 
-True-main and true-subtype prototype ranks are computed from ascending stored cosine distances with stable fixed-label tie breaking. Main and hierarchical prototype methods share the same auxiliary-prototype ordering; their subtype values are therefore not independent improvements. Favorable distance margin is `nearest wrong prototype distance - true prototype distance`; per-run error AUROC uses negative margin only as a diagnostic score and no test threshold is fitted.
+True-main and true-subtype prototype ranks are computed from ascending stored cosine distances with stable fixed-label tie breaking. The {main_candidate_display} and {hierarchical_candidate_display} share the same auxiliary-prototype ordering; their subtype values are therefore not independent improvements. Favorable distance margin is `nearest wrong prototype distance - true prototype distance`; per-run error AUROC uses negative margin only as a diagnostic score and no test threshold is fitted.
 
 Disagreement counts are reported per fold-seed before aggregation. The representative description remains: **“a training sample closest to the predicted class prototype”**. Case studies, where used elsewhere, remain deterministic and illustrative only.
 
 ## Convergence and stability
 
-{_markdown_table(("Stage", "Mean best epoch", "SD", "Median", "Range", "Provenance"), epoch_rows)}
+{_markdown_table(("Legacy stage key", "Stage", "Mean best epoch", "SD", "Median", "Range", "Provenance"), epoch_rows)}
 
-{_markdown_table(("Stage", "Mean val-test gap", "SD", "Median", "Range"), gap_rows)}
+{_markdown_table(("Legacy stage key", "Stage", "Mean val-test gap", "SD", "Median", "Range"), gap_rows)}
 
-Complete epoch-level train-loss and validation-Macro-F1 histories were unavailable (`{log_audit['epoch_log_coverage']}`). Median/IQR learning curves were therefore not emitted or regenerated. B3 is post-hoc inference and inherits the selected B2 checkpoint epoch and validation metric; it has no independent training convergence trajectory.
+Complete epoch-level train-loss and validation-Macro-F1 histories were unavailable (`{log_audit['epoch_log_coverage']}`). Median/IQR learning curves were therefore not emitted or regenerated. {b3_display} is post-hoc inference and inherits the selected checkpoint epoch and validation metric of {b2_display}; it has no independent training convergence trajectory.
 
 ## Acceptance interpretation
 
 **{acceptance_text}**
 
-- B2_valsel − B1 mean Δ: {_format_float(acceptance_evidence['B2_valsel_minus_B1_mean_delta'])}
-- B3_valsel − B2_valsel mean Δ: {_format_float(acceptance_evidence['B3_valsel_minus_B2_valsel_mean_delta'])}
-- Positive B3_valsel − B1 fold means: {acceptance_evidence['positive_B3_valsel_minus_B1_folds']}/5
+- {b2_display} − {b1_display} mean Δ: {_format_float(acceptance_evidence['B2_valsel_minus_B1_mean_delta'])}
+- {b3_display} − {b2_display} mean Δ: {_format_float(acceptance_evidence['B3_valsel_minus_B2_valsel_mean_delta'])}
+- Positive {b3_display} − {b1_display} fold means: {acceptance_evidence['positive_B3_valsel_minus_B1_folds']}/5
 - Major functional contradiction detected: {not acceptance_evidence['no_major_functional_contradiction']}
 - Measurable candidate-prediction value: {acceptance_evidence['measurable_functional_value']}
 
@@ -2143,7 +2871,7 @@ The label is applied from the evidence literally rather than selected to favour 
 - Validation data: λ selection by outer fold and the existing prototype temperature/penalty/rejection calibration protocol.
 - Test data: frozen evaluation only.
 - Every included prototype run passed exact-path, source-ID, and MD5 disjointness audits; exact path/source-ID/MD5/main-label/subtype membership against its train, validation, and frozen-test manifest; freshly recomputed checkpoint/summary/manifest/prototype-bundle/calibration/prediction SHA256 link verification; exact Softmax prediction/Macro-F1 reproduction; and `training_exact` feature qualification.
-- Reproduced Raw Softmax probabilities had a maximum advisory absolute drift of {_format_float(max_probability_drift, 9)} versus the canonical training output, with {rank_mismatch_count} full main-class rank-order mismatches. The compact canonical rows are first bound to frozen manifest truth, then joined one-to-one to exact path/source-ID/MD5 identities with zero truth or prediction mismatches. Functional Raw main-class ranks use those identity-aligned canonical probabilities; auxiliary Softmax probabilities use the `training_exact` reproduction because the original compact test CSV did not persist auxiliary scores.
+- Reproduced {softmax_display} probabilities had a maximum advisory absolute drift of {_format_float(max_probability_drift, 9)} versus the canonical training output, with {rank_mismatch_count} full main-class rank-order mismatches. The compact canonical rows are first bound to frozen manifest truth, then joined one-to-one to exact path/source-ID/MD5 identities with zero truth or prediction mismatches. Functional primary-route main-class ranks use those identity-aligned canonical probabilities; auxiliary Softmax probabilities use the `training_exact` reproduction because the original compact test CSV did not persist auxiliary scores.
 - Frozen-source SHA256 files checked before and after analysis: {source_file_count}; changed: 0.
 - Missing required selected combinations after reconstruction: none.
 - Existing epoch histories were searched in all 75 B0/B1/selected-B2 run directories; {len(log_audit.get('candidate_history_files_scanned', []))} candidate history files and {len(log_audit.get('repository_log_files_scanned', []))} repository `.log` files were structurally inspected without retraining.
@@ -2166,21 +2894,21 @@ The label is applied from the evidence literally rather than selected to favour 
 
 ## Reproducibility entry points
 
-The audit branch is `paper/final-validation-audit`; the implementation and delivery commit SHAs are recorded in `handoff/CODEX_TO_GPT.md` and `handoff/CODEX_TO_GPT.json` after commit creation. From a checkout where the target output directory does not yet exist:
+The implementation and delivery commit SHAs are recorded in `handoff/CODEX_TO_GPT.md` and `handoff/CODEX_TO_GPT.json` after commit creation. From a checkout where the versioned target output directory does not yet exist:
 
 ```powershell
 cd C:/py/pigsound/pig-sound-classification
 $env:PYTHONNOUSERSITE="1"
 $env:NUMBA_CACHE_DIR=(Resolve-Path '.numba_cache').Path
-& "C:/py/anaconda3/envs/pigsound-gpu/python.exe" tools/generate_final_validation_audit.py --root . --validate-only
-& "C:/py/anaconda3/envs/pigsound-gpu/python.exe" tools/generate_final_validation_audit.py --root .
+& "C:/py/anaconda3/envs/pigsound-gpu/python.exe" tools/generate_final_validation_audit.py --root . --output-dir "{output_directory}" --validate-only
+& "C:/py/anaconda3/envs/pigsound-gpu/python.exe" tools/generate_final_validation_audit.py --root . --output-dir "{output_directory}"
 ```
 
 The one-time 20-run selected-lambda prototype reconstruction used the five existing exact-protocol commands without `--allow_overwrite`; its complete fold/seed loop, fixed grids, and output-directory patterns are recorded in the GPT handoff. No backbone was retrained.
 
 ## Output status
 
-All required audit tables and the five preliminary SVG/PDF/PNG audit figures are under `paper/final_validation/`. These are not final manuscript figures. The manuscript was not regenerated.
+All required audit tables and the five preliminary SVG/PDF/PNG audit figures are under `{output_directory.rstrip('/')}/`. The established `paper/final_validation/` package remains historical and is not rewritten. These are not final manuscript figures. The manuscript was not regenerated.
 """
 
 
@@ -2224,6 +2952,8 @@ def generate(
     paired, folds = paired_statistics(
         runs, FRAMEWORK_COMPARISONS, n_boot=n_boot, seed=seed
     )
+    paired = add_canonical_comparison_metadata(paired)
+    folds = add_canonical_comparison_metadata(folds)
     functional_run_frames: list[pd.DataFrame] = []
     margin_run_frames: list[pd.DataFrame] = []
     disagreement_run_frames: list[pd.DataFrame] = []
@@ -2245,6 +2975,12 @@ def generate(
         disagreement_runs, n_boot=n_boot, seed=seed
     )
     epochs, gaps, log_audit = compute_convergence_tables(runs, root=root)
+    epochs = add_canonical_stage_metadata(
+        epochs, selection_protocol="foldwise_validation_selected_lambda"
+    )
+    gaps = add_canonical_stage_metadata(
+        gaps, selection_protocol="foldwise_validation_selected_lambda"
+    )
     acceptance, acceptance_evidence = determine_acceptance(
         paired, functional_summary, margins, disagreements
     )
@@ -2272,6 +3008,8 @@ def generate(
     provenance = {
         "artifact_type": "final_validation_lambda_selection_provenance",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        "nomenclature_schema_version": NOMENCLATURE_SCHEMA_VERSION,
+        "nomenclature": canonical_nomenclature_provenance(),
         "analysis_characterization": "locked_validation_only_sensitivity_analysis",
         "fully_prospective": False,
         "fully_confirmatory": False,
@@ -2371,6 +3109,7 @@ def generate(
         acceptance=acceptance,
         acceptance_evidence=acceptance_evidence,
         source_file_count=len(source_paths),
+        output_directory=_relative(root, output_dir),
     )
     table_frames = {
         "lambda_selection_by_fold.csv": selection,
@@ -2405,7 +3144,11 @@ def generate(
         for stem, fig in figures.items():
             written.extend(
                 _relative(root, path)
-                for path in _export_figure(fig, output_dir / "figures" / stem)
+                for path in _export_figure(
+                    fig,
+                    output_dir / "figures" / stem,
+                    preserve_canvas=(stem == "best_epoch_and_val_test_gap"),
+                )
             )
     return {
         "selection": selection,
@@ -2442,8 +3185,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("paper/final_validation"),
-        help="Unique audit output directory relative to --root.",
+        default=DEFAULT_OUTPUT_DIR,
+        help=(
+            "Unique audit output directory relative to --root (default: "
+            "paper/final_validation_audit_nomenclature_v1)."
+        ),
     )
     parser.add_argument(
         "--bootstrap-resamples",
