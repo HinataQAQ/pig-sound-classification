@@ -1055,3 +1055,39 @@
 - Stop point: review this committed package. Do not begin manuscript revision,
   external validation, or another experiment without a new explicit
   `APPROVED: true` stage.
+
+## 2026-07-12 - Canonical nomenclature v1
+
+- Status: completed the approved non-destructive nomenclature refactor.
+- Branch: `refactor/canonical-nomenclature-v1`, based on
+  `3b336996dba15c6227d652b276c9882503714659`.
+- Implementation commit:
+  `1cd4afe1a716a05481a9ee14094825ed7700d70a`.
+- Added the centralized `pig_sound_nomenclature.v1` registry, bilingual labels,
+  legacy aliases, strict canonical builders/validators, and architecture versus
+  inference-route documentation.
+- Updated only active prototype, final-validation, final-functional figure, and
+  cumulative paper-table readers/writers. Old CLI names and storage keys remain
+  accepted; fixed lambda=0.5 and fold-wise validation selection remain distinct.
+- Explicit schema blocks and cross-artifact family/stage/context/protocol/route
+  relationships are validated. Unversioned provenance is preserved, nested
+  method maps reject unknown/duplicate/conflicting aliases, and output writers
+  protect every planned file from overwrite.
+- New generated packages use versioned paths/suffixes; historical artifacts,
+  checkpoint filenames/bytes/keys, result schemas, paper values, manifests,
+  branches, tags, and commits were not rewritten.
+- No training, checkpoint inference, feature extraction, audio modification,
+  parameter selection, test tuning, or result generation was run.
+- Verification: 184/184 tests, 13-file `py_compile`, 9/9 CLI help checks,
+  renderer-bound checks, and `git diff --check` passed. Independent review found
+  no Critical, Important, or Minor issue and marked the change ready to commit.
+- Integrity: 2,624/2,624 tracked historical artifacts retained identical SHA-256;
+  the sampled hierarchical checkpoint retained its SHA-256, 40 `state_dict`
+  keys/signatures, `main_head`/`aux_head` names, and strict load compatibility.
+- Metrics were not recomputed or changed. The hierarchical increment over the
+  2-s baseline remains non-significant; no new statistical claim was made.
+- Paper usability: `paper_usable=true` for naming/metadata/display consistency
+  only, not as new scientific evidence.
+- Stop point: GPT Pro/user should review this handoff. Do not merge, regenerate
+  results, revise the manuscript, retrain, or begin another stage without a new
+  explicit `APPROVED: true` instruction.

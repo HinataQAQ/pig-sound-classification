@@ -1,244 +1,148 @@
 {
-  "status": "completed_final_functional_figure_package",
-  "date": "2026-07-11",
-  "task": "final_frozen_functional_statistics_and_publication_figure_package",
-  "acceptance_interpretation": "framework_functional_only",
+  "status": "completed_canonical_nomenclature_v1",
+  "date": "2026-07-12",
+  "task": "non_destructive_canonical_nomenclature_refactor",
   "approval": {
     "approved_true": true,
     "training_authorized": false,
     "checkpoint_inference_authorized": false,
-    "atlas_authorized": false,
-    "few_shot_open_set_authorized": false,
-    "new_noise_experiment_authorized": false,
-    "new_hyperparameter_selection_authorized": false,
-    "test_tuning_authorized": false
+    "test_tuning_authorized": false,
+    "historical_artifact_rewrite_authorized": false
   },
   "git": {
-    "source_branch": "paper/final-validation-audit",
-    "base_commit_sha": "9953cd73f0b0c86eab9ba4386295d75f5fd87cdb",
-    "branch": "paper/final-figures-functional-framework",
-    "implementation_commit_sha": "ddeb89708e9c52b301b254a6382cc80890eb7ad4",
-    "handoff_commit_sha": "reported_in_final_codex_response"
+    "base_commit_sha": "3b336996dba15c6227d652b276c9882503714659",
+    "branch": "refactor/canonical-nomenclature-v1",
+    "implementation_commit_sha": "1cd4afe1a716a05481a9ee14094825ed7700d70a",
+    "handoff_commit_sha": "reported_in_final_codex_response",
+    "merged": false
+  },
+  "nomenclature": {
+    "schema_version": "pig_sound_nomenclature.v1",
+    "model_family": [
+      "logmel_crnn",
+      "hierarchical_supervision_crnn"
+    ],
+    "training_stage": [
+      "b0_1s_logmel_baseline",
+      "b1_2s_logmel_mainline",
+      "b2_validation_selected_hierarchical_crnn",
+      "b3_hierarchical_prototype_top1_ablation"
+    ],
+    "inference_route": [
+      "primary_softmax",
+      "main_class_prototype_candidate",
+      "hierarchical_prototype_candidate"
+    ],
+    "selection_protocol": [
+      "none",
+      "foldwise_validation_selected_lambda",
+      "fixed_lambda_0_5_retrospective"
+    ],
+    "fixed_and_validation_selected_distinct": true,
+    "legacy_machine_keys_preserved": true
+  },
+  "legacy_aliases": {
+    "raw_softmax": "primary_softmax",
+    "prototype": "main_class_prototype_candidate",
+    "main_prototype": "main_class_prototype_candidate",
+    "hierarchical": "hierarchical_prototype_candidate",
+    "hierarchical_prototype": "hierarchical_prototype_candidate"
   },
   "data_boundaries": {
     "model_training_run": false,
     "checkpoint_inference_run": false,
     "feature_extraction_run": false,
-    "prototype_rebuild_run": false,
     "new_parameter_selection_run": false,
     "test_set_parameter_selection": false,
     "audio_modified": false,
     "checkpoint_modified": false,
     "manifest_modified": false,
-    "existing_result_csv_json_modified": false,
-    "preexisting_csv_json_audited": 3956,
-    "preexisting_csv_json_missing": 0,
-    "preexisting_csv_json_changed": 0,
-    "locked_lambda_selection_authority": "paper/final_validation/lambda_selection_by_fold.csv",
-    "validation_summary_role": "reproduction_check_only",
-    "primary_classifier": "B2_validation_selected_raw_softmax",
-    "prototype_role": "parallel_candidate_prediction_and_diagnostic",
-    "B3_role": "ablation_not_superior_classifier"
-  },
-  "commands": {
-    "help": "conda run -n pigsound-gpu python tools/generate_final_functional_figure_package.py --help",
-    "validate_only": "conda run -n pigsound-gpu python tools/generate_final_functional_figure_package.py --root . --n-boot 10000 --bootstrap-seed 3407 --validate-only",
-    "generate": "conda run -n pigsound-gpu python tools/generate_final_functional_figure_package.py --root . --n-boot 10000 --bootstrap-seed 3407",
-    "tests": "conda run -n pigsound-gpu python -m unittest tests.test_generate_final_validation_audit tests.test_generate_journal_figure_package tests.test_generate_cumulative_framework_analysis tests.test_generate_final_functional_figure_package",
-    "compile": "conda run -n pigsound-gpu python -m py_compile tools/generate_final_functional_figure_package.py tests/test_generate_final_functional_figure_package.py",
-    "diff_check": "git diff --cached --check"
-  },
-  "cohort": {
-    "folds": [0, 1, 2, 3, 4],
-    "seeds": [42, 123, 777, 2024, 3407],
-    "n_runs": 25,
-    "pairing": "exact_fold_seed",
-    "selected_lambda_by_fold": {
-      "0": 1.0,
-      "1": 0.2,
-      "2": 0.2,
-      "3": 0.2,
-      "4": 0.5
-    },
-    "selection_source": "locked_csv",
-    "selection_reproduction_required": true
-  },
-  "bootstrap": {
-    "primary_type": "fold_cluster_bootstrap_after_seed_averaging",
-    "n_fold_clusters": 5,
-    "n_resamples": 10000,
-    "seed": 3407
-  },
-  "deployable_predicted_margin": {
-    "definition": "second_nearest_minus_nearest_four_main_prototype_distance",
-    "margin_uses_true_label": false,
-    "evaluation_uses_true_label": true,
-    "shared_geometry_for_main_and_hierarchical": true,
-    "main_prototype": {
-      "correct_margin_median": 1.01673002338,
-      "correct_margin_ci95": [0.9852297836, 1.0456256896],
-      "error_margin_median": 0.09661658918,
-      "error_margin_ci95": [0.07218815472, 0.12104502364],
-      "error_detection_auroc": 0.9460175129650935,
-      "error_detection_auroc_ci95": [0.9327767633941914, 0.956515334939281]
-    },
-    "hierarchical_prototype": {
-      "correct_margin_median": 1.01769265934,
-      "correct_margin_ci95": [0.98463873696, 1.04955039312],
-      "error_margin_median": 0.09162569004,
-      "error_margin_ci95": [0.07037496366, 0.11396694634],
-      "error_detection_auroc": 0.9469181109827804,
-      "error_detection_auroc_ci95": [0.9361422875849609, 0.9576939343806]
-    }
-  },
-  "hierarchy_inconsistency": {
-    "flag_uses_true_label": false,
-    "raw_softmax": {
-      "prevalence": 0.01642857142857143,
-      "prevalence_ci95": [0.011428571428571429, 0.02095238095238095],
-      "error_precision": 0.29866666666666664,
-      "error_precision_ci95": [0.16733333333333333, 0.424],
-      "error_recall": 0.1164040404040404,
-      "error_recall_ci95": [0.05545454545454546, 0.17933333333333332],
-      "error_enrichment": 9.299352092352091,
-      "error_enrichment_ci95": [3.5882727272727273, 17.77563492063492],
-      "enrichment_runs_available": 24
-    },
-    "main_prototype": {
-      "prevalence": 0.011428571428571427,
-      "prevalence_ci95": [0.007857142857142858, 0.014285714285714285],
-      "error_precision": 0.4766666666666667,
-      "error_precision_ci95": [0.30333333333333334, 0.6466666666666667],
-      "error_recall": 0.13764502164502165,
-      "error_recall_ci95": [0.06464069264069265, 0.20764069264069263],
-      "error_enrichment": 15.600734126984127,
-      "error_enrichment_ci95": [8.19868253968254, 24.139583333333334],
-      "enrichment_runs_available": 22
-    },
-    "hierarchical_prototype": {
-      "prevalence": 0.008333333333333331,
-      "prevalence_ci95": [0.004523809523809523, 0.012142857142857141],
-      "error_precision": 0.492,
-      "error_precision_ci95": [0.304, 0.6866666666666668],
-      "error_recall": 0.116013431013431,
-      "error_recall_ci95": [0.05215384615384615, 0.1794920634920635],
-      "error_enrichment": 17.911559523809522,
-      "error_enrichment_ci95": [11.097511904761907, 25.87358333333333],
-      "enrichment_runs_available": 18
-    },
-    "interpretation": "rare_error_enriched_diagnostic_not_safe_automatic_rejector"
-  },
-  "disagreement": {
-    "main_prototype": {
-      "raw_correct_prototype_wrong": 29,
-      "prototype_correct_raw_wrong": 28,
-      "both_wrong": 0,
-      "net_harm_minus_rescue": 1
-    },
-    "hierarchical_prototype": {
-      "raw_correct_prototype_wrong": 37,
-      "prototype_correct_raw_wrong": 29,
-      "both_wrong": 0,
-      "net_harm_minus_rescue": 8,
-      "explicit_conclusion": "harmed_more_repeated_predictions_than_rescued"
-    }
-  },
-  "primary_paired_results": {
-    "B1_minus_B0": {
-      "mean_delta_macro_f1": 0.0246308909903974,
-      "fold_cluster_ci95": [0.006578, 0.048280],
-      "wilcoxon_p": 0.000162303448,
-      "holm_status": "not_applicable_prespecified_duration_contrast"
-    },
-    "B2_minus_B1": {
-      "mean_delta_macro_f1": 0.004944395289120927,
-      "fold_cluster_ci95": [-0.00048120834107202805, 0.00946131574294879],
-      "wilcoxon_p": 0.12284633752866045,
-      "holm_p": 0.6142316876433023,
-      "interpretation": "exploratory_nonsignificant"
-    },
-    "B3_minus_B2": {
-      "mean_delta_macro_f1": -0.0019159504050923503,
-      "fold_cluster_ci95": [-0.0046310187934056925, 0.0007991179832209916],
-      "wilcoxon_p": 0.477536356531021,
-      "holm_p": 0.955072713062042,
-      "interpretation": "does_not_improve_top1"
-    }
-  },
-  "outputs": {
-    "derived_tables": [
-      "paper/final_validation/deployable_predicted_margin_summary.csv",
-      "paper/final_validation/hierarchy_inconsistency_utility.csv",
-      "paper/final_validation/prototype_functional_final_summary.csv"
-    ],
-    "main_figure_stems": [
-      "paper/figures_final/figure1_final_framework",
-      "paper/figures_final/figure2_primary_classification_evidence",
-      "paper/figures_final/figure3_prototype_functional_value",
-      "paper/figures_final/figure4_prototype_candidate_cases"
-    ],
-    "supplementary_figure_stems": [
-      "paper/figures_final/figure_s1_complete_clean_ablations",
-      "paper/figures_final/figure_s2_fixed_lambda_retrospective_cumulative",
-      "paper/figures_final/figure_s3_lambda_selection_by_fold",
-      "paper/figures_final/figure_s4_best_epoch_validation_test_gap",
-      "paper/figures_final/figure_s5_demand_simulated_noise",
-      "paper/figures_final/figure_s6_aurc_augrc",
-      "paper/figures_final/figure_s7_label_aware_true_class_margin"
-    ],
-    "extensions_per_figure": ["svg", "pdf", "png", "tiff"],
-    "legends_and_maps": [
-      "paper/figures_final/FIGURE_LEGENDS_EN.md",
-      "paper/figures_final/FIGURE_LEGENDS_CN.md",
-      "paper/figures_final/FIGURE_SOURCE_MAP.csv",
-      "paper/figures_final/FIGURE_TO_CLAIM_MATRIX.csv",
-      "paper/figures_final/FIGURE_QA_REPORT.md"
-    ],
-    "review": "paper/review/FINAL_FUNCTIONAL_FIGURE_AUDIT.md",
-    "documentation": "docs/FINAL_FUNCTIONAL_FIGURE_PACKAGE.md"
+    "historical_result_modified": false,
+    "checkpoint_filenames_modified": false,
+    "state_dict_keys_modified": false,
+    "main_head_aux_head_modified": false,
+    "path_source_id_md5_logic_modified": false
   },
   "verification": {
-    "tests_passed": 82,
-    "focused_tests_passed": 27,
-    "figure_count": 11,
-    "panel_count": 30,
-    "figure_exports": 44,
-    "empty_exports": 0,
-    "frozen_sources_hashed": 921,
-    "source_hashes_unchanged": true,
-    "pre_analysis_sha_locked": true,
-    "failure_atomic_promotion": true,
-    "source_map_rows": 30,
-    "claim_map_rows": 30,
-    "source_map_hash_links_verified": 151,
-    "original_resolution_visual_qa": "pass",
-    "svg_editable_text": "pass",
-    "svg_trailing_whitespace_files": 0,
-    "png_dpi": 300,
-    "tiff_dpi": 600,
-    "fixed_width_mm": 183,
-    "py_compile": "pass",
-    "git_diff_check": "pass",
-    "independent_code_review": "pass_no_remaining_defect",
-    "ars_editorial_decision": "accept"
+    "py_compile_passed": true,
+    "python_files_compiled": 13,
+    "tests_run": 184,
+    "tests_passed": 184,
+    "tests_failed": 0,
+    "cli_help_passed": 9,
+    "cli_help_total": 9,
+    "git_diff_check_passed": true,
+    "independent_review_ready_to_commit": true,
+    "independent_review_findings": {
+      "critical": 0,
+      "important": 0,
+      "minor": 0
+    },
+    "historical_sha_entries_checked": 2624,
+    "historical_sha_missing": 0,
+    "historical_sha_changed": 0,
+    "checkpoint_path": "checkpoints/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed42.pt",
+    "checkpoint_sha256": "8728fb7afc98f7c4ea113ede3ebc2e83aa2a39a583f1928e5354b45f6f87da6c",
+    "checkpoint_state_dict_key_count": 40,
+    "checkpoint_state_dict_keys_sha256": "5c7555550670b0db67efd09109d4addc36b6ee9720fd386f31c5f92aae36224c",
+    "checkpoint_state_dict_signature_sha256": "05ceeb624c750d0635e9336ffdb720b02c5fb181406d588c2e13e9924274fee5",
+    "checkpoint_strict_load_passed": true,
+    "checkpoint_forward_pass_run": false
   },
-  "paper_usable": true,
-  "limitations": [
-    "only_path_source_id_md5_disjointness_is_established",
-    "pig_session_device_barn_farm_grouping_not_established",
-    "only_five_fold_clusters_for_primary_cluster_intervals",
-    "S2_is_retrospective_run_bootstrap_and_multiplicity_unadjusted",
-    "S6_uncertainty_not_available_in_frozen_summary",
-    "DEMAND_noise_is_simulated_and_supplementary",
-    "no_welfare_diagnosis_safe_rejector_universal_threshold_or_real_farm_external_validity",
-    "full_921_digest_ledger_not_persisted_separately"
+  "metrics": {
+    "recomputed": false,
+    "changed": false,
+    "validated_reference_only": {
+      "b1_2s_logmel_mean_macro_f1_approx": 0.947237,
+      "hierarchical_lambda_0_2_mean_macro_f1_approx": 0.950506,
+      "hierarchical_lambda_0_5_mean_macro_f1_approx": 0.951050,
+      "hierarchical_lambda_1_0_mean_macro_f1_approx": 0.951508
+    },
+    "hierarchical_gain_claimed_significant": false
+  },
+  "paper": {
+    "paper_usable": true,
+    "scope": "nomenclature_metadata_and_display_layer_only",
+    "new_scientific_evidence": false,
+    "published_values_changed": false,
+    "primary_classifier": "b2_primary_softmax",
+    "prototype_role": "parallel_candidate_routes",
+    "b3_role": "hierarchical_prototype_top1_ablation"
+  },
+  "changed_files": [
+    "tools/nomenclature.py",
+    "docs/NOMENCLATURE.md",
+    "tests/test_nomenclature.py",
+    "docs/superpowers/plans/2026-07-12-canonical-nomenclature-v1.md",
+    "tools/build_hier_acoustic_prototypes.py",
+    "tools/calibrate_prototype_predictor.py",
+    "tools/predict_hier_acoustic_prototype.py",
+    "tools/eval_hier_acoustic_prototype.py",
+    "tools/summarize_cv5_exact_prototype.py",
+    "tools/generate_final_validation_audit.py",
+    "tools/generate_final_functional_figure_package.py",
+    "tools/generate_cumulative_framework_analysis.py",
+    "tests/test_generate_final_validation_audit.py",
+    "tests/test_generate_final_functional_figure_package.py",
+    "tests/test_generate_cumulative_framework_analysis.py",
+    "docs/FINAL_FUNCTIONAL_FIGURE_PACKAGE.md",
+    "docs/CUMULATIVE_FRAMEWORK_ANALYSIS.md"
   ],
+  "commands": {
+    "environment": "$env:PYTHONUTF8='1'; conda activate pigsound-gpu; $env:PYTHONNOUSERSITE='1'",
+    "tests": "python -m unittest -q tests.test_nomenclature tests.test_prototype_pipeline_core tests.test_generate_final_validation_audit tests.test_generate_final_functional_figure_package tests.test_generate_cumulative_framework_analysis tests.test_generate_journal_figure_package",
+    "integrity_tests": "python -m unittest -v tests.test_nomenclature.ImmutableArtifactCompatibilityTests",
+    "diff_check": "git diff --check"
+  },
+  "leakage_audit": {
+    "train_validation_test_roles_changed": false,
+    "exact_path_disjointness_changed": false,
+    "source_id_disjointness_changed": false,
+    "md5_disjointness_changed": false,
+    "test_used_for_selection": false,
+    "tracked_historical_artifacts_unchanged": true
+  },
   "blockers": [],
-  "scientific_judgment_questions": [
-    "Choose later manuscript ordering for Figure 1 versus Figure 2.",
-    "Decide whether a future approved release should persist the full 921-artifact digest ledger.",
-    "Choose a later separately approved manuscript-integration or real-farm validation stage."
-  ],
-  "recommended_next_step_not_executed": "separately_approved_manuscript_integration_preserving_B2_primary_and_all_limitations",
-  "stop_after_handoff": true
+  "questions_for_gpt_pro": [],
+  "recommended_next_step": "Review the nomenclature contract and handoff only; do not execute another stage without a new APPROVED: true instruction."
 }
