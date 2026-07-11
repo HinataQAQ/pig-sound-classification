@@ -1,166 +1,202 @@
 {
-  "status": "completed",
-  "task": "final_journal_figure_package",
+  "status": "completed_planning_only",
+  "task": "hierarchical_acoustic_prototype_atlas_engineering_audit_and_fold0_debug_plan",
   "approval": {
     "approved_true": true,
     "direct_user_request": true,
-    "models_authorized": false,
+    "implementation_authorized": false,
+    "full_cv_authorized": false,
+    "open_set_evaluation_authorized": false,
     "manuscript_rewrite_authorized": false
   },
   "branch": "paper/sci-draft-v1",
-  "base_commit_sha": "3c6bd7817095b9e2165624c1fae934db0fa39975",
-  "implementation_commit_sha": "e6a7f91579cc2fa128ae9e2dce2b154f55ea0774",
+  "repository_primary_branch_from_agents_md": "current-mctafd-ablation",
+  "base_commit_sha": "a1a7a552e225522e021c9d14ef7a5136a6505e4c",
+  "planning_commit_sha": "83050e8d3e1bebdc7e67bd4ced3df779abb4d5d0",
   "handoff_commit_sha": "see_final_codex_response",
   "skills_used": [
-    "nature-figure",
-    "academic-research-suite: integrity verification",
-    "academic-research-suite: claim alignment",
-    "academic-research-suite: methodology reviewer",
-    "karpathy-guidelines",
-    "test-driven-development",
-    "verification-before-completion"
+    "superpowers:using-superpowers",
+    "superpowers:writing-plans",
+    "superpowers:dispatching-parallel-agents",
+    "superpowers:systematic-debugging",
+    "superpowers:verification-before-completion",
+    "academic-research-suite: experiment planning",
+    "firecrawl: unavailable_cli_fallback_to_primary_web",
+    "karpathy-guidelines"
   ],
-  "paperspine_used": false,
-  "changed_files": {
-    "implementation": [
-      "tools/generate_journal_figure_package.py",
-      "tests/test_generate_journal_figure_package.py"
-    ],
-    "main_figures": [
-      "paper/figures_journal/figure1_overall_framework.{svg,pdf,png,tiff}",
-      "paper/figures_journal/figure2_duration_clean_ablations.{svg,pdf,png,tiff}",
-      "paper/figures_journal/figure3_hierarchical_clean_prototypes.{svg,pdf,png,tiff}",
-      "paper/figures_journal/figure4_simulated_noise_robustness.{svg,pdf,png,tiff}",
-      "paper/figures_journal/figure5_failure_selective_prediction.{svg,pdf,png,tiff}"
-    ],
-    "supplementary_figures": [
-      "paper/supplementary/figures/figure_s1_clean_ablations.{svg,pdf,png,tiff}",
-      "paper/supplementary/figures/figure_s2_demand_environment_snr.{svg,pdf,png,tiff}",
-      "paper/supplementary/figures/figure_s3_confusion_calibration_fold_deltas.{svg,pdf,png,tiff}"
-    ],
-    "documentation_and_audit": [
-      "paper/figures_journal/FIGURE_LEGENDS_CN.md",
-      "paper/figures_journal/FIGURE_LEGENDS_EN.md",
-      "paper/figures_journal/FIGURE_QA_REPORT.md",
-      "paper/figure_source_data/FIGURE_SOURCE_MAP.csv",
-      "paper/figure_source_data/FIGURE_TO_CLAIM_MATRIX.csv",
-      "paper/review/FINAL_FIGURE_AUDIT.md",
-      "handoff/CODEX_TO_GPT.md",
-      "handoff/CODEX_TO_GPT.json",
-      "handoff/HISTORY.md"
-    ]
-  },
-  "outputs": {
-    "main_figure_count": 5,
-    "supplementary_figure_count": 3,
-    "panel_trace_count": 25,
-    "formats_per_figure": [
-      "svg_editable_text",
-      "pdf",
-      "png_300_dpi",
-      "tiff_600_dpi_lzw"
-    ],
-    "fixed_width_mm": 183.0,
-    "primary_font": "SimSun",
-    "font_fallbacks": [
-      "Arial",
-      "DejaVu Sans"
-    ],
-    "svg_font_embedded": false,
-    "svg_text_nodes": true
-  },
-  "metrics": {
-    "new_model_metrics_created": false,
-    "duration": {
-      "one_second_mean_macro_f1": 0.9226,
-      "one_second_n": 25,
-      "two_second_mean_macro_f1": 0.9472,
-      "two_second_n": 25,
-      "three_second_mean_macro_f1": 0.9434,
-      "three_second_n": 15,
-      "paired_two_minus_one_delta": 0.024630891,
-      "paired_ci95": [
-        0.014112838,
-        0.035642072
-      ],
-      "wilcoxon_p": 0.0001623034477
-    },
-    "hierarchical_means": {
-      "lambda_0_2": 0.950506,
-      "lambda_0_5": 0.95105,
-      "lambda_1_0": 0.951508,
-      "significant_incremental_clean_gain": false
-    },
-    "noise_main_minus_raw_run_fold_p": {
-      "moderate": [
-        0.00167307,
-        0.0625
-      ],
-      "all_noisy": [
-        0.0105108,
-        0.3125
-      ],
-      "extreme_0_db": [
-        0.560171,
-        1.0
-      ]
-    },
-    "uncertainty_boundary": "Raw Softmax has the best ALL_NOISY AURC/AUGRC; main prototype has only a small frozen-threshold risk advantage."
-  },
-  "ars_audit": {
-    "mode": "read_only_final_figure_to_claim",
-    "verdict": "PASS_WITH_NOTES",
-    "panels_audited": 25,
-    "blocking_findings": 0,
-    "serious_or_medium_integrity_findings": 0,
-    "prohibited_overclaims": 0,
-    "report": "paper/review/FINAL_FIGURE_AUDIT.md"
-  },
+  "changed_files": [
+    "docs/superpowers/plans/2026-07-11-hierarchical-acoustic-prototype-atlas.md",
+    "handoff/CODEX_TO_GPT.md",
+    "handoff/CODEX_TO_GPT.json",
+    "handoff/HISTORY.md"
+  ],
   "data_boundaries": {
     "training_run": false,
     "inference_run": false,
     "feature_extraction_run": false,
-    "checkpoint_loaded": false,
-    "prototype_or_calibration_rebuilt": false,
+    "prototype_or_atlas_built": false,
+    "calibration_run": false,
+    "clean_test_evaluation_run": false,
+    "open_set_evaluation_run": false,
+    "demand_noise_run": false,
+    "full_cv_run": false,
     "test_set_tuning": false,
-    "source_result_csv_json_modified": false,
-    "manuscript_modified": false,
-    "references_modified": false,
-    "model_code_modified": false,
-    "raw_audio_modified": false,
-    "real_farm_external_validation": false,
-    "simulated_noise_only": true
+    "training_script_modified": false,
+    "clean_or_noise_result_modified": false,
+    "checkpoint_or_audio_modified": false,
+    "manuscript_modified": false
+  },
+  "current_pipeline_capability": {
+    "status": "partial_semi_atlas",
+    "available": [
+      "train-only main and subtype centroids",
+      "q95 mean and std cosine dispersion",
+      "normalized Log-Mel mean and std",
+      "representative samples",
+      "validation-only calibration",
+      "top-2 labels distances margins hierarchy consistency and uncertainty",
+      "geometry and acoustic-map plots"
+    ],
+    "missing": [
+      "unified schema-versioned ten-node graph",
+      "stable node IDs and parent links",
+      "explicit medoids and unified cross-level nearest nodes",
+      "SHA-bound per-exemplar embeddings",
+      "exact consolidated query schema",
+      "unknown_candidate and ordered rejection_reason",
+      "five-baseline comparison",
+      "few-shot node insertion",
+      "rights-gated open-set evaluation"
+    ]
+  },
+  "canonical_debug_cohort": {
+    "fold": 0,
+    "seed": 3407,
+    "aux_weight": 0.5,
+    "qualification": "training_exact",
+    "query_split": "clean_test_only",
+    "checkpoint": "checkpoints/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407.pt",
+    "checkpoint_sha256": "d6ec8dcdd6b16a6b3212a732e1d235428ba4c7c1f5702b5b1330ca9a3c449347",
+    "summary": "reports/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407/summary.json",
+    "summary_sha256": "b0e92e1a86081559e46eabea4719322f259b83ca58834106256f247fcacde4ec",
+    "canonical_prior_prototype_root": "reports/prototype_cv5_exact_w05_fold0_seed3407",
+    "prototype_bundle_sha256": "e2ad7e29735dcd88ca1e197c6a8ebdb0b4b75106594feeea96ee36617b2d18ee",
+    "prototype_calibration_sha256": "d27e0ea53487e8162cb6e7f7c1e5e8489ca13f53dab79d150cdaa54e0ccd279e",
+    "prototype_test_pred_sha256": "e672c334dec2c187f318ab357d7c948e0d8a2df06550a207d61127ee05a0508c",
+    "manifest_counts": {
+      "train": 1174,
+      "validation": 120,
+      "test": 168
+    },
+    "manifest_sha256": {
+      "train": "33337bf683c9a07b8bdf9dc5a0020e53e6883716924c6deafc06af85720b005b",
+      "validation": "ed86bb19512f4b36d3ed4630251e5e15b9fe38d8d2d42119eb90058e6689dd79",
+      "test": "4c2eedb0766725c84da2a41b9ec0793b874f9a3d10a80a0a79f4ada7342c5e68"
+    }
+  },
+  "existing_metrics_read_only": {
+    "new_metrics_created": false,
+    "raw_softmax_macro_f1": 0.9463601533,
+    "hierarchical_prototype_main_macro_f1": 0.9522727273,
+    "auxiliary_subtype_prototype_macro_f1": 0.8355042017
+  },
+  "fewshot_protocol": {
+    "eligible_subtypes": [
+      "dry_cough",
+      "abdominal_cough",
+      "frightened_stress",
+      "anxious_stress"
+    ],
+    "ineligible_single_child_subtypes": [
+      "calm_grunt",
+      "feeding"
+    ],
+    "k": [1, 3, 5, 10],
+    "complete_repeat_count": 20,
+    "debug_subtype": "dry_cough",
+    "debug_repeat": 0,
+    "support_source": "train_only",
+    "query_source": "frozen_full_clean_test",
+    "test_selects_k_or_threshold": false,
+    "claim_boundary": "frozen-representation node insertion; not genuinely unseen-backbone learning"
+  },
+  "open_set_audit": {
+    "evaluation_started": false,
+    "rights_confirmation_required_first": true,
+    "candidate_sources": [
+      {
+        "source": "SoundWel Zenodo 8252482",
+        "license": "CC BY 4.0",
+        "role": "external-known/domain-shift pig audio"
+      },
+      {
+        "source": "aSwine",
+        "license": "CC BY-NC 4.0",
+        "role": "conditional farm-background candidate"
+      },
+      {
+        "source": "SmartEars poultry farm",
+        "license": "CC BY 4.0",
+        "role": "far-OOD farm-background candidate"
+      },
+      {
+        "source": "Poultry Vocalization Dataset",
+        "license": "CC BY 4.0",
+        "role": "far-OOD noise candidate"
+      },
+      {
+        "source": "FSD50K/Freesound",
+        "license": "per-file; accept CC0 or CC BY only",
+        "role": "curated far-OOD pool"
+      },
+      {
+        "source": "ESC-50 pig",
+        "license": "CC BY-NC",
+        "role": "external-known pig audio; not unknown"
+      },
+      {
+        "source": "local Kaggle-like scream/cough archive",
+        "license": "unresolved",
+        "role": "blocked"
+      }
+    ],
+    "local_exact_md5_overlap_fold0": {
+      "soundwel_raw_6887_files": 0,
+      "aswine_raw_154_files": 0,
+      "kaggle_scream_cough_400_files": 0,
+      "soundwel_reviewed_300_files": 0
+    },
+    "md5_limit": "Exact-file overlap only; segment, source-study and acoustic-fingerprint overlap remain unaudited."
   },
   "verification": {
-    "unit_tests_passed": 10,
-    "validate_only_passed": true,
-    "programmatic_package_audit_passed": true,
-    "manual_png_visual_qa_count": 8,
-    "all_exports_nonempty": true,
-    "source_map_claim_matrix_aligned": true,
-    "baseline_result_sha256_files_unchanged": 39,
-    "figure4_png_right_margin_px": 10,
-    "figure4_tiff_right_margin_px": 21,
-    "no_significance_stars": true,
-    "run_and_fold_cluster_separated": true
+    "plan_diff_check_passed": true,
+    "placeholder_scan_passed": true,
+    "required_node_fields_present": 18,
+    "required_query_fields_present": 15,
+    "implementation_tests_run": false,
+    "reason_no_tests": "No implementation code was created or changed in this planning-only round."
   },
   "paper_usability": {
-    "paper_usable": true,
-    "figure_package_complete": true,
-    "submission_complete": "conditional_on_existing_manuscript_and_release_metadata",
-    "target": "Chinese Word working draft and later journal layout"
+    "planning_artifact_usable": true,
+    "new_atlas_evidence_created": false,
+    "paper_main_result_usable": false,
+    "noise_results_role": "supplementary_or_deployment_boundary_only"
   },
-  "blockers": [],
-  "notes": [
-    "SimSun is referenced but not embedded in SVG; recipients without it may see substitution or reflow.",
-    "Local external PDF font inspection tooling is unavailable.",
-    "Fold-cluster sensitivity has five folds and low power.",
-    "No environment-specific fold-cluster CI or selective-metric paired CI/P was available or invented.",
-    "DEMAND controlled additive noise is not real-farm external validation."
+  "blockers": [
+    "implementation branch requires confirmation",
+    "additional core and validation-only calibrator files require approval",
+    "unknown ontology and exact rights-approved source pool require approval",
+    "few-shot experiment is pseudo-new node insertion because the backbone saw all six subtypes",
+    "SoundWel official 6888 versus local 6887 file discrepancy",
+    "Kaggle-like archive license unresolved and blocked",
+    "non-local candidate overlap audits not yet run"
   ],
   "questions_for_gpt_pro": [
-    "Should a later approved manuscript round retain the stored unadjusted nine-comparison P display or apply a prespecified multiplicity correction?",
-    "What font-embedding and TIFF preflight does the selected target journal require?"
+    "Approve the ten-file implementation map including the pure core and validation-only calibrator?",
+    "Implement on paper/sci-draft-v1 or move to current-mctafd-ablation?",
+    "Approve the proposed far-OOD versus external-known ontology and source pool?",
+    "Accept few-shot claims only as frozen-representation node insertion?",
+    "Keep manuscript reframing deferred until Atlas evidence exists?"
   ],
-  "recommended_next_step": "Stop. Review the final figure package; do not modify the manuscript or start another experiment/paper stage without a new explicit APPROVED:true."
+  "recommended_next_step": "Stop. GPT Pro/user reviews this audit and plan; do not implement or run the fold0 debug until a new explicit approved stage."
 }

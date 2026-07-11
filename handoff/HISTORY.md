@@ -816,3 +816,48 @@
   unavailable CI/P was invented.
 - Stop point: review the figure package. Do not modify the manuscript or start
   another stage without a new explicit `APPROVED: true`.
+
+## 2026-07-11 - Hierarchical Acoustic Prototype Atlas engineering audit and debug plan
+
+- Status: completed as planning only.
+- Branch: `paper/sci-draft-v1`.
+- Planning commit: `83050e8d3e1bebdc7e67bd4ced3df779abb4d5d0`.
+- Approval state: the user supplied `APPROVED: true` and restricted the round to
+  Atlas engineering audit plus a fold0/seed3407 debug plan.
+- Added
+  `docs/superpowers/plans/2026-07-11-hierarchical-acoustic-prototype-atlas.md`
+  with exact file tasks, schemas, validation-only calibration, five baselines,
+  deterministic few-shot insertion, rights-gated open-set evaluation, commands,
+  outputs, and acceptance gates.
+- Existing pipeline verdict: partial/semi-Atlas. It already provides train-only
+  main/subtype centroids, cosine dispersion, normalized Log-Mel maps,
+  representatives, validation calibration, top-2 distances/margins, hierarchy
+  consistency, uncertainty, evaluation, and plots, but lacks a unified ten-node
+  schema, explicit medoids/cross-level neighbors, consolidated unknown output,
+  few-shot insertion, and open-set rights workflow.
+- Locked future debug scope: fold0, seed3407, lambda=0.5, `training_exact`, clean
+  test only, and `dry_cough` repeat 0 for nested k=1,3,5,10 supports. No debug
+  command ran in this round.
+- Canonical reference root:
+  `reports/prototype_cv5_exact_w05_fold0_seed3407/`; existing clean Macro-F1
+  values `0.9463601533` raw, `0.9522727273` hierarchical-main prototype, and
+  `0.8355042017` auxiliary prototype were read only and are not new results.
+- Leakage boundary: existing fold0 reports show zero exact-path, source-ID, and
+  MD5 overlap. Local candidate exact-file MD5 checks also found zero overlap for
+  SoundWel raw (6887), aSwine raw (154), unresolved Kaggle archive (400), and
+  reviewed SoundWel (300), but segment/acoustic/source-study overlap remains
+  unaudited.
+- Rights boundary: SoundWel pig calls and pig scream/squeal/grunt sources are
+  external-known or near-OOD unless the ontology proves otherwise. True
+  unknowns should prioritize rights-cleared non-target farm noise, machinery,
+  people, poultry, or other species. The unresolved Kaggle-like archive is
+  blocked, and no open-set evaluation started.
+- No Atlas code, training script, checkpoint, audio, manuscript, established
+  prototype result, clean result, or noise result was changed. No training,
+  inference, feature extraction, calibration, clean/noise evaluation, DEMAND
+  run, test tuning, or full CV occurred.
+- Paper usability: the planning artifact is usable; no new Atlas evidence is
+  paper-usable yet. DEMAND remains supplementary/deployment-boundary evidence.
+- Stop point: GPT Pro/user must review the branch, implementation file map,
+  few-shot claim boundary, unknown ontology, and data rights before approving a
+  separate implementation/debug stage.

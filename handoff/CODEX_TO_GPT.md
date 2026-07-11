@@ -1,198 +1,222 @@
-# Codex to GPT Handoff - Final Journal Figure Package
+# Codex to GPT Handoff - Hierarchical Acoustic Prototype Atlas Audit and Debug Plan
 
 ## Status
 
-Completed. The user supplied `APPROVED: true` and restricted this round to the
-final paper figure package. No model, training, inference, result regeneration,
-result CSV/JSON edit, or manuscript rewrite was performed.
+Completed as a planning-only research audit. The user supplied `APPROVED: true`
+and restricted this round to the current prototype-pipeline audit and a
+fold0/seed3407 Atlas debug plan. No Atlas implementation, model training,
+inference, feature extraction, calibration, clean/noise evaluation, DEMAND run,
+or full CV was started.
 
-## Branch and Commit
+## Branch and Commits
 
-- Branch: `paper/sci-draft-v1`
-- Base commit: `3c6bd7817095b9e2165624c1fae934db0fa39975`
-- Figure-package implementation commit:
-  `e6a7f91579cc2fa128ae9e2dce2b154f55ea0774`
+- Current branch: `paper/sci-draft-v1`
+- Base commit: `a1a7a552e225522e021c9d14ef7a5136a6505e4c`
+- Planning commit: `83050e8d3e1bebdc7e67bd4ced3df779abb4d5d0`
 - Handoff commit: the delivery HEAD reported in the final Codex response
-
-## Skills and Review Route
-
-- `nature-figure`: Python/Matplotlib journal-figure contract, evidence-first
-  plotting, fixed export geometry, source mapping, and figure QA.
-- `academic-research-suite`: read-only integrity verification, claim alignment,
-  and methodology-reviewer figure-to-claim audit.
-- `karpathy-guidelines`, test-driven development, and verification-before-
-  completion were used for surgical implementation and regression checks.
-- PaperSpine was not run.
+- Repository guidance names `current-mctafd-ablation` as the primary branch;
+  implementation should not begin until GPT Pro/user confirms whether to remain
+  on the current paper branch or move the approved implementation to that branch.
 
 ## Changed Files
 
-Implementation and tests:
-
-- `tools/generate_journal_figure_package.py`
-- `tests/test_generate_journal_figure_package.py`
-
-Main figure package:
-
-- `paper/figures_journal/figure1_overall_framework.{svg,pdf,png,tiff}`
-- `paper/figures_journal/figure2_duration_clean_ablations.{svg,pdf,png,tiff}`
-- `paper/figures_journal/figure3_hierarchical_clean_prototypes.{svg,pdf,png,tiff}`
-- `paper/figures_journal/figure4_simulated_noise_robustness.{svg,pdf,png,tiff}`
-- `paper/figures_journal/figure5_failure_selective_prediction.{svg,pdf,png,tiff}`
-- `paper/figures_journal/FIGURE_LEGENDS_CN.md`
-- `paper/figures_journal/FIGURE_LEGENDS_EN.md`
-- `paper/figures_journal/FIGURE_QA_REPORT.md`
-
-Supplementary package:
-
-- `paper/supplementary/figures/figure_s1_clean_ablations.{svg,pdf,png,tiff}`
-- `paper/supplementary/figures/figure_s2_demand_environment_snr.{svg,pdf,png,tiff}`
-- `paper/supplementary/figures/figure_s3_confusion_calibration_fold_deltas.{svg,pdf,png,tiff}`
-
-Trace and review outputs:
-
-- `paper/figure_source_data/FIGURE_SOURCE_MAP.csv`
-- `paper/figure_source_data/FIGURE_TO_CLAIM_MATRIX.csv`
-- `paper/review/FINAL_FIGURE_AUDIT.md`
+- `docs/superpowers/plans/2026-07-11-hierarchical-acoustic-prototype-atlas.md`
 - `handoff/CODEX_TO_GPT.md`
 - `handoff/CODEX_TO_GPT.json`
 - `handoff/HISTORY.md`
 
-No manuscript, bibliography, paper-result table, appendix result, report result,
-model code, checkpoint, prediction, or audio file was changed.
+No training script, predictor/evaluator implementation, manuscript, checkpoint,
+audio, established prototype result, clean result, or noise result was changed.
 
-## Exact Commands
+## Current Pipeline Audit
 
-Python was run only after activating the required environment:
+The existing pipeline is a partial or "semi-Atlas" implementation:
+
+- `build_hier_acoustic_prototypes.py` constructs train-only main-class and
+  subtype centroids, q95/mean/std cosine dispersion, normalized Log-Mel
+  mean/std, representative samples, provenance, and leakage reports.
+- `calibrate_prototype_predictor.py` performs validation-only temperature,
+  fusion, and rejection calibration.
+- `predict_hier_acoustic_prototype.py` already emits main/subtype top-2 labels,
+  distances, margins, hierarchy consistency, uncertainty, and representative
+  links.
+- `eval_hier_acoustic_prototype.py` and
+  `plot_acoustic_prototype_atlas.py` provide clean evaluation and geometry/
+  acoustic-map views.
+
+Missing for the requested Atlas are a unified schema-versioned ten-node graph,
+explicit stable node IDs/parents, explicit medoids, unified cross-level nearest
+nodes, SHA-bound per-exemplar embeddings, a single exact query schema,
+`unknown_candidate`/ordered `rejection_reason`, a five-baseline comparison,
+few-shot node insertion, and a rights-gated open-set workflow.
+
+Risk found in the existing evaluator: it writes multiple test metrics and a
+test threshold sweep. Those artifacts are useful diagnostics but must never be
+used to select thresholds or claims. The planned Atlas evaluator has no test
+grid or parameter-selection path.
+
+## Exact Debug Cohort Locked by the Plan
+
+- Setting: fold0, seed3407, lambda=0.5, `training_exact`, clean test only.
+- Checkpoint:
+  `checkpoints/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407.pt`
+  - SHA-256: `d6ec8dcdd6b16a6b3212a732e1d235428ba4c7c1f5702b5b1330ca9a3c449347`
+- Training summary:
+  `reports/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407/summary.json`
+  - SHA-256: `b0e92e1a86081559e46eabea4719322f259b83ca58834106256f247fcacde4ec`
+- Canonical prior prototype reference:
+  `reports/prototype_cv5_exact_w05_fold0_seed3407/`
+  - Bundle SHA-256: `e2ad7e29735dcd88ca1e197c6a8ebdb0b4b75106594feeea96ee36617b2d18ee`
+  - Calibration SHA-256: `d27e0ea53487e8162cb6e7f7c1e5e8489ca13f53dab79d150cdaa54e0ccd279e`
+  - Test prediction SHA-256: `e672c334dec2c187f318ab357d7c948e0d8a2df06550a207d61127ee05a0508c`
+- Locked fold0 manifest counts and SHA-256:
+  - train: 1174,
+    `33337bf683c9a07b8bdf9dc5a0020e53e6883716924c6deafc06af85720b005b`
+  - validation: 120,
+    `ed86bb19512f4b36d3ed4630251e5e15b9fe38d8d2d42119eb90058e6689dd79`
+  - test: 168,
+    `4c2eedb0766725c84da2a41b9ec0793b874f9a3d10a80a0a79f4ada7342c5e68`
+
+Existing leakage reports for this cohort have `ok=true` and zero cross-split
+exact-path, source-ID, and MD5 overlap.
+
+## Planned Files and Architecture
+
+The implementation plan adds, without altering the nine audited legacy files:
+
+- `tools/hier_acoustic_atlas_core.py`
+- `tools/build_hier_acoustic_atlas.py`
+- `tools/calibrate_hier_acoustic_atlas.py`
+- `tools/predict_hier_acoustic_atlas.py`
+- `tools/eval_hier_acoustic_atlas.py`
+- `tools/eval_atlas_fewshot_extension.py`
+- `tools/eval_atlas_open_set.py`
+- `tools/plot_hier_acoustic_atlas.py`
+- `tests/test_acoustic_atlas_pipeline.py`
+- `docs/HIERARCHICAL_ACOUSTIC_ATLAS.md`
+
+The added calibrator is necessary to enforce validation-only Atlas path-weight,
+kNN-k, known-rejection, and future unknown-rejection selection. The exact
+implementation tasks, interfaces, commands, outputs, and acceptance gates are
+in the planning document committed above.
+
+## Few-Shot Protocol
+
+- Eligible paired-parent subtypes: `dry_cough`, `abdominal_cough`,
+  `frightened_stress`, and `anxious_stress`.
+- `calm_grunt` and `feeding` are not eligible for leave-one-subtype-node-out
+  insertion because each is its parent's sole subtype.
+- Remove all target-subtype train exemplars from the base Atlas, select nested
+  support sets from train only for k=1,3,5,10, insert the node, and evaluate the
+  frozen full clean-test query set. Test data never selects k, thresholds, or
+  support samples.
+- Future complete protocol: 20 deterministic support-selection repeats per
+  eligible subtype. This debug round is limited to `dry_cough`, repeat 0, with
+  the four nested k values.
+- Report mean/std Top-1, Top-2, and Macro-F1 and compare Raw Softmax, kNN, and
+  Atlas insertion. Raw auxiliary Softmax is a seen-head upper bound, not a true
+  unseen-subtype baseline, because the frozen backbone/head has already seen all
+  six subtype labels.
+
+## Open-Set Rights Gate
+
+No open-set evaluation may start before source-level rights approval. Candidate
+sources audited are:
+
+- SoundWel (Zenodo 8252482): 6888 calls reported, CC BY 4.0. Pig calls are
+  external-known/domain-shift data, not automatically unknown.
+- aSwine: about 15 h, CC BY-NC 4.0. Exclusive non-target farm-background labels
+  may be candidates, but paper/commercial reuse needs review.
+- SmartEars poultry farm: 6000 clips including 2000 `None`, CC BY 4.0; strong
+  far-OOD farm-background candidate.
+- Poultry Vocalization Dataset: 346 WAV including 86 noise, CC BY 4.0; smaller
+  far-OOD candidate.
+- FSD50K/Freesound: only per-file CC0/CC BY clips may be used; preserve source
+  IDs and attribution and de-duplicate by Freesound ID.
+- ESC-50: 40 pig clips, CC BY-NC; pig is external-known, not unknown.
+- Local Kaggle-like scream/cough archive: licence unresolved; blocked from
+  evaluation and paper use.
+
+Local exact-file MD5 checks found zero fold0 overlap for SoundWel raw (6887
+local WAV), aSwine raw (154), the unresolved Kaggle archive (400), and the
+reviewed SoundWel subset (300). This proves only zero exact-file overlap; it does
+not exclude shared long-recording segments, source-study overlap, or acoustic
+duplicates. Non-local candidates have not yet been overlap-audited.
+
+## Commands Actually Executed
+
+All commands were read-only except the plan/handoff documentation commits:
 
 ```powershell
-$env:PYTHONUTF8="1"
-$env:PYTHONIOENCODING="utf-8"
-$env:PYTHONNOUSERSITE="1"
-conda activate pigsound-gpu
-cd C:\py\pigsound\pig-sound-classification
+git branch --show-current
+git rev-parse HEAD
+git status --short
+Get-Content -Raw tools/prototype_model_adapter.py
+Get-Content -Raw tools/build_hier_acoustic_prototypes.py
+Get-Content -Raw tools/calibrate_prototype_predictor.py
+Get-Content -Raw tools/predict_hier_acoustic_prototype.py
+Get-Content -Raw tools/eval_hier_acoustic_prototype.py
+Get-Content -Raw tools/plot_acoustic_prototype_atlas.py
+Get-Content -Raw docs/PROTOTYPE_PREDICTOR.md
+Get-Content -Raw tests/test_prototype_pipeline_core.py
+Get-Content -Raw paper/manuscript/paper_en_full_story_polished.md
+Get-FileHash -Algorithm SHA256 <locked checkpoint/summary/manifests/prototype artifacts>
+firecrawl --status
+rg -n "TBD|TODO|implement later|fill in details" docs/superpowers/plans/2026-07-11-hierarchical-acoustic-prototype-atlas.md
+git diff --check -- docs/superpowers/plans/2026-07-11-hierarchical-acoustic-prototype-atlas.md
+git add -- docs/superpowers/plans/2026-07-11-hierarchical-acoustic-prototype-atlas.md
+git commit -m "docs: plan hierarchical acoustic prototype atlas"
 ```
 
-Generation and validation:
+`firecrawl --status` failed because the CLI is not installed; primary official
+web pages were checked through the available web browser instead. No Python,
+Conda, training, prediction, evaluator, unit-test, DEMAND, or CV command ran.
 
-```powershell
-python tools/generate_journal_figure_package.py --help
-python tools/generate_journal_figure_package.py --root . --validate-only
-python -m unittest tests.test_generate_journal_figure_package -v
-python tools/generate_journal_figure_package.py --root .
-```
+## Metrics
 
-Scope and source-integrity checks:
+No new metrics were produced. For cohort identification only, the existing
+canonical fold0/seed3407 clean file reports:
 
-```powershell
-git diff --name-only -- paper/manuscript paper/references paper/tables paper/appendix paper_results reports src tools/prototype_model_adapter.py
-Get-ChildItem paper\appendix,paper\tables,reports\prototype_noise_demand_w05_final -Recurse -File | Get-FileHash -Algorithm SHA256
-git diff --cached --check -- . ':(exclude)paper/figures_journal/*.svg' ':(exclude)paper/supplementary/figures/*.svg'
-```
+- Raw Softmax Macro-F1: `0.9463601533`
+- Hierarchical prototype main Macro-F1: `0.9522727273`
+- Auxiliary subtype prototype Macro-F1: `0.8355042017`
 
-The generated Matplotlib SVGs contain normal trailing spaces in multiline path
-data, so the whitespace check excluded SVG artwork while checking all code,
-Markdown, and CSV deliverables.
+These are pre-existing read-only metrics, not results of this Atlas round.
 
-Commit and delivery:
+## Paper Usability and Blockers
 
-```powershell
-git add -- tools/generate_journal_figure_package.py tests/test_generate_journal_figure_package.py paper/figures_journal paper/supplementary/figures paper/figure_source_data paper/review/FINAL_FIGURE_AUDIT.md
-git commit -m "feat: add final journal figure package"
-git add -- handoff/CODEX_TO_GPT.md handoff/CODEX_TO_GPT.json handoff/HISTORY.md
-git commit -m "docs: update final figure handoff"
-git push origin paper/sci-draft-v1
-```
+- `planning_artifact_usable=true`
+- `new_atlas_evidence_created=false`
+- `paper_main_result_usable=false` until the approved implementation and debug
+  gates pass, followed by a separately approved full matched evaluation.
+- DEMAND remains available only for supplementary/deployment-boundary analysis;
+  no noise result was regenerated or rewritten here.
 
-## Deliverables and QA
+Blockers requiring scientific or governance judgment:
 
-- Exactly 5 main figures and 3 supplementary figures.
-- Each figure has editable-text SVG, PDF, 300 dpi PNG, and 600 dpi LZW TIFF.
-- Every figure is fixed at 183 mm width; `bbox_inches='tight'` is not used.
-- Primary font is SimSun, with Arial and DejaVu Sans fallbacks recorded.
-- SVG uses text nodes and references SimSun; no SVG contains an embedded raster,
-  gradient, or filter.
-- White background; no shadows, 3D, dashboard cards, decorative icons, rainbow
-  palette, or table screenshots.
-- Macro-F1/recall axes retain 0-1 limits; only explicit delta panels use a
-  centered narrow axis.
-- Exact P values are printed without significance stars.
-- All eight 300 dpi PNGs were inspected at original resolution. No clipping or
-  legend/data overlap remains. Figure 4 right margins are PNG 10 px and TIFF
-  21 px.
-- Source map and claim matrix contain aligned entries for all 25 panels.
-- Unit tests: 10/10 passed.
-- Final programmatic package audit passed.
+1. Confirm the implementation branch.
+2. Approve the additional pure core and validation-only calibrator files.
+3. Approve the far-OOD versus external-known ontology and exact source list.
+4. Decide whether the pseudo-new subtype experiment is acceptable given that
+   the frozen representation has seen every subtype during backbone training.
+5. Resolve local SoundWel 6887-versus-official-6888 count discrepancy.
+6. Resolve rights for every per-file source; keep the Kaggle-like archive blocked.
 
-## Locked Metrics Used in Figures
+## Questions for GPT Pro
 
-No new metrics were produced. The package visualizes only locked evidence:
-
-- Duration: 1 s `0.9226` (n=25), 2 s `0.9472` (n=25), 3 s `0.9434`
-  (n=15).
-- Matched 2 s - 1 s delta: `0.024630891`, 95% CI
-  `[0.014112838, 0.035642072]`, Wilcoxon P=`0.0001623034477`.
-- Hierarchical weights: lambda 0.2/0.5/1.0 means
-  `0.950506/0.951050/0.951508`; all incremental clean paired CIs cross zero.
-- The 25 clean raw/main/hierarchical outputs in Figure 3c are directly traced
-  to one lambda=0.5 fold-seed checkpoint cohort.
-- Main prototype - raw under moderate/ALL_NOISY/extreme simulation has
-  run/fold P values `0.00167307/0.0625`, `0.0105108/0.3125`, and
-  `0.560171/1.0`.
-- Raw Softmax retains the best ALL_NOISY AURC/AUGRC; main prototype has only a
-  small frozen-threshold selective-risk advantage.
-
-## ARS Figure-to-Claim Audit
-
-- Final verdict: `PASS WITH NOTES`.
-- Blocking findings: 0.
-- Serious or medium integrity findings: 0.
-- Prohibited overclaims: 0.
-- Coverage: 25/25 panels.
-- The audit explicitly preserves these boundaries:
-  - simulated additive noise is not real-farm external validation;
-  - 0 dB is an extreme simulated-noise stress condition, not no-noise;
-  - hierarchical clean gains are not statistically significant;
-  - run-level and fold-cluster evidence are separate;
-  - Figure 4 stored Wilcoxon P values are unadjusted;
-  - pooled repeated decisions are not independent recordings;
-  - prototype inference does not universally improve uncertainty.
-
-## Leakage and Data Audit
-
-- No training, inference, feature extraction, checkpoint loading, prototype
-  construction, calibration, threshold fitting, or noise simulation ran.
-- No test-set tuning occurred.
-- Training-only prototype and validation-only calibration boundaries are shown
-  but were not recomputed.
-- A pre/post SHA-256 comparison passed for 39 locked result CSV/JSON files.
-- The generator's own pre/post snapshot also found no changed required source.
-- Train/validation/test roles, folds, seeds, predictions, and manifests are
-  unchanged.
-
-## Paper Usability
-
-- `paper_usable`: true for the final figure package.
-- `figure_package_complete`: true.
-- `submission_complete`: conditional on existing manuscript/release metadata,
-  not on this figure task.
-- The figures are suitable for the current Chinese Word working draft and later
-  journal layout, subject to target-journal production preflight.
-
-## Remaining Notes and Scientific-Judgment Questions
-
-- SimSun is referenced but not embedded in SVG. A system without SimSun may
-  substitute/reflow text; local PDF font inspection tooling is unavailable.
-- The fold-cluster sensitivity has only five folds and low power.
-- No environment-specific fold-cluster CI or selective-metric paired CI/P exists;
-  none was invented.
-- DEMAND controlled additive noise cannot replace real-farm external validation.
-- GPT Pro/editorial judgment is still needed on whether the final manuscript
-  should retain the stored unadjusted nine-comparison P display or apply and
-  report a prespecified multiplicity correction in a separate approved round.
-- The target journal should determine whether 600 dpi TIFF is required and what
-  final font-embedding preflight is needed.
+1. Approve the ten-file implementation map, including
+   `hier_acoustic_atlas_core.py` and `calibrate_hier_acoustic_atlas.py`?
+2. Should implementation occur on `paper/sci-draft-v1` or be moved to the
+   repository-primary `current-mctafd-ablation` branch?
+3. Approve SmartEars/Poultry-noise plus CC0/CC-BY Freesound/FSD50K clips as the
+   far-OOD source pool, with pig grunt/oink/scream kept out of true-unknown claims?
+4. Is the few-shot result to be framed only as frozen-representation node
+   insertion, not genuinely unseen-backbone class learning?
+5. Should manuscript reframing wait until Atlas evidence exists? Codex
+   recommends yes.
 
 ## Stop Point
 
-The approved final-figure stage is complete. Do not modify the manuscript or
-start another paper/experiment stage without a new explicit `APPROVED: true`.
+Review the committed audit and implementation plan. Do not begin implementation,
+the fold0 debug, open-set evaluation, full CV, manuscript changes, or any noise
+experiment without a new explicit approved stage.
