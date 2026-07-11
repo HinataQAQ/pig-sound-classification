@@ -946,3 +946,67 @@
 - Stop point: review the delivered evidence and scientific cautions. Do not
   start manuscript revision, inference, training, benchmarking, or exemplar
   extension without a new explicit `APPROVED: true` stage.
+
+## 2026-07-11 - Final scientific validation audit
+
+- Status: completed the approved final validation pass before final figure and
+  manuscript regeneration.
+- Branch: `paper/final-validation-audit`, based on
+  `ccf3171be6c53a75299427bc1cf726377a9c1c29`.
+- Audit implementation/output commit:
+  `69366cbf8f60fd4ed4068039a9d78629ab7a41ef`.
+- Approval boundaries: no backbone training, new model, new grid, new noise
+  experiment, test tuning, manuscript edit, or prior validated-result edit.
+- Fold-wise validation selection chose lambda `1.0, 0.2, 0.2, 0.2, 0.5` for
+  folds `0-4`, respectively, using five-seed validation mean, validation SD
+  within a `1e-6` mean tie, then smallest lambda. Test values were excluded.
+- Rebuilt 20 missing exact selected-lambda prototype runs from existing
+  checkpoints only; prototypes were train-only, calibration validation-only,
+  and frozen test inference/evaluation ran once. Five fold-4 lambda-0.5 runs
+  were reused. No overwrite flag was used.
+- Stage means: B0 `0.922606467`, B1 `0.947237358`, B2_valsel
+  `0.952181754`, B3_valsel `0.950265803`, fixed-0.5 B2 `0.951049673`,
+  fixed-0.5 B3 `0.953986214` Macro-F1.
+- B2_valsel-B1 delta is `+0.004944395`, raw P=`0.122846338`, Holm
+  P=`0.614231688`, W/T/L `17/1/7`, fold-cluster CI
+  `[-0.000481208, 0.009461316]`.
+- B3_valsel-B2_valsel delta is `-0.001915950`, raw P=`0.477536357`,
+  Holm P=`0.955072713`, W/T/L `6/8/11`, fold-cluster CI
+  `[-0.004631019, 0.000799118]`.
+- B3_valsel-B1 is positive on only `3/5` fold means. Fixed-0.5 B3 exceeds
+  B3_valsel by `+0.003720411`, but the contrast is nonsignificant.
+- Prototype functional audit: all three main routes have Top-2=`1.0`;
+  hierarchical prototype consistency is `0.991667`; error rates are
+  `0.044371` if consistent and `0.683333` if inconsistent; exact feeding/
+  stress Top-2-pair coverage is `0.996667`. Raw-versus-hierarchical repeated
+  disagreements include 37 harmed and 29 rescued decisions.
+- Acceptance is **B. framework_functional_only**. Outcome A is not supported;
+  the B3 mean increment is negative and prototype harm exceeds rescue, while
+  Top-k, conditional consistency, rank, and margin diagnostics retain
+  candidate-prediction/interpretive value.
+- Convergence audit used existing scalar logs only. Mean best epochs are B0
+  `14.24`, B1 `14.48`, selected B2 `17.72`; B3 inherits B2. A real search found
+  complete epoch histories in `0/25` B0, `0/25` B1, and `0/25` B2 runs, so no
+  learning curves were invented.
+- Integrity: exact train/validation/test path, source-ID, MD5, main-label, and
+  subtype membership passed; at least 32 artifact hash links per selected run
+  were recomputed; exact Softmax prediction/Macro-F1 reproduction passed; 905
+  frozen source/artifact files retained identical pre/post SHA256. Missing
+  selected artifacts are zero and test parameter selection is false.
+- Added the required 12 top-level audit outputs and five SVG/PDF/300-dpi PNG
+  preliminary figures under `paper/final_validation/`. No manuscript or final
+  manuscript figure was regenerated.
+- Verification: 23/23 task tests, 69/69 prototype/cumulative regressions, and
+  141/141 full tests passed; seven help commands, py_compile, validate-only,
+  overwrite refusal, staged whitespace check, and original-resolution visual
+  QA passed. Independent review found no Critical or Important issue.
+- The 20 detailed reconstructed run directories (660 files, 88,465,995 bytes)
+  remain preserved locally and intentionally excluded from Git; durable
+  artifact archiving is a separate scientific-release decision.
+- Paper usability: the audit tables/report/preliminary figures are usable with
+  CAUTION. Do not call the validation-selected increment significant, do not
+  present prototype AUROC as deployable uncertainty, and do not claim real-farm
+  external generalization.
+- Stop point: GPT Pro/user must choose the manuscript framing and artifact
+  archive policy. Do not regenerate the manuscript or final figures or start a
+  new experiment without another explicit `APPROVED: true` stage.

@@ -1,281 +1,243 @@
 {
-  "status": "completed_cumulative_framework_analysis",
-  "task": "duration_aware_hierarchical_prototype_inference_framework",
+  "status": "completed_final_validation_audit",
+  "task": "final_scientific_validation_before_figure_and_manuscript_regeneration",
   "date": "2026-07-11",
   "approval": {
     "approved_true": true,
     "direct_user_request": true,
-    "training_authorized": false,
-    "inference_authorized": false,
+    "backbone_training_authorized": false,
+    "existing_checkpoint_inference_authorized_for_missing_selected_prototypes": true,
     "test_tuning_authorized": false,
-    "lambda_change_authorized": false
+    "new_grid_authorized": false,
+    "manuscript_regeneration_authorized": false
   },
-  "branch": "paper/prior-art-fair-benchmark",
-  "base_commit_sha": "d96192d73ae32adadebd3c5bd910b31848283fd3",
-  "implementation_commit_sha": "f265f6b7bf009d46a318d2683bff5b85c879c5e1",
+  "branch": "paper/final-validation-audit",
+  "base_commit_sha": "ccf3171be6c53a75299427bc1cf726377a9c1c29",
+  "implementation_commit_sha": "69366cbf8f60fd4ed4068039a9d78629ab7a41ef",
   "handoff_commit_sha": "reported_in_final_codex_response",
   "data_boundaries": {
-    "training_run": false,
-    "model_inference_run": false,
-    "feature_extraction_run": false,
-    "prototype_rebuild_run": false,
-    "calibration_run": false,
-    "test_set_tuning": false,
+    "backbone_training_run": false,
+    "model_inference_run": true,
+    "feature_extraction_run": true,
+    "prototype_rebuild_runs": 20,
+    "prototype_source": "train_only",
+    "calibration_source": "validation_only",
+    "frozen_test_prediction_runs": 20,
+    "test_set_parameter_selection": false,
     "new_threshold": false,
-    "lambda": 0.5,
-    "source_result_file_modified": false,
-    "noise_result_modified": false,
-    "manifest_modified": false,
+    "new_grid": false,
+    "audio_modified": false,
     "checkpoint_modified": false,
-    "audio_modified": false
+    "manifest_modified": false,
+    "validated_source_result_modified": false,
+    "manuscript_modified": false,
+    "prior_figure_modified": false
   },
-  "commands": [
-    "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_cumulative_framework_analysis.py --help",
-    "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_cumulative_framework_analysis.py --root . --validate-only",
-    "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_cumulative_framework_analysis.py --root .",
-    "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe -m unittest discover -s tests -v",
-    "git diff --cached --check -- <non-generated scoped paths>"
+  "commands": {
+    "environment_python": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe",
+    "reconstruction_protocol": [
+      "eval_hier_exact_softmax_reproduction.py",
+      "build_hier_acoustic_prototypes.py",
+      "calibrate_prototype_predictor.py",
+      "predict_hier_acoustic_prototype.py",
+      "eval_hier_acoustic_prototype.py"
+    ],
+    "reconstruction_scope": {
+      "fold0": {"lambda": 1.0, "seeds": [42, 123, 777, 2024, 3407]},
+      "fold1": {"lambda": 0.2, "seeds": [42, 123, 777, 2024, 3407]},
+      "fold2": {"lambda": 0.2, "seeds": [42, 123, 777, 2024, 3407]},
+      "fold3": {"lambda": 0.2, "seeds": [42, 123, 777, 2024, 3407]},
+      "fold4": {"lambda": 0.5, "action": "reuse_existing_five_runs"}
+    },
+    "calibration_grids": {
+      "prototype_temperature": [0.03, 0.05, 0.07, 0.1, 0.2, 0.5, 1.0],
+      "softmax_temperature": [0.5, 0.75, 1.0, 1.5, 2.0],
+      "fusion_weight": [0.0, 0.25, 0.5, 0.75, 1.0],
+      "hierarchy_penalty": [0.5, 0.7, 0.85, 1.0],
+      "target_coverage": 0.95,
+      "selection_method": "hierarchical"
+    },
+    "verification": [
+      "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_final_validation_audit.py --help",
+      "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_final_validation_audit.py --root . --validate-only",
+      "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_final_validation_audit.py --root .",
+      "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_cumulative_framework_analysis.py --root . --validate-only",
+      "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe -m py_compile tools/generate_final_validation_audit.py tests/test_generate_final_validation_audit.py",
+      "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe -m unittest discover -s tests -v",
+      "git diff --cached --check"
+    ],
+    "full_reconstruction_loop_location": "handoff/CODEX_TO_GPT.md"
+  },
+  "lambda_selection": {
+    "characterization": "locked_validation_only_sensitivity_analysis",
+    "fully_prospective": false,
+    "fully_confirmatory": false,
+    "candidates": [0.2, 0.5, 1.0],
+    "folds": [0, 1, 2, 3, 4],
+    "seeds": [42, 123, 777, 2024, 3407],
+    "rule": [
+      "highest five-seed validation mean",
+      "lowest validation sample SD when means differ by no more than 1e-6",
+      "smallest lambda"
+    ],
+    "test_metric_used": false,
+    "selected_by_fold": {"0": 1.0, "1": 0.2, "2": 0.2, "3": 0.2, "4": 0.5},
+    "candidate_statistics": {
+      "0": {"0.2": [0.9849995369, 0.0037257445], "0.5": [0.9849995369, 0.0037257445], "1.0": [0.9866657405, 0.0045630864]},
+      "1": {"0.2": [0.9733194313, 0.0069735676], "0.5": [0.9683208237, 0.0069752271], "1.0": [0.9699674595, 0.0045881210]},
+      "2": {"0.2": [0.9816597172, 0.0069735532], "0.5": [0.9783319441, 0.0074543372], "1.0": [0.9799842270, 0.0074655287]},
+      "3": {"0.2": [0.9649865642, 0.0069730094], "0.5": [0.9633073786, 0.0074701648], "1.0": [0.9616188754, 0.0074765371]},
+      "4": {"0.2": [0.9649642677, 0.0069775824], "0.5": [0.9683208020, 0.0036987591], "1.0": [0.9665960722, 0.0059075906]}
+    },
+    "selection_source_count": 75
+  },
+  "cohort": {
+    "n": 25,
+    "folds": [0, 1, 2, 3, 4],
+    "seeds": [42, 123, 777, 2024, 3407],
+    "pairing": "strict fold and seed",
+    "missing_pairs": [],
+    "duplicate_pairs": [],
+    "imputation_used": false
+  },
+  "stage_summary": {
+    "B0": {"n": 25, "mean_macro_f1": 0.9226064673362835, "sd_macro_f1": 0.014540638405285713, "min": 0.8918764302059496, "max": 0.9462380884653676},
+    "B1": {"n": 25, "mean_macro_f1": 0.9472373583266809, "sd_macro_f1": 0.016763540828925106, "min": 0.921268925739005, "max": 0.9821403260099221},
+    "B2_valsel": {"n": 25, "mean_macro_f1": 0.9521817536158017, "sd_macro_f1": 0.013261981802572837, "min": 0.9279176201372997, "max": 0.9761769710720363},
+    "B3_valsel": {"n": 25, "mean_macro_f1": 0.9502658032107094, "sd_macro_f1": 0.016527703527144607, "min": 0.921268925739005, "max": 0.9761769710720363},
+    "B2_fixed_w05": {"n": 25, "mean_macro_f1": 0.9510496732091448, "sd_macro_f1": 0.012393313898909944, "min": 0.9217204301075269, "max": 0.9761769710720363},
+    "B3_fixed_w05": {"n": 25, "mean_macro_f1": 0.9539862142299651, "sd_macro_f1": 0.012003773477142526, "min": 0.9342909970132272, "max": 0.9761769710720363}
+  },
+  "paired_statistics": [
+    {"comparison": "B2_valsel-B1", "mean_delta": 0.004944395289120927, "run_ci95": [0.00013130432117804483, 0.009698122140622512], "wilcoxon_raw_p": 0.12284633752866045, "holm_p": 0.6142316876433023, "wins_ties_losses": [17, 1, 7], "fold_deltas": [0.004773866963751816, 0.006991420156629058, 0.011945647513802426, 0.005734818086668337, -0.004723776275247005], "fold_ci95": [-0.00048120834107202805, 0.00946131574294879]},
+    {"comparison": "B2_valsel-B0", "mean_delta": 0.02957528627951817, "run_ci95": [0.020723093008378497, 0.038717612125226786], "wilcoxon_raw_p": 1.9669532775878906e-06, "holm_p": 1.3768672943115234e-05, "wins_ties_losses": [22, 0, 3], "fold_deltas": [0.0046035350652251505, 0.03623455861341083, 0.021870084733156835, 0.019115934415270708, 0.06605231857052732], "fold_ci95": [0.013832219644871396, 0.048161662596257426]},
+    {"comparison": "B2_fixed_w05-B2_valsel", "mean_delta": -0.0011320804066568746, "run_ci95": [-0.004734671894203786, 0.002393660050542146], "wilcoxon_raw_p": 0.6291623521725525, "holm_p": 0.955072713062042, "wins_ties_losses": [8, 6, 11], "fold_deltas": [0.007393167991043304, -0.014291349931957176, -0.0023934536689539597, 0.003631233576583459, 0.0], "fold_ci95": [-0.008327253977648405, 0.004435900794625983]},
+    {"comparison": "B3_valsel-B2_valsel", "mean_delta": -0.0019159504050923503, "run_ci95": [-0.005377724386072174, 0.0014969121653014821], "wilcoxon_raw_p": 0.477536356531021, "holm_p": 0.955072713062042, "wins_ties_losses": [6, 8, 11], "fold_deltas": [-0.00627950767339327, 0.0025166458030799086, -0.003574300060148028, -0.0034474784999458663, 0.0012048884049455032], "fold_ci95": [-0.0046310187934056925, 0.0007991179832209916]},
+    {"comparison": "B3_valsel-B1", "mean_delta": 0.003028444884028576, "run_ci95": [-0.0016258045868413125, 0.0075893973059403975], "wilcoxon_raw_p": 0.290397165862864, "holm_p": 0.871191497588592, "wins_ties_losses": [13, 1, 11], "fold_deltas": [-0.0015056407096414536, 0.009508065959708966, 0.008371347453654398, 0.00228733958672247, -0.0035188878703015015], "fold_ci95": [-0.001552343514632688, 0.007609233282689839]},
+    {"comparison": "B3_valsel-B0", "mean_delta": 0.027659335874425817, "run_ci95": [0.01760161327890417, 0.03792847161182925], "wilcoxon_raw_p": 2.664327621459961e-05, "holm_p": 0.00015985965728759766, "wins_ties_losses": [20, 0, 5], "fold_deltas": [-0.0016759726081681191, 0.038751204416490735, 0.018295784673008807, 0.01566845591532484, 0.06725720697547281], "fold_ci95": [0.00925615025746445, 0.05015360544008356]},
+    {"comparison": "B3_fixed_w05-B3_valsel", "mean_delta": 0.003720411019255838, "run_ci95": [-0.0016617401347548662, 0.008861914374851098], "wilcoxon_raw_p": 0.12739804434044583, "holm_p": 0.6142316876433023, "wins_ties_losses": [12, 7, 6], "fold_deltas": [0.012504044913896516, -0.0034731604848766253, 0.0023850050650415567, 0.007186165602217742, 0.0], "fold_ci95": [-0.0009122631809423389, 0.008939660068781458]}
   ],
+  "prototype_functional_value": {
+    "raw_softmax": {"main_top1": 0.952381, "main_top2": 1.0, "subtype_top1": 0.843571, "subtype_top2": 0.988333, "hierarchy_consistency": 0.983571, "error_if_consistent": 0.042855, "error_if_inconsistent": 0.311111, "feeding_stress_exact_pair_top2": 0.987619},
+    "main_prototype": {"main_top1": 0.952143, "main_top2": 1.0, "subtype_top1": 0.858095, "subtype_top2": 0.986905, "hierarchy_consistency": 0.988571, "error_if_consistent": 0.042135, "error_if_inconsistent": 0.541667, "feeding_stress_exact_pair_top2": 0.997143},
+    "hierarchical_prototype": {"main_top1": 0.950476, "main_top2": 1.0, "subtype_top1": 0.858095, "subtype_top2": 0.986905, "hierarchy_consistency": 0.991667, "error_if_consistent": 0.044371, "error_if_inconsistent": 0.683333, "feeding_stress_exact_pair_top2": 0.996667},
+    "true_main_prototype": {"mean_rank": 1.047857, "rank1_rate": 0.952143, "rank2_rate": 1.0, "mrr": 0.976071},
+    "true_subtype_prototype": {"mean_rank": 1.155, "rank1_rate": 0.858095, "rank2_rate": 0.986905, "mrr": 0.926865},
+    "hierarchical_main_margin_error_auroc": 0.998160,
+    "hierarchical_main_margin_auroc_fold_ci95": [0.995753, 0.999865],
+    "raw_vs_main_prototype": {"repeated_disagreements": 57, "raw_correct_prototype_wrong": 29, "prototype_correct_raw_wrong": 28, "both_wrong": 0},
+    "raw_vs_hierarchical_prototype": {"repeated_disagreements": 66, "raw_correct_prototype_wrong": 37, "prototype_correct_raw_wrong": 29, "both_wrong": 0},
+    "margin_threshold_fitted_on_test": false,
+    "representative_definition": "a training sample closest to the predicted class prototype"
+  },
+  "convergence": {
+    "B0": {"mean_best_epoch": 14.24, "sd": 6.1731, "median": 15, "range": [6, 28], "mean_val_test_gap": 0.022564, "gap_sd": 0.020471},
+    "B1": {"mean_best_epoch": 14.48, "sd": 7.4951, "median": 13, "range": [3, 27], "mean_val_test_gap": 0.024395, "gap_sd": 0.023920},
+    "B2": {"mean_best_epoch": 17.72, "sd": 7.1736, "median": 17, "range": [6, 30], "mean_val_test_gap": 0.022809, "gap_sd": 0.019255},
+    "B3": {"mean_best_epoch": 17.72, "sd": 7.1736, "median": 17, "range": [6, 30], "mean_val_test_gap": 0.024725, "gap_sd": 0.022620, "epoch_provenance": "inherited_from_selected_B2_checkpoint"},
+    "epoch_log_coverage": {"B0": "0/25", "B1": "0/25", "B2": "0/25", "B3": "not_applicable_post_hoc"},
+    "repository_logs_scanned": 8,
+    "training_curves_emitted": false
+  },
+  "acceptance": {
+    "label": "B",
+    "code": "framework_functional_only",
+    "B2_valsel_minus_B1_mean_delta": 0.004944395289120927,
+    "B3_valsel_minus_B2_valsel_mean_delta": -0.0019159504050923503,
+    "positive_B3_valsel_minus_B1_folds": 3,
+    "major_functional_contradiction": true,
+    "measurable_candidate_prediction_value": true
+  },
+  "integrity": {
+    "frozen_source_count": 905,
+    "pre_post_sha256_identical": true,
+    "selection_sources": 75,
+    "selected_prototype_runs": 25,
+    "unique_selected_and_fixed_prototype_runs": 45,
+    "minimum_recorded_hash_links_recomputed_per_selected_run": 32,
+    "path_overlap": 0,
+    "source_id_overlap": 0,
+    "md5_overlap": 0,
+    "main_truth_mismatches": 0,
+    "subtype_truth_mismatches": 0,
+    "train_prototype_membership_exact": true,
+    "validation_calibration_membership_exact": true,
+    "frozen_test_membership_exact": true,
+    "softmax_predictions_and_macro_f1_exact": true,
+    "canonical_probability_identity_join": "one_to_one_after_manifest_truth_binding",
+    "maximum_advisory_probability_drift": 0.0010788472200011778,
+    "full_main_rank_order_mismatches": 0,
+    "test_used_for_parameter_selection": false,
+    "missing_selected_artifacts": []
+  },
   "changed_files": {
     "implementation": [
-      "tools/generate_cumulative_framework_analysis.py",
-      "paper_results/scripts/generate_cumulative_framework_analysis.py",
-      "tests/test_generate_cumulative_framework_analysis.py",
-      "docs/CUMULATIVE_FRAMEWORK_ANALYSIS.md",
-      "docs/superpowers/specs/2026-07-11-duration-aware-hierarchical-prototype-inference-design.md",
-      "docs/superpowers/plans/2026-07-11-duration-aware-hierarchical-prototype-inference.md"
+      "tools/generate_final_validation_audit.py",
+      "tests/test_generate_final_validation_audit.py",
+      "docs/superpowers/plans/2026-07-11-final-validation-audit.md"
     ],
-    "tables": [
-      "paper/tables/cumulative_framework_runs.csv",
-      "paper/tables/cumulative_framework_summary.csv",
-      "paper/tables/cumulative_framework_paired_stats.csv",
-      "paper/tables/cumulative_framework_fold_stats.csv",
-      "paper/tables/prototype_prediction_case_studies.csv",
-      "paper_results/tables/cumulative_framework_runs.csv",
-      "paper_results/tables/cumulative_framework_summary.csv",
-      "paper_results/tables/cumulative_framework_paired_stats.csv",
-      "paper_results/tables/cumulative_framework_fold_stats.csv",
-      "paper_results/tables/prototype_prediction_case_studies.csv"
-    ],
-    "figures": [
-      "paper/figures_journal/figure_cumulative_framework.svg",
-      "paper/figures_journal/figure_cumulative_framework.pdf",
-      "paper/figures_journal/figure_cumulative_framework.png",
-      "paper/figures_journal/figure_prototype_prediction_cases.svg",
-      "paper/figures_journal/figure_prototype_prediction_cases.pdf",
-      "paper/figures_journal/figure_prototype_prediction_cases.png"
-    ],
+    "audit_package": "paper/final_validation/ (12 top-level outputs and 15 figure exports)",
     "handoff": [
       "handoff/CODEX_TO_GPT.md",
       "handoff/CODEX_TO_GPT.json",
       "handoff/HISTORY.md"
     ]
   },
-  "cohort": {
-    "folds": [0, 1, 2, 3, 4],
-    "seeds": [42, 123, 777, 2024, 3407],
-    "n": 25,
-    "missing_pairs": [],
-    "duplicate_pairs": [],
-    "imputation_used": false,
-    "pairing": "strict fold and seed"
-  },
-  "stage_summary": {
-    "B0": {
-      "definition": "1 s Log-Mel CRNN",
-      "n": 25,
-      "mean_macro_f1": 0.9226064673362835,
-      "sd_macro_f1": 0.014540638405285713,
-      "min_macro_f1": 0.8918764302059496,
-      "max_macro_f1": 0.9462380884653676
-    },
-    "B1": {
-      "definition": "2 s Log-Mel CRNN",
-      "n": 25,
-      "mean_macro_f1": 0.9472373583266809,
-      "sd_macro_f1": 0.016763540828925106,
-      "min_macro_f1": 0.921268925739005,
-      "max_macro_f1": 0.9821403260099221
-    },
-    "B2": {
-      "definition": "2 s Log-Mel CRNN plus hierarchical auxiliary supervision lambda=0.5, Raw Softmax",
-      "n": 25,
-      "mean_macro_f1": 0.9510496732091448,
-      "sd_macro_f1": 0.012393313898909944,
-      "min_macro_f1": 0.9217204301075269,
-      "max_macro_f1": 0.9761769710720363
-    },
-    "B3": {
-      "definition": "B2 backbone plus hierarchical acoustic prototype inference",
-      "n": 25,
-      "mean_macro_f1": 0.9539862142299651,
-      "sd_macro_f1": 0.012003773477142526,
-      "min_macro_f1": 0.9342909970132272,
-      "max_macro_f1": 0.9761769710720363
-    }
-  },
-  "paired_statistics": [
-    {
-      "comparison": "B1-B0",
-      "n": 25,
-      "baseline_mean": 0.9226064673362835,
-      "final_mean": 0.9472373583266809,
-      "mean_delta": 0.02463089099039724,
-      "std_delta": 0.028534613255749075,
-      "bootstrap_ci95": [0.014112837971563999, 0.03564207235269266],
-      "wilcoxon_p_unadjusted": 0.00016230344772338867,
-      "wins_ties_losses": [21, 0, 4],
-      "fold_mean_deltas": [-0.00017033189852666553, 0.02924313845678177, 0.009924437219354409, 0.013381116328602371, 0.07077609484577432],
-      "fold_cluster_bootstrap_ci95": [0.006577865394051571, 0.048280218219115614]
-    },
-    {
-      "comparison": "B2-B1",
-      "n": 25,
-      "baseline_mean": 0.9472373583266809,
-      "final_mean": 0.9510496732091448,
-      "mean_delta": 0.0038123148824640517,
-      "std_delta": 0.012940365086276233,
-      "bootstrap_ci95": [-0.0013204227591915722, 0.008726684136810842],
-      "wilcoxon_p_unadjusted": 0.17024139590961385,
-      "wins_ties_losses": [16, 1, 8],
-      "fold_mean_deltas": [0.01216703495479512, -0.007299929775328118, 0.009552193844848466, 0.009366051663251796, -0.004723776275247005],
-      "fold_cluster_bootstrap_ci95": [-0.0034065368293034705, 0.010560901852507793]
-    },
-    {
-      "comparison": "B3-B2",
-      "n": 25,
-      "baseline_mean": 0.9510496732091448,
-      "final_mean": 0.9539862142299651,
-      "mean_delta": 0.0029365410208203623,
-      "std_delta": 0.010335612646114685,
-      "bootstrap_ci95": [-0.0004775650942011766, 0.007294064960569131],
-      "wilcoxon_p_unadjusted": 0.05825295212511276,
-      "wins_ties_losses": [13, 8, 4],
-      "fold_mean_deltas": [-0.0011686307505400562, 0.01333483525016046, 0.0012041586738474885, 0.00010745352568841682, 0.0012048884049455032],
-      "fold_cluster_bootstrap_ci95": [-0.00021951498078503833, 0.00826336953622306]
-    },
-    {
-      "comparison": "B3-B1",
-      "n": 25,
-      "baseline_mean": 0.9472373583266809,
-      "final_mean": 0.9539862142299651,
-      "mean_delta": 0.006748855903284414,
-      "std_delta": 0.011611119463844641,
-      "bootstrap_ci95": [0.002388568610691431, 0.011270119626183867],
-      "wilcoxon_p_unadjusted": 0.013808561544817114,
-      "wins_ties_losses": [18, 0, 7],
-      "fold_mean_deltas": [0.010998404204255064, 0.006034905474832342, 0.010756352518695955, 0.009473505188940213, -0.0035188878703015015],
-      "fold_cluster_bootstrap_ci95": [0.0012953292136365802, 0.01059660372696845]
-    },
-    {
-      "comparison": "B3-B0",
-      "n": 25,
-      "baseline_mean": 0.9226064673362835,
-      "final_mean": 0.9539862142299651,
-      "mean_delta": 0.031379746893681656,
-      "std_delta": 0.023102130626727987,
-      "bootstrap_ci95": [0.02282111227854716, 0.04030148837924802],
-      "wilcoxon_p_unadjusted": 2.980232238769531e-7,
-      "wins_ties_losses": [24, 0, 1],
-      "fold_mean_deltas": [0.010828072305728399, 0.035278043931614114, 0.020680789738050365, 0.022854621517542584, 0.06725720697547281],
-      "fold_cluster_bootstrap_ci95": [0.01717446912102002, 0.049575547432752186],
-      "directly_calculated": true,
-      "all_fold_means_positive": true
-    }
-  ],
-  "case_studies": {
-    "canonical_fold": 0,
-    "canonical_seed": 42,
-    "count": 7,
-    "unique_source_ids": true,
-    "selection_threshold_fitted": false,
-    "case_types": [
-      "correct_cough",
-      "correct_calm_grunt",
-      "correct_feeding",
-      "correct_stress_vocal",
-      "feeding_stress_boundary_feeding",
-      "feeding_stress_boundary_stress",
-      "low_margin_uncertain"
+  "local_generated_prototype_artifacts": {
+    "committed": false,
+    "preserved_locally": true,
+    "directories": 20,
+    "files": 660,
+    "bytes": 88465995,
+    "patterns": [
+      "reports/prototype_cv5_exact_valsel_w10_fold0_seed*/",
+      "reports/prototype_cv5_exact_valsel_w02_fold{1,2,3}_seed*/"
     ],
-    "selection_ranks_and_pool_sizes": [[21, 42], [21, 42], [18, 35], [20, 39], [4, 7], [2, 3], [1, 162]],
-    "all_hierarchy_consistent": true,
-    "representative_split": "train_only",
-    "representative_definition": "same-run training sample closest to predicted class prototype",
-    "nearest_query_neighbor_claim": false
-  },
-  "integrity": {
-    "frozen_source_count": 240,
-    "pre_post_sha256_identical": true,
-    "prototype_metadata_files": 25,
-    "actual_manifest_files": 15,
-    "leakage_audits_passed": 25,
-    "path_overlap": 0,
-    "source_id_overlap": 0,
-    "md5_overlap": 0,
-    "test_used_for_parameter_selection": false,
-    "prototype_source": "train",
-    "calibration_source": "validation",
-    "evaluation_source": "frozen_test",
-    "missing_source_files": [],
-    "checkpoint_bytes_read": false,
-    "eligible_debug_marker": {"fold": 0, "seed": 3407, "single_fold_debug": true, "eligible_for_cv_aggregation": true}
-  },
-  "raw_softmax_reproduction": {
-    "class_predictions_match_all_25": true,
-    "macro_f1_matches_all_25": true,
-    "probability_tolerance_is_advisory": true,
-    "cohort_max_abs_probability_drift": 0.0009449124336242676,
-    "canonical_max_abs_probability_drift": 0.0002601742744445801,
-    "case_probability_source": "matched B3 evaluation/test_predictions.csv"
+    "portability_caution": "Requires a separate durable result-artifact archive policy."
   },
   "verification": {
-    "generator_help_passed": true,
-    "generator_full_run_passed": true,
-    "generator_validate_only_passed": true,
-    "full_test_suite": {"passed": 118, "failed": 0},
-    "task_specific_tests": {"passed": 22, "failed": 0},
-    "required_table_rows": [25, 4, 5, 25, 7],
-    "byte_identical_mirrors": "6/6",
-    "svg_editable_text": true,
-    "svg_embedded_raster": false,
-    "pdf_truetype_fonts": true,
+    "all_relevant_help_commands": {"passed": 7, "failed": 0},
+    "py_compile": true,
+    "final_validation_tests": {"passed": 23, "failed": 0},
+    "prototype_and_cumulative_tests": {"passed": 69, "failed": 0},
+    "full_repository_tests": {"passed": 141, "failed": 0},
+    "final_validate_only": "PASS_905_SOURCES_UNCHANGED",
+    "prior_cumulative_validate_only": "PASS_240_SOURCES_UNCHANGED",
+    "required_outputs": {"present": 27, "missing": 0, "empty": 0},
     "png_dpi": 300,
-    "figure_width_mm": 183,
-    "visual_qa_passed": true,
-    "independent_code_review": "PASS",
-    "independent_scientific_review": "PASS_WITH_CAUTION",
-    "maximum_independent_numeric_discrepancy": 1.11e-16,
-    "fallacy_scan": "11/11"
+    "visual_qa": "PASS_ALL_FIVE_ORIGINAL_RESOLUTION",
+    "svg_editable_text": true,
+    "pdf_nonempty": true,
+    "overwrite_refusal": true,
+    "git_diff_cached_check": true,
+    "independent_review": "READY_NO_CRITICAL_OR_IMPORTANT_FINDINGS",
+    "independent_numeric_max_discrepancy": "less_than_1e-15",
+    "statistical_fallacy_scan": "11/11"
   },
   "paper_usability": {
     "paper_usable": true,
     "tables_complete": true,
-    "figures_complete": true,
-    "case_studies_complete": true,
-    "scientific_interpretation": "CAUTION",
+    "preliminary_audit_figures_complete": true,
+    "final_manuscript_figures": false,
+    "manuscript_regenerated": false,
+    "interpretation": "CAUTION",
     "cautions": [
-      "Five Wilcoxon P values are unadjusted.",
-      "Twenty-five runs are clustered within only five folds.",
-      "B2-B1 and B3-B2 are nonsignificant.",
-      "B3-B1 does not survive illustrative Bonferroni alpha=0.01.",
-      "Five-fold Wilcoxon sensitivity for B3-B0 is P=0.0625.",
-      "Macro-F1 must not be called accuracy.",
-      "No real-farm external-generalization claim is supported."
+      "The sensitivity analysis is retrospective and validation-selected, not fully prospective or confirmatory.",
+      "B2_valsel-B1 and B3_valsel-B2_valsel are nonsignificant after the requested tests.",
+      "B3_valsel has a negative mean increment over B2_valsel.",
+      "Hierarchical prototype harm exceeds rescue in repeated-run disagreement counts.",
+      "Prototype error AUROC is diagnostic geometry, not a deployable threshold.",
+      "The five-fold cluster sensitivity has low power.",
+      "The clean closed-set cohort does not establish real-farm external generalization."
     ]
   },
   "blockers": [],
-  "limitations": [
-    "Query-to-training embeddings were not saved, so representatives are closest to class prototypes rather than nearest query neighbours.",
-    "Same-checkpoint Raw Softmax probabilities have small advisory drift from original B2 probability files.",
-    "One aggregation-eligible artifact retains single_fold_debug=true.",
-    "Checkpoint bytes were not read or independently rehashed in this no-inference analysis."
-  ],
   "questions_for_gpt_pro": [
-    "Should all five unadjusted Wilcoxon contrasts remain in the main text or move to supplementary material with multiplicity caution?",
-    "Where should the eligible fold0/seed3407 debug marker be disclosed?",
-    "Should a future approved inference stage save query-to-training embeddings for true nearest-neighbour exemplars?",
-    "Should future case selection retain the aligned B3 reproduction probabilities or be redesigned around original B2 probabilities?"
+    "Should the retrospective validation-selected sensitivity analysis be in the main text or supplementary material?",
+    "How prominently should the higher fixed-lambda-0.5 B3 mean be shown when its contrast with B3_valsel is nonsignificant?",
+    "How much should B3 performance language be reduced given its negative mean increment and harm-rescue imbalance?",
+    "How should margin AUROC be framed strictly as diagnostic geometry?",
+    "Should the 20 detailed local prototype reconstruction directories receive a separate durable artifact archive before release?"
   ],
-  "recommended_next_step": "Stop. Review the cumulative evidence and scientific cautions. Do not start manuscript revision, inference, training, benchmarking, or exemplar extension without a new explicit APPROVED: true stage."
+  "stop_point": "Do not regenerate the manuscript or final figures and do not start new experiments without another explicit APPROVED: true stage."
 }
