@@ -884,3 +884,65 @@
 - No training, inference, feature extraction, calibration, benchmark, test-set tuning, manuscript edit, established result edit, manifest edit, checkpoint edit, or audio edit occurred.
 - Paper usability: the prior-art guard and fair-comparison design are usable; no new benchmark result is paper evidence. Recommendation is `manuscript_only_revision` until full corpus/split/lineage metadata are recovered.
 - Stop point: review the audit/design. Do not run the benchmark, implement TransformerCNN, export new predictions, or revise the manuscript without a new explicit `APPROVED: true` stage.
+
+## 2026-07-11 - Duration-Aware Hierarchical Prototype Inference Framework
+
+- Status: completed cumulative analysis from locked existing 25-run data.
+- Branch: `paper/prior-art-fair-benchmark`.
+- Round base: `d96192d73ae32adadebd3c5bd910b31848283fd3`.
+- Implementation/output commit: `f265f6b7bf009d46a318d2683bff5b85c879c5e1`.
+- Approval state: the user supplied `APPROVED: true` and explicitly prohibited
+  model retraining, test-set parameter selection, lambda changes, new
+  thresholds, fold/seed mixing, and modification of existing CSV/JSON/noise
+  results.
+- Implemented one standalone read-only generator, a clean-checkout-safe test
+  module, a reproducibility document, design/plan records, five required paper
+  tables plus byte-identical `paper_results` mirrors, and two requested
+  SVG/PDF/300 dpi PNG publication figures.
+- Strict grid: folds `0-4` x seeds `42,123,777,2024,3407`, 25 unique pairs for
+  every B0-B3 stage, with no missing pairs, duplicate pairs, or imputation.
+- Stage means: B0 `0.922606467`, B1 `0.947237358`, B2 `0.951049673`, and B3
+  `0.953986214` Macro-F1.
+- Direct paired deltas: B1-B0 `+0.024630891` (`P=0.000162303`), B2-B1
+  `+0.003812315` (`P=0.170241396`), B3-B2 `+0.002936541`
+  (`P=0.058252952`), B3-B1 `+0.006748856` (`P=0.013808562`), and directly
+  computed B3-B0 `+0.031379747` (`P=2.980232e-7`). All P values are unadjusted.
+- B3-B0 run-bootstrap CI is `[0.022821112, 0.040301488]`, W/T/L is `24/0/1`,
+  fold deltas are `0.010828072, 0.035278044, 0.020680790, 0.022854622,
+  0.067257207`, and fold-cluster CI is `[0.017174469, 0.049575547]`.
+- B2-B1 and B3-B2 remain nonsignificant. The 25 runs are clustered within
+  only five folds; multiplicity and five-cluster sensitivity cautions are
+  mandatory.
+- Added seven deterministic fold0/seed42 prototype cases: four lower-median
+  all-route-correct class examples, two class-specific lower-median
+  feeding/stress boundary errors, and one minimum remaining B3 hierarchical
+  margin example. No test threshold or case-performance optimization was used.
+- Representative samples are train-only closest-to-class-prototype examples,
+  not claimed query nearest neighbours because query-to-training embeddings
+  were not saved.
+- Integrity boundary: 240 frozen sources, including 25 prototype metadata
+  files and all 15 manifests, remained byte-identical. Full B2 model/STFT/label
+  identity, actual summary/manifest hashes, train/validation/test roles, and
+  canonical path/source-ID/MD5 membership/disjointness all passed.
+- Fold0/seed3407 retains `single_fold_debug=true` in metadata and metrics but is
+  explicitly aggregation-eligible; the marker is disclosed rather than used
+  for post-hoc exclusion.
+- Case-table Raw Softmax values are aligned same-checkpoint reproductions.
+  Class predictions and Macro-F1 match original B2 outputs; advisory
+  probability drift reaches `9.449124e-4` across the cohort.
+- Verification: generator full and validate-only runs passed with 240 inputs
+  unchanged; full tests 118/118; task tests 22/22; table/script mirrors 6/6;
+  editable-text raster-free SVG, TrueType PDF, and 183 mm/300 dpi PNG audits
+  passed; both figures passed original-resolution visual QA.
+- Independent code review: PASS with no findings. Independent scientific
+  recomputation: PASS with maximum discrepancy `1.11e-16` and fallacy scan
+  11/11; interpretation remains CAUTION for multiplicity and clustering.
+- No training, inference, feature extraction, prototype rebuild, calibration,
+  test tuning, checkpoint/audio/manifest edit, established result edit, or
+  noise-result modification occurred. No required source file is missing.
+- Paper usability: `paper_usable=true` for the tables, figures, and deterministic
+  cases. Macro-F1 must not be called accuracy, incremental nonsignificance must
+  be preserved, and no real-farm external-generalization claim is supported.
+- Stop point: review the delivered evidence and scientific cautions. Do not
+  start manuscript revision, inference, training, benchmarking, or exemplar
+  extension without a new explicit `APPROVED: true` stage.

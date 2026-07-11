@@ -1,169 +1,281 @@
 {
-  "status": "completed_research_audit_and_design_only",
-  "task": "prior_art_overlap_audit_and_fair_comparison_design",
+  "status": "completed_cumulative_framework_analysis",
+  "task": "duration_aware_hierarchical_prototype_inference_framework",
   "date": "2026-07-11",
   "approval": {
     "approved_true": true,
     "direct_user_request": true,
     "training_authorized": false,
-    "benchmark_execution_authorized": false,
-    "manuscript_rewrite_authorized": false,
-    "test_tuning_authorized": false
+    "inference_authorized": false,
+    "test_tuning_authorized": false,
+    "lambda_change_authorized": false
   },
   "branch": "paper/prior-art-fair-benchmark",
-  "base_branch": "paper/sci-draft-v1",
-  "base_commit_sha": "b52a0f63539d544f27c57e29760384c0782e7f61",
-  "artifact_commit_sha": "36f950f020ed769a4fe297d48e460a10829e08fa",
-  "handoff_commit_sha": "see_final_codex_response",
-  "changed_files": [
-    "paper/references/PRIOR_ART_OVERLAP_MATRIX.csv",
-    "paper/references/PUBLISHED_SCORE_COMPARABILITY.csv",
-    "paper/references/NOVELTY_CLAIM_GUARD.md",
-    "paper/benchmark/SOW_CALL_BENCHMARK_FEASIBILITY.md",
-    "paper/benchmark/SOW_CALL_SOURCE_AUDIT.csv",
-    "paper/benchmark/SOW_CALL_FAIR_BENCHMARK_PLAN.md",
-    "paper/benchmark/PROTOTYPE_PREDICTION_VALUE_PLAN.md",
-    "handoff/CODEX_TO_GPT.md",
-    "handoff/CODEX_TO_GPT.json",
-    "handoff/HISTORY.md"
-  ],
+  "base_commit_sha": "d96192d73ae32adadebd3c5bd910b31848283fd3",
+  "implementation_commit_sha": "f265f6b7bf009d46a318d2683bff5b85c879c5e1",
+  "handoff_commit_sha": "reported_in_final_codex_response",
   "data_boundaries": {
     "training_run": false,
     "model_inference_run": false,
     "feature_extraction_run": false,
+    "prototype_rebuild_run": false,
     "calibration_run": false,
-    "benchmark_run": false,
     "test_set_tuning": false,
-    "manuscript_modified": false,
-    "training_or_adapter_script_modified": false,
+    "new_threshold": false,
+    "lambda": 0.5,
     "source_result_file_modified": false,
+    "noise_result_modified": false,
     "manifest_modified": false,
-    "checkpoint_or_audio_modified": false
+    "checkpoint_modified": false,
+    "audio_modified": false
   },
-  "prior_art": {
-    "required_works_verified": 8,
-    "matrix_rows": 12,
-    "exact_pig_specific_route_match_found": false,
-    "route_match_qualification": "No exact match located in targeted publisher/preprint search through 2026-07-11; not proof of universal nonexistence.",
-    "highest_method_overlap": "HiSSNet for hierarchical supervision plus prototype inference",
-    "highest_posthoc_retrieval_overlap": "AudioProtoPNet for frozen-representation prototypes plus training-example retrieval",
-    "highest_pig_topology_overlap": "PVMC for modular coarse-to-fine pig classification",
-    "direct_external_score_comparisons": 0,
-    "briefer_doi": "10.1038/s41598-022-07174-8"
-  },
-  "sow_call_audit": {
-    "raw_files": 1746,
-    "unique_md5": 1743,
-    "class_inventory": {
-      "calm": {"files": 280, "unique_md5": 280, "suffix": 0},
-      "feeding": {"files": 210, "unique_md5": 210, "suffix": 1},
-      "frightened": {"files": 750, "unique_md5": 749, "suffix": 2},
-      "anxious": {"files": 506, "unique_md5": 504, "suffix": 3}
-    },
-    "filename_label_recovery": true,
-    "index_rows": 1746,
-    "unknown_labels": 0,
-    "manifest_rows_all": 7310,
-    "manifest_unique_identities_all": 3812,
-    "manifest_rows_sow": 4880,
-    "manifest_unique_identities_sow": 1637,
-    "missing_manifest_paths": 0,
-    "blank_source_ids": 0,
-    "blank_md5": 0,
-    "sow_rehash_mismatches": 0,
-    "within_fold_path_source_md5_overlap": 0,
-    "pairwise_test_fold_overlap": 0,
-    "test_union_all": 840,
-    "test_union_sow": 630,
-    "published_3200_800_recoverable": false,
-    "true_source_group_cv5_possible": false,
-    "source_id_limit": "parent_folder::filename_stem singleton identity; no animal/session/parent-recording lineage",
-    "current_main_task_directly_comparable": false,
-    "six_subtype_hard_prediction_diagnostic_possible": true,
-    "six_subtype_probability_evaluation_possible_from_stored_files": false
-  },
-  "benchmark_plan": {
-    "protocol_a_status": "blocked_missing_full_4000_and_exact_split_membership",
-    "protocol_b_status": "blocked_missing_true_source_lineage",
-    "clip_cv_fallback_status": "possible_only_if_labeled_md5_disjoint_clip_cv_and_not_source_generalization",
-    "transformercnn_status": "not_reproducible_without_assumptions",
-    "candidate_baselines": [
-      "Log-Mel CRNN",
-      "2 s hierarchical CRNN without prototype",
-      "kNN on frozen embeddings",
-      "main centroid prototype",
-      "hierarchical centroid prototype",
-      "TransformerCNN description-based reimplementation"
+  "commands": [
+    "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_cumulative_framework_analysis.py --help",
+    "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_cumulative_framework_analysis.py --root . --validate-only",
+    "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_cumulative_framework_analysis.py --root .",
+    "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe -m unittest discover -s tests -v",
+    "git diff --cached --check -- <non-generated scoped paths>"
+  ],
+  "changed_files": {
+    "implementation": [
+      "tools/generate_cumulative_framework_analysis.py",
+      "paper_results/scripts/generate_cumulative_framework_analysis.py",
+      "tests/test_generate_cumulative_framework_analysis.py",
+      "docs/CUMULATIVE_FRAMEWORK_ANALYSIS.md",
+      "docs/superpowers/specs/2026-07-11-duration-aware-hierarchical-prototype-inference-design.md",
+      "docs/superpowers/plans/2026-07-11-duration-aware-hierarchical-prototype-inference.md"
+    ],
+    "tables": [
+      "paper/tables/cumulative_framework_runs.csv",
+      "paper/tables/cumulative_framework_summary.csv",
+      "paper/tables/cumulative_framework_paired_stats.csv",
+      "paper/tables/cumulative_framework_fold_stats.csv",
+      "paper/tables/prototype_prediction_case_studies.csv",
+      "paper_results/tables/cumulative_framework_runs.csv",
+      "paper_results/tables/cumulative_framework_summary.csv",
+      "paper_results/tables/cumulative_framework_paired_stats.csv",
+      "paper_results/tables/cumulative_framework_fold_stats.csv",
+      "paper_results/tables/prototype_prediction_case_studies.csv"
+    ],
+    "figures": [
+      "paper/figures_journal/figure_cumulative_framework.svg",
+      "paper/figures_journal/figure_cumulative_framework.pdf",
+      "paper/figures_journal/figure_cumulative_framework.png",
+      "paper/figures_journal/figure_prototype_prediction_cases.svg",
+      "paper/figures_journal/figure_prototype_prediction_cases.pdf",
+      "paper/figures_journal/figure_prototype_prediction_cases.png"
+    ],
+    "handoff": [
+      "handoff/CODEX_TO_GPT.md",
+      "handoff/CODEX_TO_GPT.json",
+      "handoff/HISTORY.md"
     ]
   },
-  "cumulative_25_pair_analysis": {
-    "coverage_complete": true,
+  "cohort": {
     "folds": [0, 1, 2, 3, 4],
     "seeds": [42, 123, 777, 2024, 3407],
+    "n": 25,
     "missing_pairs": [],
+    "duplicate_pairs": [],
     "imputation_used": false,
-    "b2_cross_source_max_abs_difference": 0.0,
-    "stage_summary": {
-      "B0": {"mean_macro_f1": 0.922606467, "sd": 0.014540638},
-      "B1": {"mean_macro_f1": 0.947237358, "sd": 0.016763541},
-      "B2": {"mean_macro_f1": 0.951049673, "sd": 0.012393314},
-      "B3": {"mean_macro_f1": 0.953986214, "sd": 0.012003773}
+    "pairing": "strict fold and seed"
+  },
+  "stage_summary": {
+    "B0": {
+      "definition": "1 s Log-Mel CRNN",
+      "n": 25,
+      "mean_macro_f1": 0.9226064673362835,
+      "sd_macro_f1": 0.014540638405285713,
+      "min_macro_f1": 0.8918764302059496,
+      "max_macro_f1": 0.9462380884653676
     },
-    "comparisons": [
-      {"name": "B1-B0", "n": 25, "mean_delta": 0.024630891, "sd_delta": 0.028534613, "ci95": [0.014112838, 0.035642072], "wilcoxon_p": 0.000162303, "wins": 21, "ties": 0, "losses": 4, "fold_cluster_ci95": [0.006577865, 0.048280218]},
-      {"name": "B2-B1", "n": 25, "mean_delta": 0.003812315, "sd_delta": 0.012940365, "ci95": [-0.001320423, 0.008726684], "wilcoxon_p": 0.170241396, "wins": 16, "ties": 1, "losses": 8, "fold_cluster_ci95": [-0.003406537, 0.010560902]},
-      {"name": "B3-B2", "n": 25, "mean_delta": 0.002936541, "sd_delta": 0.010335613, "ci95": [-0.000477565, 0.007294065], "wilcoxon_p": 0.058252952, "wins": 13, "ties": 8, "losses": 4, "fold_cluster_ci95": [-0.000219515, 0.008263370]},
-      {"name": "B3-B1", "n": 25, "mean_delta": 0.006748856, "sd_delta": 0.011611119, "ci95": [0.002388569, 0.011270120], "wilcoxon_p": 0.013808562, "wins": 18, "ties": 0, "losses": 7, "fold_cluster_ci95": [0.001295329, 0.010596604]},
-      {"name": "B3-B0", "n": 25, "mean_delta": 0.031379747, "sd_delta": 0.023102131, "ci95": [0.022821112, 0.040301488], "wilcoxon_p": 2.980232e-7, "wins": 24, "ties": 0, "losses": 1, "fold_cluster_ci95": [0.017174469, 0.049575547]}
+    "B1": {
+      "definition": "2 s Log-Mel CRNN",
+      "n": 25,
+      "mean_macro_f1": 0.9472373583266809,
+      "sd_macro_f1": 0.016763540828925106,
+      "min_macro_f1": 0.921268925739005,
+      "max_macro_f1": 0.9821403260099221
+    },
+    "B2": {
+      "definition": "2 s Log-Mel CRNN plus hierarchical auxiliary supervision lambda=0.5, Raw Softmax",
+      "n": 25,
+      "mean_macro_f1": 0.9510496732091448,
+      "sd_macro_f1": 0.012393313898909944,
+      "min_macro_f1": 0.9217204301075269,
+      "max_macro_f1": 0.9761769710720363
+    },
+    "B3": {
+      "definition": "B2 backbone plus hierarchical acoustic prototype inference",
+      "n": 25,
+      "mean_macro_f1": 0.9539862142299651,
+      "sd_macro_f1": 0.012003773477142526,
+      "min_macro_f1": 0.9342909970132272,
+      "max_macro_f1": 0.9761769710720363
+    }
+  },
+  "paired_statistics": [
+    {
+      "comparison": "B1-B0",
+      "n": 25,
+      "baseline_mean": 0.9226064673362835,
+      "final_mean": 0.9472373583266809,
+      "mean_delta": 0.02463089099039724,
+      "std_delta": 0.028534613255749075,
+      "bootstrap_ci95": [0.014112837971563999, 0.03564207235269266],
+      "wilcoxon_p_unadjusted": 0.00016230344772338867,
+      "wins_ties_losses": [21, 0, 4],
+      "fold_mean_deltas": [-0.00017033189852666553, 0.02924313845678177, 0.009924437219354409, 0.013381116328602371, 0.07077609484577432],
+      "fold_cluster_bootstrap_ci95": [0.006577865394051571, 0.048280218219115614]
+    },
+    {
+      "comparison": "B2-B1",
+      "n": 25,
+      "baseline_mean": 0.9472373583266809,
+      "final_mean": 0.9510496732091448,
+      "mean_delta": 0.0038123148824640517,
+      "std_delta": 0.012940365086276233,
+      "bootstrap_ci95": [-0.0013204227591915722, 0.008726684136810842],
+      "wilcoxon_p_unadjusted": 0.17024139590961385,
+      "wins_ties_losses": [16, 1, 8],
+      "fold_mean_deltas": [0.01216703495479512, -0.007299929775328118, 0.009552193844848466, 0.009366051663251796, -0.004723776275247005],
+      "fold_cluster_bootstrap_ci95": [-0.0034065368293034705, 0.010560901852507793]
+    },
+    {
+      "comparison": "B3-B2",
+      "n": 25,
+      "baseline_mean": 0.9510496732091448,
+      "final_mean": 0.9539862142299651,
+      "mean_delta": 0.0029365410208203623,
+      "std_delta": 0.010335612646114685,
+      "bootstrap_ci95": [-0.0004775650942011766, 0.007294064960569131],
+      "wilcoxon_p_unadjusted": 0.05825295212511276,
+      "wins_ties_losses": [13, 8, 4],
+      "fold_mean_deltas": [-0.0011686307505400562, 0.01333483525016046, 0.0012041586738474885, 0.00010745352568841682, 0.0012048884049455032],
+      "fold_cluster_bootstrap_ci95": [-0.00021951498078503833, 0.00826336953622306]
+    },
+    {
+      "comparison": "B3-B1",
+      "n": 25,
+      "baseline_mean": 0.9472373583266809,
+      "final_mean": 0.9539862142299651,
+      "mean_delta": 0.006748855903284414,
+      "std_delta": 0.011611119463844641,
+      "bootstrap_ci95": [0.002388568610691431, 0.011270119626183867],
+      "wilcoxon_p_unadjusted": 0.013808561544817114,
+      "wins_ties_losses": [18, 0, 7],
+      "fold_mean_deltas": [0.010998404204255064, 0.006034905474832342, 0.010756352518695955, 0.009473505188940213, -0.0035188878703015015],
+      "fold_cluster_bootstrap_ci95": [0.0012953292136365802, 0.01059660372696845]
+    },
+    {
+      "comparison": "B3-B0",
+      "n": 25,
+      "baseline_mean": 0.9226064673362835,
+      "final_mean": 0.9539862142299651,
+      "mean_delta": 0.031379746893681656,
+      "std_delta": 0.023102130626727987,
+      "bootstrap_ci95": [0.02282111227854716, 0.04030148837924802],
+      "wilcoxon_p_unadjusted": 2.980232238769531e-7,
+      "wins_ties_losses": [24, 0, 1],
+      "fold_mean_deltas": [0.010828072305728399, 0.035278043931614114, 0.020680789738050365, 0.022854621517542584, 0.06725720697547281],
+      "fold_cluster_bootstrap_ci95": [0.01717446912102002, 0.049575547432752186],
+      "directly_calculated": true,
+      "all_fold_means_positive": true
+    }
+  ],
+  "case_studies": {
+    "canonical_fold": 0,
+    "canonical_seed": 42,
+    "count": 7,
+    "unique_source_ids": true,
+    "selection_threshold_fitted": false,
+    "case_types": [
+      "correct_cough",
+      "correct_calm_grunt",
+      "correct_feeding",
+      "correct_stress_vocal",
+      "feeding_stress_boundary_feeding",
+      "feeding_stress_boundary_stress",
+      "low_margin_uncertain"
     ],
-    "statistical_guard": "B2-B1 and B3-B2 are nonsignificant. B3-B1 is unadjusted and does not pass Bonferroni alpha=0.01 across five contrasts."
+    "selection_ranks_and_pool_sizes": [[21, 42], [21, 42], [18, 35], [20, 39], [4, 7], [2, 3], [1, 162]],
+    "all_hierarchy_consistent": true,
+    "representative_split": "train_only",
+    "representative_definition": "same-run training sample closest to predicted class prototype",
+    "nearest_query_neighbor_claim": false
+  },
+  "integrity": {
+    "frozen_source_count": 240,
+    "pre_post_sha256_identical": true,
+    "prototype_metadata_files": 25,
+    "actual_manifest_files": 15,
+    "leakage_audits_passed": 25,
+    "path_overlap": 0,
+    "source_id_overlap": 0,
+    "md5_overlap": 0,
+    "test_used_for_parameter_selection": false,
+    "prototype_source": "train",
+    "calibration_source": "validation",
+    "evaluation_source": "frozen_test",
+    "missing_source_files": [],
+    "checkpoint_bytes_read": false,
+    "eligible_debug_marker": {"fold": 0, "seed": 3407, "single_fold_debug": true, "eligible_for_cv_aggregation": true}
+  },
+  "raw_softmax_reproduction": {
+    "class_predictions_match_all_25": true,
+    "macro_f1_matches_all_25": true,
+    "probability_tolerance_is_advisory": true,
+    "cohort_max_abs_probability_drift": 0.0009449124336242676,
+    "canonical_max_abs_probability_drift": 0.0002601742744445801,
+    "case_probability_source": "matched B3 evaluation/test_predictions.csv"
   },
   "verification": {
-    "required_artifacts_present": 7,
-    "prior_art_rows": 12,
-    "external_score_rows": 40,
-    "source_audit_rows": 12,
-    "direct_comparison_rows": 0,
-    "required_matrix_columns_passed": true,
-    "comparability_enum_passed": true,
-    "cumulative_validator_passed": true,
-    "frozen_validator_source_files_unchanged": 200,
-    "immutable_required_inputs_checked": 50,
-    "immutable_required_input_mismatches": 0,
-    "scoped_diff_check_passed": true,
-    "conda_activation_passed": false,
-    "conda_activation_error": "GBK UnicodeEncodeError caused by invalid replacement character in PATH",
-    "fallback_environment_python": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe"
+    "generator_help_passed": true,
+    "generator_full_run_passed": true,
+    "generator_validate_only_passed": true,
+    "full_test_suite": {"passed": 118, "failed": 0},
+    "task_specific_tests": {"passed": 22, "failed": 0},
+    "required_table_rows": [25, 4, 5, 25, 7],
+    "byte_identical_mirrors": "6/6",
+    "svg_editable_text": true,
+    "svg_embedded_raster": false,
+    "pdf_truetype_fonts": true,
+    "png_dpi": 300,
+    "figure_width_mm": 183,
+    "visual_qa_passed": true,
+    "independent_code_review": "PASS",
+    "independent_scientific_review": "PASS_WITH_CAUTION",
+    "maximum_independent_numeric_discrepancy": 1.11e-16,
+    "fallacy_scan": "11/11"
   },
   "paper_usability": {
-    "prior_art_guard_usable": true,
-    "fair_comparison_design_usable": true,
-    "new_benchmark_evidence_created": false,
-    "paper_claim_change_authorized": false,
-    "recommended_action": "manuscript_only_revision"
+    "paper_usable": true,
+    "tables_complete": true,
+    "figures_complete": true,
+    "case_studies_complete": true,
+    "scientific_interpretation": "CAUTION",
+    "cautions": [
+      "Five Wilcoxon P values are unadjusted.",
+      "Twenty-five runs are clustered within only five folds.",
+      "B2-B1 and B3-B2 are nonsignificant.",
+      "B3-B1 does not survive illustrative Bonferroni alpha=0.01.",
+      "Five-fold Wilcoxon sensitivity for B3-B0 is P=0.0625.",
+      "Macro-F1 must not be called accuracy.",
+      "No real-farm external-generalization claim is supported."
+    ]
   },
-  "blockers": [
-    "full official 4000-item Sow corpus unavailable locally",
-    "exact published 3200/800 item assignment and split seed unavailable",
-    "animal/session/parent-recording lineage unavailable",
-    "TransformerCNN exact reproduction requires undocumented assumptions",
-    "stored auxiliary predictions lack probabilities/logits for masked four-way evaluation"
+  "blockers": [],
+  "limitations": [
+    "Query-to-training embeddings were not saved, so representatives are closest to class prototypes rather than nearest query neighbours.",
+    "Same-checkpoint Raw Softmax probabilities have small advisory drift from original B2 probability files.",
+    "One aggregation-eligible artifact retains single_fold_debug=true.",
+    "Checkpoint bytes were not read or independently rehashed in this no-inference analysis."
   ],
   "questions_for_gpt_pro": [
-    "Should the team acquire the full official Sow corpus and exact split before any benchmark claim?",
-    "Is a transparently labeled MD5-disjoint clip-CV diagnostic worth running despite unavailable lineage?",
-    "Should a description-based TransformerCNN implementation be authorized with an explicit assumption ledger?",
-    "Which targeted-search additions should enter Related Work in a separately approved manuscript-revision stage?"
+    "Should all five unadjusted Wilcoxon contrasts remain in the main text or move to supplementary material with multiplicity caution?",
+    "Where should the eligible fold0/seed3407 debug marker be disclosed?",
+    "Should a future approved inference stage save query-to-training embeddings for true nearest-neighbour exemplars?",
+    "Should future case selection retain the aligned B3 reproduction probabilities or be redesigned around original B2 probabilities?"
   ],
-  "skills_used": [
-    "superpowers:using-superpowers",
-    "superpowers:writing-plans",
-    "superpowers:dispatching-parallel-agents",
-    "superpowers:verification-before-completion",
-    "academic-research-suite",
-    "nature-academic-search",
-    "firecrawl_cli_unavailable_browser_fallback",
-    "github:yeet_scope_and_explicit_staging_only"
-  ],
-  "recommended_next_step": "Stop. Review audit/design. Do not run a benchmark, implement TransformerCNN, export new inference, or edit the manuscript without a new explicit APPROVED stage."
+  "recommended_next_step": "Stop. Review the cumulative evidence and scientific cautions. Do not start manuscript revision, inference, training, benchmarking, or exemplar extension without a new explicit APPROVED: true stage."
 }
