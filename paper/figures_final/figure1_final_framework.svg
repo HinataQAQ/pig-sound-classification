@@ -1,0 +1,473 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="518.740157pt" height="334.488189pt" viewBox="0 0 518.740157 334.488189" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-07-11T21:36:23.557642</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 334.488189
+L 518.740157 334.488189
+L 518.740157 0
+L 0 0
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 34.099342 81.872456
+L 89.379051 81.872456
+Q 95.137354 81.872456 95.137354 78.195161
+L 95.137354 47.305887
+Q 95.137354 43.628592 89.379051 43.628592
+L 34.099342 43.628592
+Q 28.341039 43.628592 28.341039 47.305887
+L 28.341039 78.195161
+Q 28.341039 81.872456 34.099342 81.872456
+z
+" clip-path="url(#pc21fd56fb1)" style="fill: #e3ead9; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 112.412263 81.872456
+L 167.691972 81.872456
+Q 173.450275 81.872456 173.450275 78.195161
+L 173.450275 47.305887
+Q 173.450275 43.628592 167.691972 43.628592
+L 112.412263 43.628592
+Q 106.65396 43.628592 106.65396 47.305887
+L 106.65396 78.195161
+Q 106.65396 81.872456 112.412263 81.872456
+z
+" clip-path="url(#pc21fd56fb1)" style="fill: #eee6d1; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 190.725184 81.872456
+L 246.004893 81.872456
+Q 251.763196 81.872456 251.763196 78.195161
+L 251.763196 47.305887
+Q 251.763196 43.628592 246.004893 43.628592
+L 190.725184 43.628592
+Q 184.966881 43.628592 184.966881 47.305887
+L 184.966881 78.195161
+Q 184.966881 81.872456 190.725184 81.872456
+z
+" clip-path="url(#pc21fd56fb1)" style="fill: #f1deda; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_1">
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(54.793259 60.992824)">Train</text>
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(41.062681 67.641162)">(no test tuning)</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(126.66593 61.07449)">Validation</text>
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(112.827336 67.632152)">selection/calibration</text>
+   </g>
+   <g id="text_3">
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(202.860195 61.038162)">Frozen test</text>
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(197.685133 67.595824)">evaluation only</text>
+   </g>
+   <g id="patch_5">
+    <path d="M 92.53234 62.750524
+Q 100.897417 62.750524 108.256264 62.750524
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+    <path d="M 105.456264 61.350524
+L 108.256264 62.750524
+L 105.456264 64.150524
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 170.845262 62.750524
+Q 179.210339 62.750524 186.569185 62.750524
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+    <path d="M 183.769185 61.350524
+L 186.569185 62.750524
+L 183.769185 64.150524
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 7px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: middle; fill: #69717e" x="141.203778" y="117.174484" transform="rotate(-0 141.203778 117.174484)">Exact path, source-ID and MD5 disjointness</text>
+   </g>
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: start; fill: #20242a" x="3.004506" y="9.492306" transform="rotate(-0 3.004506 9.492306)">a</text>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: start" x="26.037718" y="11.152071" transform="rotate(-0 26.037718 11.152071)">Disjoint split roles</text>
+   </g>
+  </g>
+  <g id="axes_2">
+   <g id="patch_7">
+    <path d="M 288.862778 81.872456
+L 325.715918 81.872456
+Q 331.474221 81.872456 331.474221 78.195161
+L 331.474221 50.247722
+Q 331.474221 46.570428 325.715918 46.570428
+L 288.862778 46.570428
+Q 283.104475 46.570428 283.104475 50.247722
+L 283.104475 78.195161
+Q 283.104475 81.872456 288.862778 81.872456
+z
+" clip-path="url(#p747166ef12)" style="fill: #ddeaf0; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 341.839166 81.872456
+L 378.692305 81.872456
+Q 384.450608 81.872456 384.450608 78.195161
+L 384.450608 50.247722
+Q 384.450608 46.570428 378.692305 46.570428
+L 341.839166 46.570428
+Q 336.080863 46.570428 336.080863 50.247722
+L 336.080863 78.195161
+Q 336.080863 81.872456 341.839166 81.872456
+z
+" clip-path="url(#p747166ef12)" style="fill: #ddeaf0; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 394.815554 86.285209
+L 447.791942 86.285209
+Q 453.550245 86.285209 453.550245 82.607915
+L 453.550245 45.834969
+Q 453.550245 42.157674 447.791942 42.157674
+L 394.815554 42.157674
+Q 389.057251 42.157674 389.057251 45.834969
+L 389.057251 82.607915
+Q 389.057251 86.285209 394.815554 86.285209
+z
+" clip-path="url(#p747166ef12)" style="fill: #ddeaf0; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 466.218511 67.163278
+L 509.981614 67.163278
+Q 515.739917 67.163278 515.739917 63.485983
+L 515.739917 38.48038
+Q 515.739917 34.803085 509.981614 34.803085
+L 466.218511 34.803085
+Q 460.460208 34.803085 460.460208 38.48038
+L 460.460208 63.485983
+Q 460.460208 67.163278 466.218511 67.163278
+z
+" clip-path="url(#p747166ef12)" style="fill: #e3ead9; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 466.218511 112.76173
+L 509.981614 112.76173
+Q 515.739917 112.76173 515.739917 109.084436
+L 515.739917 84.078833
+Q 515.739917 80.401538 509.981614 80.401538
+L 466.218511 80.401538
+Q 460.460208 80.401538 460.460208 84.078833
+L 460.460208 109.084436
+Q 460.460208 112.76173 466.218511 112.76173
+z
+" clip-path="url(#p747166ef12)" style="fill: #eee6d1; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_7">
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(303.154238 62.545407)">2 s</text>
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(293.85327 69.10307)">waveform</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: middle; fill: #20242a" x="360.265736" y="65.787911" transform="rotate(-0 360.265736 65.787911)">Log-Mel</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 5px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(391.849451 62.803942)">Shared hierarchical CRNN</text>
+    <text style="font-size: 5px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(401.292029 68.165504)">frozen embedding</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 5px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(463.92975 49.632713)">Primary Raw Softmax</text>
+    <text style="font-size: 5px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(468.64811 54.979744)">4-class prediction</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 5px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(466.980532 95.208119)">Auxiliary 6-subtype</text>
+    <text style="font-size: 5px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(475.455532 100.55515)">supervision</text>
+   </g>
+   <g id="patch_12">
+    <path d="M 328.868364 64.221442
+Q 333.778097 64.221442 337.681601 64.221442
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+    <path d="M 334.881601 62.821442
+L 337.681601 64.221442
+L 334.881601 65.621442
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+   </g>
+   <g id="patch_13">
+    <path d="M 381.844751 64.221442
+Q 386.754485 64.221442 390.657989 64.221442
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+    <path d="M 387.857989 62.821442
+L 390.657989 64.221442
+L 387.857989 65.621442
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 450.632292 60.201196
+Q 457.005559 56.131182 462.53077 52.602741
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+    <path d="M 459.41741 52.929834
+L 462.53077 52.602741
+L 460.924428 55.289685
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 450.0753 74.698859
+Q 457.006513 84.81617 463.36903 94.10337
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+    <path d="M 462.9415 91.002206
+L 463.36903 94.10337
+L 460.631581 92.584695
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+   </g>
+   <g id="text_12">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: start; fill: #20242a" x="262.374584" y="9.492306" transform="rotate(-0 262.374584 9.492306)">b</text>
+   </g>
+   <g id="text_13">
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: start" x="285.407796" y="11.152071" transform="rotate(-0 285.407796 11.152071)">Validated representation and auxiliary supervision</text>
+   </g>
+  </g>
+  <g id="axes_3">
+   <g id="patch_16">
+    <path d="M 29.492699 259.412975
+L 66.345839 259.412975
+Q 72.104142 259.412975 72.104142 255.735681
+L 72.104142 224.846406
+Q 72.104142 221.169112 66.345839 221.169112
+L 29.492699 221.169112
+Q 23.734396 221.169112 23.734396 224.846406
+L 23.734396 255.735681
+Q 23.734396 259.412975 29.492699 259.412975
+z
+" clip-path="url(#p7ef36cd251)" style="fill: #ddeaf0; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_17">
+    <path d="M 84.772409 263.825729
+L 135.445475 263.825729
+Q 141.203778 263.825729 141.203778 260.148434
+L 141.203778 220.433653
+Q 141.203778 216.756358 135.445475 216.756358
+L 84.772409 216.756358
+Q 79.014105 216.756358 79.014105 220.433653
+L 79.014105 260.148434
+Q 79.014105 263.825729 84.772409 263.825729
+z
+" clip-path="url(#p7ef36cd251)" style="fill: #e3ead9; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_18">
+    <path d="M 153.872045 280.005825
+L 250.611536 280.005825
+Q 256.369839 280.005825 256.369839 276.32853
+L 256.369839 204.253556
+Q 256.369839 200.576262 250.611536 200.576262
+L 153.872045 200.576262
+Q 148.113742 200.576262 148.113742 204.253556
+L 148.113742 276.32853
+Q 148.113742 280.005825 153.872045 280.005825
+z
+" clip-path="url(#p7ef36cd251)" style="fill: #f1deda; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(38.271972 238.578681)">Frozen</text>
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(32.58105 245.136343)">embedding</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 4.9px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(99.309418 236.288968)">Train-only</text>
+    <text style="font-size: 4.9px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(92.679106 241.529059)">main prototypes</text>
+    <text style="font-size: 4.9px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(87.297145 246.76915)">+ subtype prototypes</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 4.5px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(182.857337 229.417004)">Parallel diagnostics</text>
+    <text style="font-size: 4.5px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(185.2339 234.229332)">Top-k candidates</text>
+    <text style="font-size: 4.5px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(192.363236 238.988926)">Distances</text>
+    <text style="font-size: 4.5px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(163.765736 243.814332)">Predicted Top-1/Top-2 distance margin</text>
+    <text style="font-size: 4.5px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(180.235032 248.626661)">Hierarchy consistency</text>
+    <text style="font-size: 4.5px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; fill: #20242a" transform="translate(177.729798 253.438989)">Prototype representative</text>
+   </g>
+   <g id="patch_19">
+    <path d="M 69.501096 240.291043
+Q 75.559516 240.291043 80.611705 240.291043
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+    <path d="M 77.811705 238.891043
+L 80.611705 240.291043
+L 77.811705 241.691043
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+   </g>
+   <g id="patch_20">
+    <path d="M 138.600733 240.291043
+Q 144.659153 240.291043 149.711342 240.291043
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+    <path d="M 146.911342 238.891043
+L 149.711342 240.291043
+L 146.911342 241.691043
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 7px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: middle; fill: #69717e" x="141.203778" y="305.011428" transform="rotate(-0 141.203778 305.011428)">Validation-only calibration; frozen-test labels are evaluation only</text>
+   </g>
+   <g id="text_18">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: start; fill: #20242a" x="3.004506" y="176.736401" transform="rotate(-0 3.004506 176.736401)">c</text>
+   </g>
+   <g id="text_19">
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: start" x="26.037718" y="178.396166" transform="rotate(-0 26.037718 178.396166)">Parallel prototype candidate and diagnostic layer</text>
+   </g>
+  </g>
+  <g id="axes_4">
+   <g id="patch_21">
+    <path d="M 298.076063 228.523701
+L 341.839166 228.523701
+Q 347.597469 228.523701 347.597469 224.846406
+L 347.597469 204.253556
+Q 347.597469 200.576262 341.839166 200.576262
+L 298.076063 200.576262
+Q 292.31776 200.576262 292.31776 204.253556
+L 292.31776 224.846406
+Q 292.31776 228.523701 298.076063 228.523701
+z
+" clip-path="url(#p0b34b9cefb)" style="fill: #ddeaf0; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_22">
+    <path d="M 374.085663 228.523701
+L 486.948402 228.523701
+Q 492.706705 228.523701 492.706705 224.846406
+L 492.706705 204.253556
+Q 492.706705 200.576262 486.948402 200.576262
+L 374.085663 200.576262
+Q 368.32736 200.576262 368.32736 204.253556
+L 368.32736 224.846406
+Q 368.32736 228.523701 374.085663 228.523701
+z
+" clip-path="url(#p0b34b9cefb)" style="fill: #ddeaf0; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_23">
+    <path d="M 298.076063 265.296646
+L 341.839166 265.296646
+Q 347.597469 265.296646 347.597469 261.619352
+L 347.597469 241.026502
+Q 347.597469 237.349208 341.839166 237.349208
+L 298.076063 237.349208
+Q 292.31776 237.349208 292.31776 241.026502
+L 292.31776 261.619352
+Q 292.31776 265.296646 298.076063 265.296646
+z
+" clip-path="url(#p0b34b9cefb)" style="fill: #e3ead9; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_24">
+    <path d="M 374.085663 265.296646
+L 486.948402 265.296646
+Q 492.706705 265.296646 492.706705 261.619352
+L 492.706705 241.026502
+Q 492.706705 237.349208 486.948402 237.349208
+L 374.085663 237.349208
+Q 368.32736 237.349208 368.32736 241.026502
+L 368.32736 261.619352
+Q 368.32736 265.296646 374.085663 265.296646
+z
+" clip-path="url(#p0b34b9cefb)" style="fill: #e3ead9; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_25">
+    <path d="M 298.076063 302.069592
+L 341.839166 302.069592
+Q 347.597469 302.069592 347.597469 298.392298
+L 347.597469 277.799448
+Q 347.597469 274.122153 341.839166 274.122153
+L 298.076063 274.122153
+Q 292.31776 274.122153 292.31776 277.799448
+L 292.31776 298.392298
+Q 292.31776 302.069592 298.076063 302.069592
+z
+" clip-path="url(#p0b34b9cefb)" style="fill: #eee6d1; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_26">
+    <path d="M 374.085663 302.069592
+L 486.948402 302.069592
+Q 492.706705 302.069592 492.706705 298.392298
+L 492.706705 277.799448
+Q 492.706705 274.122153 486.948402 274.122153
+L 374.085663 274.122153
+Q 368.32736 274.122153 368.32736 277.799448
+L 368.32736 298.392298
+Q 368.32736 302.069592 374.085663 302.069592
+z
+" clip-path="url(#p0b34b9cefb)" style="fill: #eee6d1; stroke: #69717e; stroke-width: 0.7; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_20">
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: middle; fill: #20242a" x="319.957615" y="216.11645" transform="rotate(-0 319.957615 216.11645)">Primary</text>
+   </g>
+   <g id="text_21">
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: middle; fill: #20242a" x="430.517033" y="216.154231" transform="rotate(-0 430.517033 216.154231)">Raw Softmax (B2)</text>
+   </g>
+   <g id="patch_27">
+    <path d="M 344.990206 214.549981
+Q 357.960944 214.549981 369.925451 214.549981
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+    <path d="M 367.125451 213.149981
+L 369.925451 214.549981
+L 367.125451 215.949981
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+   </g>
+   <g id="text_22">
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: middle; fill: #20242a" x="319.957615" y="252.925724" transform="rotate(-0 319.957615 252.925724)">Candidate</text>
+   </g>
+   <g id="text_23">
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: middle; fill: #20242a" x="430.517033" y="252.889396" transform="rotate(-0 430.517033 252.889396)">Main Prototype parallel candidates</text>
+   </g>
+   <g id="patch_28">
+    <path d="M 344.990206 251.322927
+Q 357.960944 251.322927 369.925451 251.322927
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+    <path d="M 367.125451 249.922927
+L 369.925451 251.322927
+L 367.125451 252.722927
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+   </g>
+   <g id="text_24">
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: middle; fill: #20242a" x="319.957615" y="289.69867" transform="rotate(-0 319.957615 289.69867)">Ablation</text>
+   </g>
+   <g id="text_25">
+    <text style="font-size: 6.2px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: middle; fill: #20242a" x="430.517033" y="289.700123" transform="rotate(-0 430.517033 289.700123)">Hierarchical Prototype (B3 Top-1)</text>
+   </g>
+   <g id="patch_29">
+    <path d="M 344.990206 288.095873
+Q 357.960944 288.095873 369.925451 288.095873
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+    <path d="M 367.125451 286.695873
+L 369.925451 288.095873
+L 367.125451 289.495873
+" style="fill: none; stroke: #69717e; stroke-width: 0.9; stroke-linecap: round"/>
+   </g>
+   <g id="text_26">
+    <text style="font-size: 7px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: middle; fill: #69717e" x="400.573857" y="313.836935" transform="rotate(-0 400.573857 313.836935)">Parallel evaluation; no automatic routing claim</text>
+   </g>
+   <g id="text_27">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: start; fill: #20242a" x="262.374584" y="176.736401" transform="rotate(-0 262.374584 176.736401)">d</text>
+   </g>
+   <g id="text_28">
+    <text style="font-weight: 700; font-size: 8px; font-family: 'Arial', 'Noto Sans CJK SC', 'Microsoft YaHei', 'DejaVu Sans', 'Liberation Sans', sans-serif; text-anchor: start" x="285.407796" y="178.396166" transform="rotate(-0 285.407796 178.396166)">Evidence-bounded deployment interpretation</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pc21fd56fb1">
+   <rect x="26.037718" y="17.152071" width="230.332121" height="147.091783"/>
+  </clipPath>
+  <clipPath id="p747166ef12">
+   <rect x="285.407796" y="17.152071" width="230.332121" height="147.091783"/>
+  </clipPath>
+  <clipPath id="p7ef36cd251">
+   <rect x="26.037718" y="184.396166" width="230.332121" height="147.091783"/>
+  </clipPath>
+  <clipPath id="p0b34b9cefb">
+   <rect x="285.407796" y="184.396166" width="230.332121" height="147.091783"/>
+  </clipPath>
+ </defs>
+</svg>
