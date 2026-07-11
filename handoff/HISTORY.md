@@ -1010,3 +1010,48 @@
 - Stop point: GPT Pro/user must choose the manuscript framing and artifact
   archive policy. Do not regenerate the manuscript or final figures or start a
   new experiment without another explicit `APPROVED: true` stage.
+
+## 2026-07-11 - Final functional figure package
+
+- Status: completed the approved frozen-only functional statistics and final
+  figure stage under `framework_functional_only`.
+- Branch: `paper/final-figures-functional-framework`, based on
+  `9953cd73f0b0c86eab9ba4386295d75f5fd87cdb`.
+- Implementation/results commit:
+  `ddeb89708e9c52b301b254a6382cc80890eb7ad4`.
+- No training, checkpoint inference, feature extraction, prototype rebuild,
+  Atlas, few-shot/open-set analysis, new noise experiment, hyperparameter
+  selection, test tuning, or established result modification occurred.
+- Locked `lambda_selection_by_fold.csv` is authoritative. The 75 validation
+  summaries only reproduce the locked choices and now hard-fail on mismatch.
+- Added three derived tables for the shared label-free predicted-distance
+  margin, hierarchy-inconsistency utility, and final prototype functional
+  summary. Correct/error, AUROC, precision, and recall remain explicitly
+  label-aware evaluations.
+- Main/Hierarchical error-detection AUROC from negative predicted margin is
+  `0.946018`/`0.946918`; correct median margins are `1.016730`/`1.017693`, while
+  error median margins are `0.096617`/`0.091626`.
+- Hierarchy inconsistency is rare: Raw/Main/Hierarchical prevalence is
+  `1.64%/1.14%/0.83%`, error recall is `11.64%/13.76%/11.60%`, and enrichment
+  is `9.30/15.60/17.91`. It is a diagnostic flag, not a safe rejector.
+- Disagreement totals are Main `29` harmed versus `28` rescued and
+  Hierarchical `37` harmed versus `29` rescued; B3 remains an ablation.
+- Added Figures 1-4 and S1-S7 in editable SVG, PDF, 300-dpi PNG, and 600-dpi
+  TIFF, plus bilingual legends, 30-panel source and claim maps, and a machine +
+  original-resolution visual QA report.
+- Added a five-role read-only ARS audit. Final decision is ACCEPT under the
+  frozen contract; no mandatory block/warning majority or D4 block fired.
+- Integrity: 921 frozen sources remained unchanged across analysis/export;
+  151 source-map path/hash links passed; 3,956 pre-existing CSV/JSON files had
+  zero missing and zero changed; all 44 exports were non-empty.
+- Verification: 82/82 final regression tests and 27/27 focused tests passed;
+  `--validate-only`, `py_compile`, atomic rollback, staged `git diff --check`,
+  SVG whitespace, format/DPI, and visual checks passed. Independent code review
+  passed with no remaining defect.
+- Paper usability: `paper_usable=true` only for the bounded functional
+  narrative. Five-fold CI granularity, retrospective unadjusted S2 inference,
+  missing S6 uncertainty, simulated noise, absent animal/session/farm grouping,
+  and absent real-farm/welfare/automatic-routing validity must remain explicit.
+- Stop point: review this committed package. Do not begin manuscript revision,
+  external validation, or another experiment without a new explicit
+  `APPROVED: true` stage.

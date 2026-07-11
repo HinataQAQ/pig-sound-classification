@@ -1,243 +1,244 @@
 {
-  "status": "completed_final_validation_audit",
-  "task": "final_scientific_validation_before_figure_and_manuscript_regeneration",
+  "status": "completed_final_functional_figure_package",
   "date": "2026-07-11",
+  "task": "final_frozen_functional_statistics_and_publication_figure_package",
+  "acceptance_interpretation": "framework_functional_only",
   "approval": {
     "approved_true": true,
-    "direct_user_request": true,
-    "backbone_training_authorized": false,
-    "existing_checkpoint_inference_authorized_for_missing_selected_prototypes": true,
-    "test_tuning_authorized": false,
-    "new_grid_authorized": false,
-    "manuscript_regeneration_authorized": false
+    "training_authorized": false,
+    "checkpoint_inference_authorized": false,
+    "atlas_authorized": false,
+    "few_shot_open_set_authorized": false,
+    "new_noise_experiment_authorized": false,
+    "new_hyperparameter_selection_authorized": false,
+    "test_tuning_authorized": false
   },
-  "branch": "paper/final-validation-audit",
-  "base_commit_sha": "ccf3171be6c53a75299427bc1cf726377a9c1c29",
-  "implementation_commit_sha": "69366cbf8f60fd4ed4068039a9d78629ab7a41ef",
-  "handoff_commit_sha": "reported_in_final_codex_response",
+  "git": {
+    "source_branch": "paper/final-validation-audit",
+    "base_commit_sha": "9953cd73f0b0c86eab9ba4386295d75f5fd87cdb",
+    "branch": "paper/final-figures-functional-framework",
+    "implementation_commit_sha": "ddeb89708e9c52b301b254a6382cc80890eb7ad4",
+    "handoff_commit_sha": "reported_in_final_codex_response"
+  },
   "data_boundaries": {
-    "backbone_training_run": false,
-    "model_inference_run": true,
-    "feature_extraction_run": true,
-    "prototype_rebuild_runs": 20,
-    "prototype_source": "train_only",
-    "calibration_source": "validation_only",
-    "frozen_test_prediction_runs": 20,
+    "model_training_run": false,
+    "checkpoint_inference_run": false,
+    "feature_extraction_run": false,
+    "prototype_rebuild_run": false,
+    "new_parameter_selection_run": false,
     "test_set_parameter_selection": false,
-    "new_threshold": false,
-    "new_grid": false,
     "audio_modified": false,
     "checkpoint_modified": false,
     "manifest_modified": false,
-    "validated_source_result_modified": false,
-    "manuscript_modified": false,
-    "prior_figure_modified": false
+    "existing_result_csv_json_modified": false,
+    "preexisting_csv_json_audited": 3956,
+    "preexisting_csv_json_missing": 0,
+    "preexisting_csv_json_changed": 0,
+    "locked_lambda_selection_authority": "paper/final_validation/lambda_selection_by_fold.csv",
+    "validation_summary_role": "reproduction_check_only",
+    "primary_classifier": "B2_validation_selected_raw_softmax",
+    "prototype_role": "parallel_candidate_prediction_and_diagnostic",
+    "B3_role": "ablation_not_superior_classifier"
   },
   "commands": {
-    "environment_python": "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe",
-    "reconstruction_protocol": [
-      "eval_hier_exact_softmax_reproduction.py",
-      "build_hier_acoustic_prototypes.py",
-      "calibrate_prototype_predictor.py",
-      "predict_hier_acoustic_prototype.py",
-      "eval_hier_acoustic_prototype.py"
-    ],
-    "reconstruction_scope": {
-      "fold0": {"lambda": 1.0, "seeds": [42, 123, 777, 2024, 3407]},
-      "fold1": {"lambda": 0.2, "seeds": [42, 123, 777, 2024, 3407]},
-      "fold2": {"lambda": 0.2, "seeds": [42, 123, 777, 2024, 3407]},
-      "fold3": {"lambda": 0.2, "seeds": [42, 123, 777, 2024, 3407]},
-      "fold4": {"lambda": 0.5, "action": "reuse_existing_five_runs"}
-    },
-    "calibration_grids": {
-      "prototype_temperature": [0.03, 0.05, 0.07, 0.1, 0.2, 0.5, 1.0],
-      "softmax_temperature": [0.5, 0.75, 1.0, 1.5, 2.0],
-      "fusion_weight": [0.0, 0.25, 0.5, 0.75, 1.0],
-      "hierarchy_penalty": [0.5, 0.7, 0.85, 1.0],
-      "target_coverage": 0.95,
-      "selection_method": "hierarchical"
-    },
-    "verification": [
-      "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_final_validation_audit.py --help",
-      "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_final_validation_audit.py --root . --validate-only",
-      "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_final_validation_audit.py --root .",
-      "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe tools/generate_cumulative_framework_analysis.py --root . --validate-only",
-      "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe -m py_compile tools/generate_final_validation_audit.py tests/test_generate_final_validation_audit.py",
-      "C:\\py\\anaconda3\\envs\\pigsound-gpu\\python.exe -m unittest discover -s tests -v",
-      "git diff --cached --check"
-    ],
-    "full_reconstruction_loop_location": "handoff/CODEX_TO_GPT.md"
-  },
-  "lambda_selection": {
-    "characterization": "locked_validation_only_sensitivity_analysis",
-    "fully_prospective": false,
-    "fully_confirmatory": false,
-    "candidates": [0.2, 0.5, 1.0],
-    "folds": [0, 1, 2, 3, 4],
-    "seeds": [42, 123, 777, 2024, 3407],
-    "rule": [
-      "highest five-seed validation mean",
-      "lowest validation sample SD when means differ by no more than 1e-6",
-      "smallest lambda"
-    ],
-    "test_metric_used": false,
-    "selected_by_fold": {"0": 1.0, "1": 0.2, "2": 0.2, "3": 0.2, "4": 0.5},
-    "candidate_statistics": {
-      "0": {"0.2": [0.9849995369, 0.0037257445], "0.5": [0.9849995369, 0.0037257445], "1.0": [0.9866657405, 0.0045630864]},
-      "1": {"0.2": [0.9733194313, 0.0069735676], "0.5": [0.9683208237, 0.0069752271], "1.0": [0.9699674595, 0.0045881210]},
-      "2": {"0.2": [0.9816597172, 0.0069735532], "0.5": [0.9783319441, 0.0074543372], "1.0": [0.9799842270, 0.0074655287]},
-      "3": {"0.2": [0.9649865642, 0.0069730094], "0.5": [0.9633073786, 0.0074701648], "1.0": [0.9616188754, 0.0074765371]},
-      "4": {"0.2": [0.9649642677, 0.0069775824], "0.5": [0.9683208020, 0.0036987591], "1.0": [0.9665960722, 0.0059075906]}
-    },
-    "selection_source_count": 75
+    "help": "conda run -n pigsound-gpu python tools/generate_final_functional_figure_package.py --help",
+    "validate_only": "conda run -n pigsound-gpu python tools/generate_final_functional_figure_package.py --root . --n-boot 10000 --bootstrap-seed 3407 --validate-only",
+    "generate": "conda run -n pigsound-gpu python tools/generate_final_functional_figure_package.py --root . --n-boot 10000 --bootstrap-seed 3407",
+    "tests": "conda run -n pigsound-gpu python -m unittest tests.test_generate_final_validation_audit tests.test_generate_journal_figure_package tests.test_generate_cumulative_framework_analysis tests.test_generate_final_functional_figure_package",
+    "compile": "conda run -n pigsound-gpu python -m py_compile tools/generate_final_functional_figure_package.py tests/test_generate_final_functional_figure_package.py",
+    "diff_check": "git diff --cached --check"
   },
   "cohort": {
-    "n": 25,
     "folds": [0, 1, 2, 3, 4],
     "seeds": [42, 123, 777, 2024, 3407],
-    "pairing": "strict fold and seed",
-    "missing_pairs": [],
-    "duplicate_pairs": [],
-    "imputation_used": false
+    "n_runs": 25,
+    "pairing": "exact_fold_seed",
+    "selected_lambda_by_fold": {
+      "0": 1.0,
+      "1": 0.2,
+      "2": 0.2,
+      "3": 0.2,
+      "4": 0.5
+    },
+    "selection_source": "locked_csv",
+    "selection_reproduction_required": true
   },
-  "stage_summary": {
-    "B0": {"n": 25, "mean_macro_f1": 0.9226064673362835, "sd_macro_f1": 0.014540638405285713, "min": 0.8918764302059496, "max": 0.9462380884653676},
-    "B1": {"n": 25, "mean_macro_f1": 0.9472373583266809, "sd_macro_f1": 0.016763540828925106, "min": 0.921268925739005, "max": 0.9821403260099221},
-    "B2_valsel": {"n": 25, "mean_macro_f1": 0.9521817536158017, "sd_macro_f1": 0.013261981802572837, "min": 0.9279176201372997, "max": 0.9761769710720363},
-    "B3_valsel": {"n": 25, "mean_macro_f1": 0.9502658032107094, "sd_macro_f1": 0.016527703527144607, "min": 0.921268925739005, "max": 0.9761769710720363},
-    "B2_fixed_w05": {"n": 25, "mean_macro_f1": 0.9510496732091448, "sd_macro_f1": 0.012393313898909944, "min": 0.9217204301075269, "max": 0.9761769710720363},
-    "B3_fixed_w05": {"n": 25, "mean_macro_f1": 0.9539862142299651, "sd_macro_f1": 0.012003773477142526, "min": 0.9342909970132272, "max": 0.9761769710720363}
+  "bootstrap": {
+    "primary_type": "fold_cluster_bootstrap_after_seed_averaging",
+    "n_fold_clusters": 5,
+    "n_resamples": 10000,
+    "seed": 3407
   },
-  "paired_statistics": [
-    {"comparison": "B2_valsel-B1", "mean_delta": 0.004944395289120927, "run_ci95": [0.00013130432117804483, 0.009698122140622512], "wilcoxon_raw_p": 0.12284633752866045, "holm_p": 0.6142316876433023, "wins_ties_losses": [17, 1, 7], "fold_deltas": [0.004773866963751816, 0.006991420156629058, 0.011945647513802426, 0.005734818086668337, -0.004723776275247005], "fold_ci95": [-0.00048120834107202805, 0.00946131574294879]},
-    {"comparison": "B2_valsel-B0", "mean_delta": 0.02957528627951817, "run_ci95": [0.020723093008378497, 0.038717612125226786], "wilcoxon_raw_p": 1.9669532775878906e-06, "holm_p": 1.3768672943115234e-05, "wins_ties_losses": [22, 0, 3], "fold_deltas": [0.0046035350652251505, 0.03623455861341083, 0.021870084733156835, 0.019115934415270708, 0.06605231857052732], "fold_ci95": [0.013832219644871396, 0.048161662596257426]},
-    {"comparison": "B2_fixed_w05-B2_valsel", "mean_delta": -0.0011320804066568746, "run_ci95": [-0.004734671894203786, 0.002393660050542146], "wilcoxon_raw_p": 0.6291623521725525, "holm_p": 0.955072713062042, "wins_ties_losses": [8, 6, 11], "fold_deltas": [0.007393167991043304, -0.014291349931957176, -0.0023934536689539597, 0.003631233576583459, 0.0], "fold_ci95": [-0.008327253977648405, 0.004435900794625983]},
-    {"comparison": "B3_valsel-B2_valsel", "mean_delta": -0.0019159504050923503, "run_ci95": [-0.005377724386072174, 0.0014969121653014821], "wilcoxon_raw_p": 0.477536356531021, "holm_p": 0.955072713062042, "wins_ties_losses": [6, 8, 11], "fold_deltas": [-0.00627950767339327, 0.0025166458030799086, -0.003574300060148028, -0.0034474784999458663, 0.0012048884049455032], "fold_ci95": [-0.0046310187934056925, 0.0007991179832209916]},
-    {"comparison": "B3_valsel-B1", "mean_delta": 0.003028444884028576, "run_ci95": [-0.0016258045868413125, 0.0075893973059403975], "wilcoxon_raw_p": 0.290397165862864, "holm_p": 0.871191497588592, "wins_ties_losses": [13, 1, 11], "fold_deltas": [-0.0015056407096414536, 0.009508065959708966, 0.008371347453654398, 0.00228733958672247, -0.0035188878703015015], "fold_ci95": [-0.001552343514632688, 0.007609233282689839]},
-    {"comparison": "B3_valsel-B0", "mean_delta": 0.027659335874425817, "run_ci95": [0.01760161327890417, 0.03792847161182925], "wilcoxon_raw_p": 2.664327621459961e-05, "holm_p": 0.00015985965728759766, "wins_ties_losses": [20, 0, 5], "fold_deltas": [-0.0016759726081681191, 0.038751204416490735, 0.018295784673008807, 0.01566845591532484, 0.06725720697547281], "fold_ci95": [0.00925615025746445, 0.05015360544008356]},
-    {"comparison": "B3_fixed_w05-B3_valsel", "mean_delta": 0.003720411019255838, "run_ci95": [-0.0016617401347548662, 0.008861914374851098], "wilcoxon_raw_p": 0.12739804434044583, "holm_p": 0.6142316876433023, "wins_ties_losses": [12, 7, 6], "fold_deltas": [0.012504044913896516, -0.0034731604848766253, 0.0023850050650415567, 0.007186165602217742, 0.0], "fold_ci95": [-0.0009122631809423389, 0.008939660068781458]}
-  ],
-  "prototype_functional_value": {
-    "raw_softmax": {"main_top1": 0.952381, "main_top2": 1.0, "subtype_top1": 0.843571, "subtype_top2": 0.988333, "hierarchy_consistency": 0.983571, "error_if_consistent": 0.042855, "error_if_inconsistent": 0.311111, "feeding_stress_exact_pair_top2": 0.987619},
-    "main_prototype": {"main_top1": 0.952143, "main_top2": 1.0, "subtype_top1": 0.858095, "subtype_top2": 0.986905, "hierarchy_consistency": 0.988571, "error_if_consistent": 0.042135, "error_if_inconsistent": 0.541667, "feeding_stress_exact_pair_top2": 0.997143},
-    "hierarchical_prototype": {"main_top1": 0.950476, "main_top2": 1.0, "subtype_top1": 0.858095, "subtype_top2": 0.986905, "hierarchy_consistency": 0.991667, "error_if_consistent": 0.044371, "error_if_inconsistent": 0.683333, "feeding_stress_exact_pair_top2": 0.996667},
-    "true_main_prototype": {"mean_rank": 1.047857, "rank1_rate": 0.952143, "rank2_rate": 1.0, "mrr": 0.976071},
-    "true_subtype_prototype": {"mean_rank": 1.155, "rank1_rate": 0.858095, "rank2_rate": 0.986905, "mrr": 0.926865},
-    "hierarchical_main_margin_error_auroc": 0.998160,
-    "hierarchical_main_margin_auroc_fold_ci95": [0.995753, 0.999865],
-    "raw_vs_main_prototype": {"repeated_disagreements": 57, "raw_correct_prototype_wrong": 29, "prototype_correct_raw_wrong": 28, "both_wrong": 0},
-    "raw_vs_hierarchical_prototype": {"repeated_disagreements": 66, "raw_correct_prototype_wrong": 37, "prototype_correct_raw_wrong": 29, "both_wrong": 0},
-    "margin_threshold_fitted_on_test": false,
-    "representative_definition": "a training sample closest to the predicted class prototype"
+  "deployable_predicted_margin": {
+    "definition": "second_nearest_minus_nearest_four_main_prototype_distance",
+    "margin_uses_true_label": false,
+    "evaluation_uses_true_label": true,
+    "shared_geometry_for_main_and_hierarchical": true,
+    "main_prototype": {
+      "correct_margin_median": 1.01673002338,
+      "correct_margin_ci95": [0.9852297836, 1.0456256896],
+      "error_margin_median": 0.09661658918,
+      "error_margin_ci95": [0.07218815472, 0.12104502364],
+      "error_detection_auroc": 0.9460175129650935,
+      "error_detection_auroc_ci95": [0.9327767633941914, 0.956515334939281]
+    },
+    "hierarchical_prototype": {
+      "correct_margin_median": 1.01769265934,
+      "correct_margin_ci95": [0.98463873696, 1.04955039312],
+      "error_margin_median": 0.09162569004,
+      "error_margin_ci95": [0.07037496366, 0.11396694634],
+      "error_detection_auroc": 0.9469181109827804,
+      "error_detection_auroc_ci95": [0.9361422875849609, 0.9576939343806]
+    }
   },
-  "convergence": {
-    "B0": {"mean_best_epoch": 14.24, "sd": 6.1731, "median": 15, "range": [6, 28], "mean_val_test_gap": 0.022564, "gap_sd": 0.020471},
-    "B1": {"mean_best_epoch": 14.48, "sd": 7.4951, "median": 13, "range": [3, 27], "mean_val_test_gap": 0.024395, "gap_sd": 0.023920},
-    "B2": {"mean_best_epoch": 17.72, "sd": 7.1736, "median": 17, "range": [6, 30], "mean_val_test_gap": 0.022809, "gap_sd": 0.019255},
-    "B3": {"mean_best_epoch": 17.72, "sd": 7.1736, "median": 17, "range": [6, 30], "mean_val_test_gap": 0.024725, "gap_sd": 0.022620, "epoch_provenance": "inherited_from_selected_B2_checkpoint"},
-    "epoch_log_coverage": {"B0": "0/25", "B1": "0/25", "B2": "0/25", "B3": "not_applicable_post_hoc"},
-    "repository_logs_scanned": 8,
-    "training_curves_emitted": false
+  "hierarchy_inconsistency": {
+    "flag_uses_true_label": false,
+    "raw_softmax": {
+      "prevalence": 0.01642857142857143,
+      "prevalence_ci95": [0.011428571428571429, 0.02095238095238095],
+      "error_precision": 0.29866666666666664,
+      "error_precision_ci95": [0.16733333333333333, 0.424],
+      "error_recall": 0.1164040404040404,
+      "error_recall_ci95": [0.05545454545454546, 0.17933333333333332],
+      "error_enrichment": 9.299352092352091,
+      "error_enrichment_ci95": [3.5882727272727273, 17.77563492063492],
+      "enrichment_runs_available": 24
+    },
+    "main_prototype": {
+      "prevalence": 0.011428571428571427,
+      "prevalence_ci95": [0.007857142857142858, 0.014285714285714285],
+      "error_precision": 0.4766666666666667,
+      "error_precision_ci95": [0.30333333333333334, 0.6466666666666667],
+      "error_recall": 0.13764502164502165,
+      "error_recall_ci95": [0.06464069264069265, 0.20764069264069263],
+      "error_enrichment": 15.600734126984127,
+      "error_enrichment_ci95": [8.19868253968254, 24.139583333333334],
+      "enrichment_runs_available": 22
+    },
+    "hierarchical_prototype": {
+      "prevalence": 0.008333333333333331,
+      "prevalence_ci95": [0.004523809523809523, 0.012142857142857141],
+      "error_precision": 0.492,
+      "error_precision_ci95": [0.304, 0.6866666666666668],
+      "error_recall": 0.116013431013431,
+      "error_recall_ci95": [0.05215384615384615, 0.1794920634920635],
+      "error_enrichment": 17.911559523809522,
+      "error_enrichment_ci95": [11.097511904761907, 25.87358333333333],
+      "enrichment_runs_available": 18
+    },
+    "interpretation": "rare_error_enriched_diagnostic_not_safe_automatic_rejector"
   },
-  "acceptance": {
-    "label": "B",
-    "code": "framework_functional_only",
-    "B2_valsel_minus_B1_mean_delta": 0.004944395289120927,
-    "B3_valsel_minus_B2_valsel_mean_delta": -0.0019159504050923503,
-    "positive_B3_valsel_minus_B1_folds": 3,
-    "major_functional_contradiction": true,
-    "measurable_candidate_prediction_value": true
+  "disagreement": {
+    "main_prototype": {
+      "raw_correct_prototype_wrong": 29,
+      "prototype_correct_raw_wrong": 28,
+      "both_wrong": 0,
+      "net_harm_minus_rescue": 1
+    },
+    "hierarchical_prototype": {
+      "raw_correct_prototype_wrong": 37,
+      "prototype_correct_raw_wrong": 29,
+      "both_wrong": 0,
+      "net_harm_minus_rescue": 8,
+      "explicit_conclusion": "harmed_more_repeated_predictions_than_rescued"
+    }
   },
-  "integrity": {
-    "frozen_source_count": 905,
-    "pre_post_sha256_identical": true,
-    "selection_sources": 75,
-    "selected_prototype_runs": 25,
-    "unique_selected_and_fixed_prototype_runs": 45,
-    "minimum_recorded_hash_links_recomputed_per_selected_run": 32,
-    "path_overlap": 0,
-    "source_id_overlap": 0,
-    "md5_overlap": 0,
-    "main_truth_mismatches": 0,
-    "subtype_truth_mismatches": 0,
-    "train_prototype_membership_exact": true,
-    "validation_calibration_membership_exact": true,
-    "frozen_test_membership_exact": true,
-    "softmax_predictions_and_macro_f1_exact": true,
-    "canonical_probability_identity_join": "one_to_one_after_manifest_truth_binding",
-    "maximum_advisory_probability_drift": 0.0010788472200011778,
-    "full_main_rank_order_mismatches": 0,
-    "test_used_for_parameter_selection": false,
-    "missing_selected_artifacts": []
+  "primary_paired_results": {
+    "B1_minus_B0": {
+      "mean_delta_macro_f1": 0.0246308909903974,
+      "fold_cluster_ci95": [0.006578, 0.048280],
+      "wilcoxon_p": 0.000162303448,
+      "holm_status": "not_applicable_prespecified_duration_contrast"
+    },
+    "B2_minus_B1": {
+      "mean_delta_macro_f1": 0.004944395289120927,
+      "fold_cluster_ci95": [-0.00048120834107202805, 0.00946131574294879],
+      "wilcoxon_p": 0.12284633752866045,
+      "holm_p": 0.6142316876433023,
+      "interpretation": "exploratory_nonsignificant"
+    },
+    "B3_minus_B2": {
+      "mean_delta_macro_f1": -0.0019159504050923503,
+      "fold_cluster_ci95": [-0.0046310187934056925, 0.0007991179832209916],
+      "wilcoxon_p": 0.477536356531021,
+      "holm_p": 0.955072713062042,
+      "interpretation": "does_not_improve_top1"
+    }
   },
-  "changed_files": {
-    "implementation": [
-      "tools/generate_final_validation_audit.py",
-      "tests/test_generate_final_validation_audit.py",
-      "docs/superpowers/plans/2026-07-11-final-validation-audit.md"
+  "outputs": {
+    "derived_tables": [
+      "paper/final_validation/deployable_predicted_margin_summary.csv",
+      "paper/final_validation/hierarchy_inconsistency_utility.csv",
+      "paper/final_validation/prototype_functional_final_summary.csv"
     ],
-    "audit_package": "paper/final_validation/ (12 top-level outputs and 15 figure exports)",
-    "handoff": [
-      "handoff/CODEX_TO_GPT.md",
-      "handoff/CODEX_TO_GPT.json",
-      "handoff/HISTORY.md"
-    ]
-  },
-  "local_generated_prototype_artifacts": {
-    "committed": false,
-    "preserved_locally": true,
-    "directories": 20,
-    "files": 660,
-    "bytes": 88465995,
-    "patterns": [
-      "reports/prototype_cv5_exact_valsel_w10_fold0_seed*/",
-      "reports/prototype_cv5_exact_valsel_w02_fold{1,2,3}_seed*/"
+    "main_figure_stems": [
+      "paper/figures_final/figure1_final_framework",
+      "paper/figures_final/figure2_primary_classification_evidence",
+      "paper/figures_final/figure3_prototype_functional_value",
+      "paper/figures_final/figure4_prototype_candidate_cases"
     ],
-    "portability_caution": "Requires a separate durable result-artifact archive policy."
+    "supplementary_figure_stems": [
+      "paper/figures_final/figure_s1_complete_clean_ablations",
+      "paper/figures_final/figure_s2_fixed_lambda_retrospective_cumulative",
+      "paper/figures_final/figure_s3_lambda_selection_by_fold",
+      "paper/figures_final/figure_s4_best_epoch_validation_test_gap",
+      "paper/figures_final/figure_s5_demand_simulated_noise",
+      "paper/figures_final/figure_s6_aurc_augrc",
+      "paper/figures_final/figure_s7_label_aware_true_class_margin"
+    ],
+    "extensions_per_figure": ["svg", "pdf", "png", "tiff"],
+    "legends_and_maps": [
+      "paper/figures_final/FIGURE_LEGENDS_EN.md",
+      "paper/figures_final/FIGURE_LEGENDS_CN.md",
+      "paper/figures_final/FIGURE_SOURCE_MAP.csv",
+      "paper/figures_final/FIGURE_TO_CLAIM_MATRIX.csv",
+      "paper/figures_final/FIGURE_QA_REPORT.md"
+    ],
+    "review": "paper/review/FINAL_FUNCTIONAL_FIGURE_AUDIT.md",
+    "documentation": "docs/FINAL_FUNCTIONAL_FIGURE_PACKAGE.md"
   },
   "verification": {
-    "all_relevant_help_commands": {"passed": 7, "failed": 0},
-    "py_compile": true,
-    "final_validation_tests": {"passed": 23, "failed": 0},
-    "prototype_and_cumulative_tests": {"passed": 69, "failed": 0},
-    "full_repository_tests": {"passed": 141, "failed": 0},
-    "final_validate_only": "PASS_905_SOURCES_UNCHANGED",
-    "prior_cumulative_validate_only": "PASS_240_SOURCES_UNCHANGED",
-    "required_outputs": {"present": 27, "missing": 0, "empty": 0},
+    "tests_passed": 82,
+    "focused_tests_passed": 27,
+    "figure_count": 11,
+    "panel_count": 30,
+    "figure_exports": 44,
+    "empty_exports": 0,
+    "frozen_sources_hashed": 921,
+    "source_hashes_unchanged": true,
+    "pre_analysis_sha_locked": true,
+    "failure_atomic_promotion": true,
+    "source_map_rows": 30,
+    "claim_map_rows": 30,
+    "source_map_hash_links_verified": 151,
+    "original_resolution_visual_qa": "pass",
+    "svg_editable_text": "pass",
+    "svg_trailing_whitespace_files": 0,
     "png_dpi": 300,
-    "visual_qa": "PASS_ALL_FIVE_ORIGINAL_RESOLUTION",
-    "svg_editable_text": true,
-    "pdf_nonempty": true,
-    "overwrite_refusal": true,
-    "git_diff_cached_check": true,
-    "independent_review": "READY_NO_CRITICAL_OR_IMPORTANT_FINDINGS",
-    "independent_numeric_max_discrepancy": "less_than_1e-15",
-    "statistical_fallacy_scan": "11/11"
+    "tiff_dpi": 600,
+    "fixed_width_mm": 183,
+    "py_compile": "pass",
+    "git_diff_check": "pass",
+    "independent_code_review": "pass_no_remaining_defect",
+    "ars_editorial_decision": "accept"
   },
-  "paper_usability": {
-    "paper_usable": true,
-    "tables_complete": true,
-    "preliminary_audit_figures_complete": true,
-    "final_manuscript_figures": false,
-    "manuscript_regenerated": false,
-    "interpretation": "CAUTION",
-    "cautions": [
-      "The sensitivity analysis is retrospective and validation-selected, not fully prospective or confirmatory.",
-      "B2_valsel-B1 and B3_valsel-B2_valsel are nonsignificant after the requested tests.",
-      "B3_valsel has a negative mean increment over B2_valsel.",
-      "Hierarchical prototype harm exceeds rescue in repeated-run disagreement counts.",
-      "Prototype error AUROC is diagnostic geometry, not a deployable threshold.",
-      "The five-fold cluster sensitivity has low power.",
-      "The clean closed-set cohort does not establish real-farm external generalization."
-    ]
-  },
-  "blockers": [],
-  "questions_for_gpt_pro": [
-    "Should the retrospective validation-selected sensitivity analysis be in the main text or supplementary material?",
-    "How prominently should the higher fixed-lambda-0.5 B3 mean be shown when its contrast with B3_valsel is nonsignificant?",
-    "How much should B3 performance language be reduced given its negative mean increment and harm-rescue imbalance?",
-    "How should margin AUROC be framed strictly as diagnostic geometry?",
-    "Should the 20 detailed local prototype reconstruction directories receive a separate durable artifact archive before release?"
+  "paper_usable": true,
+  "limitations": [
+    "only_path_source_id_md5_disjointness_is_established",
+    "pig_session_device_barn_farm_grouping_not_established",
+    "only_five_fold_clusters_for_primary_cluster_intervals",
+    "S2_is_retrospective_run_bootstrap_and_multiplicity_unadjusted",
+    "S6_uncertainty_not_available_in_frozen_summary",
+    "DEMAND_noise_is_simulated_and_supplementary",
+    "no_welfare_diagnosis_safe_rejector_universal_threshold_or_real_farm_external_validity",
+    "full_921_digest_ledger_not_persisted_separately"
   ],
-  "stop_point": "Do not regenerate the manuscript or final figures and do not start new experiments without another explicit APPROVED: true stage."
+  "blockers": [],
+  "scientific_judgment_questions": [
+    "Choose later manuscript ordering for Figure 1 versus Figure 2.",
+    "Decide whether a future approved release should persist the full 921-artifact digest ledger.",
+    "Choose a later separately approved manuscript-integration or real-farm validation stage."
+  ],
+  "recommended_next_step_not_executed": "separately_approved_manuscript_integration_preserving_B2_primary_and_all_limitations",
+  "stop_after_handoff": true
 }

@@ -1,337 +1,239 @@
-# Codex to GPT Handoff — Final Validation Audit
+# Codex -> GPT Pro Handoff
 
 ## Status
 
-Completed the approved final scientific validation pass before figure
-regeneration and manuscript production. The locked fold-wise validation-only
-lambda analysis, validation-selected B2/B3 evaluation, prototype functional
-audit, and existing-log convergence audit are complete.
+`COMPLETED_FINAL_FUNCTIONAL_FIGURE_PACKAGE`
 
-No backbone was retrained. Twenty missing selected-lambda prototype runs were
-reconstructed from existing checkpoints with train-only prototypes,
-validation-only calibration, and one frozen-test prediction/evaluation pass.
-Five fold-4 lambda-0.5 prototype runs were reused. No test-derived parameter,
-threshold, grid, case, or lambda was selected.
+The approved final figure stage is complete under the acceptance interpretation
+`framework_functional_only`. Stop after reviewing this handoff. Do not begin
+manuscript regeneration, training, inference, Atlas, few-shot/open-set work,
+noise experiments, or a new parameter-selection stage without a new explicit
+`APPROVED: true` instruction.
 
-## Branch and commits
+## Repository state
 
-- Branch: `paper/final-validation-audit`.
-- Base commit: `ccf3171be6c53a75299427bc1cf726377a9c1c29`.
-- Audit implementation/output commit:
-  `69366cbf8f60fd4ed4068039a9d78629ab7a41ef`.
-- Handoff commit: reported as delivery HEAD in the final Codex response.
+- Source branch: `paper/final-validation-audit`
+- Source/base commit: `9953cd73f0b0c86eab9ba4386295d75f5fd87cdb`
+- Work branch: `paper/final-figures-functional-framework`
+- Implementation/results commit:
+  `ddeb89708e9c52b301b254a6382cc80890eb7ad4`
+- Handoff commit: reported in the final Codex response
+- Acceptance: `framework_functional_only`
+- Paper usable: `true`, subject to the limitations below
 
-## Exact environment and commands
+## Authorization and data boundaries
 
-Run from `C:\py\pigsound\pig-sound-classification`:
+- Model training: **not run**
+- Checkpoint/model inference: **not run**
+- Feature extraction or prototype rebuilding: **not run**
+- Atlas, few-shot/open-set, or new noise experiment: **not run**
+- New hyperparameter selection: **not run**
+- Test-set tuning or threshold selection: **not run**
+- Audio, checkpoint, manifest, or established result modification: **none**
+- B2 validation-selected Raw Softmax remains the primary classifier.
+- Prototypes remain a parallel candidate-prediction/diagnostic layer.
+- B3 remains an ablation and is not presented as superior Top-1.
+- `paper/final_validation/lambda_selection_by_fold.csv` is authoritative for
+  frozen-cohort choice. The 75 validation summaries are reproduction checks
+  only; a mismatch hard-fails before analysis.
+
+## Commands actually executed
+
+Environment and generator interface:
 
 ```powershell
 $env:PYTHONNOUSERSITE="1"
-$env:NUMBA_CACHE_DIR=(Resolve-Path '.numba_cache').Path
-$python="C:\py\anaconda3\envs\pigsound-gpu\python.exe"
+conda run -n pigsound-gpu python tools/generate_final_functional_figure_package.py --help
+conda run -n pigsound-gpu python tools/generate_final_functional_figure_package.py --root . --n-boot 10000 --bootstrap-seed 3407 --validate-only
 ```
 
-`conda activate pigsound-gpu` was attempted first, but the local shell has a
-GBK/invalid-PATH-character activation failure. The exact environment Python
-above was therefore used; no dependency was installed.
-
-The following locked loop is the exact five-command protocol used for the 20
-missing selected combinations. It deliberately excludes fold 4 because its
-selected lambda is 0.5 and all five exact runs already existed. It never passes
-`--allow_overwrite`.
+Final generation from frozen artifacts only:
 
 ```powershell
-$selected=@(
-  [pscustomobject]@{Fold=0; Lambda=1.0; Code='10'},
-  [pscustomobject]@{Fold=1; Lambda=0.2; Code='02'},
-  [pscustomobject]@{Fold=2; Lambda=0.2; Code='02'},
-  [pscustomobject]@{Fold=3; Lambda=0.2; Code='02'}
-)
-$seeds=42,123,777,2024,3407
-
-foreach($item in $selected){
-  foreach($seed in $seeds){
-    $fold=$item.Fold
-    $lambda=$item.Lambda
-    $code=$item.Code
-    $manifestRoot="paper_results/manifests/manifests_pigvocal_4class_expanded_train_cv5_cap3x/fold$fold"
-    $sourceRoot="reports/cv5_expanded_cap3x_fold${fold}_logmel_dur2_hier_w${code}_seed${seed}"
-    $out="reports/prototype_cv5_exact_valsel_w${code}_fold${fold}_seed${seed}"
-    $ckpt="checkpoints/cv5_expanded_cap3x_fold${fold}_logmel_dur2_hier_w${code}_seed${seed}.pt"
-    $summary="$sourceRoot/summary.json"
-    $expectedMacro=(Get-Content $summary -Raw | ConvertFrom-Json).test_macro_f1
-
-    & $python tools/eval_hier_exact_softmax_reproduction.py `
-      --test_manifest "$manifestRoot/test.csv" --ckpt $ckpt `
-      --summary_json $summary --reference_pred_csv "$sourceRoot/test_pred.csv" `
-      --out_dir $out --fold $fold --seed $seed `
-      --expected_hier_aux_weight $lambda --expected_macro_f1 $expectedMacro `
-      --expected_test_rows 168 --macro_f1_tolerance 1e-6 `
-      --prob_tolerance 1e-5 --device cuda --batch_size 64 --num_workers 0 `
-      --numba_cache_dir $env:NUMBA_CACHE_DIR
-    if($LASTEXITCODE -ne 0){ throw "Softmax reproduction failed: $out" }
-
-    & $python tools/build_hier_acoustic_prototypes.py `
-      --train_manifest "$manifestRoot/train.csv" `
-      --val_manifest "$manifestRoot/val.csv" `
-      --test_manifest "$manifestRoot/test.csv" --ckpt $ckpt `
-      --summary_json $summary --out_dir $out --fold $fold --seed $seed `
-      --expected_hier_aux_weight $lambda --feature_backend training_exact `
-      --prototype_temperature 0.07 --hier_aux_prob_weight $lambda `
-      --device cuda --batch_size 32 --num_workers 0
-    if($LASTEXITCODE -ne 0){ throw "Prototype build failed: $out" }
-
-    & $python tools/calibrate_prototype_predictor.py `
-      --prototype_bundle "$out/artifacts/prototype_bundle.npz" `
-      --val_manifest "$manifestRoot/val.csv" --ckpt $ckpt --out_dir $out `
-      --feature_backend training_exact --selection_method hierarchical `
-      --prototype_temperature_grid '0.03,0.05,0.07,0.1,0.2,0.5,1.0' `
-      --softmax_temperature_grid '0.5,0.75,1.0,1.5,2.0' `
-      --fusion_weight_grid '0.0,0.25,0.5,0.75,1.0' `
-      --hierarchy_penalty_grid '0.5,0.7,0.85,1.0' `
-      --hier_aux_prob_weight $lambda --target_coverage 0.95 `
-      --per_class_min_count 5 --device cuda --batch_size 32 --num_workers 0
-    if($LASTEXITCODE -ne 0){ throw "Calibration failed: $out" }
-
-    & $python tools/predict_hier_acoustic_prototype.py `
-      --prototype_bundle "$out/artifacts/prototype_bundle.npz" `
-      --calibration_json "$out/calibration/calibration.json" `
-      --test_manifest "$manifestRoot/test.csv" --ckpt $ckpt --out_dir $out `
-      --feature_backend training_exact --device cuda --batch_size 32 --num_workers 0
-    if($LASTEXITCODE -ne 0){ throw "Frozen prediction failed: $out" }
-
-    & $python tools/eval_hier_acoustic_prototype.py `
-      --pred_csv "$out/evaluation/test_predictions.csv" `
-      --calibration_json "$out/calibration/calibration.json" --out_dir $out
-    if($LASTEXITCODE -ne 0){ throw "Evaluation failed: $out" }
-  }
-}
+$env:PYTHONNOUSERSITE="1"
+conda run -n pigsound-gpu python tools/generate_final_functional_figure_package.py --root . --n-boot 10000 --bootstrap-seed 3407
 ```
 
-Audit generation and verification:
+Final regression and syntax verification:
 
 ```powershell
-& $python tools/generate_final_validation_audit.py --help
-& $python tools/eval_hier_exact_softmax_reproduction.py --help
-& $python tools/build_hier_acoustic_prototypes.py --help
-& $python tools/calibrate_prototype_predictor.py --help
-& $python tools/predict_hier_acoustic_prototype.py --help
-& $python tools/eval_hier_acoustic_prototype.py --help
-& $python tools/generate_cumulative_framework_analysis.py --help
-& $python tools/generate_final_validation_audit.py --root . --validate-only
-& $python tools/generate_final_validation_audit.py --root .
-& $python tools/generate_cumulative_framework_analysis.py --root . --validate-only
-& $python -m py_compile tools/generate_final_validation_audit.py tests/test_generate_final_validation_audit.py
-& $python -m unittest discover -s tests -v
+$env:PYTHONNOUSERSITE="1"
+conda run -n pigsound-gpu python -m unittest tests.test_generate_final_validation_audit tests.test_generate_journal_figure_package tests.test_generate_cumulative_framework_analysis tests.test_generate_final_functional_figure_package
+conda run -n pigsound-gpu python -m py_compile tools/generate_final_functional_figure_package.py tests/test_generate_final_functional_figure_package.py
 git diff --cached --check
 ```
 
-The generator refuses existing outputs. The final full write followed a safety
-check that the disposable target was exactly
-`C:\py\pigsound\pig-sound-classification\paper\final_validation`.
+Integrity checks also re-imported the pre-task SHA baseline at
+`C:\Users\s1205\AppData\Local\Temp\pig-final-functional-csv-json-before.xml`,
+re-hashed all 3,956 pre-existing CSV/JSON files, re-hashed every semicolon-split
+path in both 30-panel provenance maps, checked all 44 exports for non-empty
+content, and scanned all SVG lines for trailing whitespace.
 
-## Fold-wise validation-only lambda selection
+## New implementation and documentation
 
-Selection used the five-seed mean `best_val_macro_f1`, then lowest validation
-sample SD when means differed by at most `1e-6`, then smallest lambda. No test
-metric participated.
+- `tools/generate_final_functional_figure_package.py`
+- `tests/test_generate_final_functional_figure_package.py`
+- `docs/FINAL_FUNCTIONAL_FIGURE_PACKAGE.md`
+- `docs/superpowers/plans/2026-07-11-final-functional-figure-package.md`
+- `paper/review/FINAL_FUNCTIONAL_FIGURE_AUDIT.md`
 
-| Fold | Selected lambda | lambda 0.2 mean/SD | lambda 0.5 mean/SD | lambda 1.0 mean/SD |
-|---:|---:|---:|---:|---:|
-| 0 | 1.0 | 0.985000 / 0.003726 | 0.985000 / 0.003726 | 0.986666 / 0.004563 |
-| 1 | 0.2 | 0.973319 / 0.006974 | 0.968321 / 0.006975 | 0.969967 / 0.004588 |
-| 2 | 0.2 | 0.981660 / 0.006974 | 0.978332 / 0.007454 | 0.979984 / 0.007466 |
-| 3 | 0.2 | 0.964987 / 0.006973 | 0.963307 / 0.007470 | 0.961619 / 0.007477 |
-| 4 | 0.5 | 0.964964 / 0.006978 | 0.968321 / 0.003699 | 0.966596 / 0.005908 |
+The generator enforces the exact 5-fold x 5-seed cohort, label-free use-time
+margin/flag definitions, fold-mean aggregation, deterministic five-fold cluster
+bootstrap, locked selection reproduction, pre-analysis SHA locking, staged
+four-format QA, failure-atomic promotion/rollback, and refusal to overwrite an
+occupied output target.
 
-## Stage results
+## New derived tables
 
-| Stage | n | Mean Macro-F1 | SD | Min | Max |
+- `paper/final_validation/deployable_predicted_margin_summary.csv`
+- `paper/final_validation/hierarchy_inconsistency_utility.csv`
+- `paper/final_validation/prototype_functional_final_summary.csv`
+
+No pre-existing validation/result CSV or JSON changed.
+
+### Deployable shared main-prototype distance margin
+
+The score is `second_nearest - nearest` across the four main-prototype cosine
+distances and does not use the true label. Correct/error partitions and AUROC
+are label-aware evaluation. Values below are means of five fold means; intervals
+are deterministic 10,000-resample fold-cluster 95% CIs.
+
+| Route | Correct median margin | Error median margin | Error AUROC from negative margin |
+|---|---:|---:|---:|
+| Main Prototype | 1.016730 `[0.985230, 1.045626]` | 0.096617 `[0.072188, 0.121045]` | 0.946018 `[0.932777, 0.956515]` |
+| Hierarchical Prototype | 1.017693 `[0.984639, 1.049550]` | 0.091626 `[0.070375, 0.113967]` | 0.946918 `[0.936142, 0.957694]` |
+
+The Main and Hierarchical rows share one geometric margin; only their
+method-specific correct/error partitions differ. No mapped-subtype or
+hierarchical cosine-distance vector exists.
+
+### Hierarchy inconsistency utility
+
+| Route | Prevalence | Error precision | Error recall | Error enrichment | Available enrichment runs |
 |---|---:|---:|---:|---:|---:|
-| B0 | 25 | 0.922606467 | 0.014540638 | 0.891876430 | 0.946238088 |
-| B1 | 25 | 0.947237358 | 0.016763541 | 0.921268926 | 0.982140326 |
-| B2_valsel | 25 | 0.952181754 | 0.013261982 | 0.927917620 | 0.976176971 |
-| B3_valsel | 25 | 0.950265803 | 0.016527704 | 0.921268926 | 0.976176971 |
-| B2 fixed lambda 0.5 | 25 | 0.951049673 | 0.012393314 | 0.921720430 | 0.976176971 |
-| B3 fixed lambda 0.5 | 25 | 0.953986214 | 0.012003773 | 0.934290997 | 0.976176971 |
+| Raw Softmax | 0.016429 `[0.011429, 0.020952]` | 0.298667 `[0.167333, 0.424000]` | 0.116404 `[0.055455, 0.179333]` | 9.299352 `[3.588273, 17.775635]` | 24/25 |
+| Main Prototype | 0.011429 `[0.007857, 0.014286]` | 0.476667 `[0.303333, 0.646667]` | 0.137645 `[0.064641, 0.207641]` | 15.600734 `[8.198683, 24.139583]` | 22/25 |
+| Hierarchical Prototype | 0.008333 `[0.004524, 0.012143]` | 0.492000 `[0.304000, 0.686667]` | 0.116013 `[0.052154, 0.179492]` | 17.911560 `[11.097512, 25.873583]` | 18/25 |
 
-## Requested paired statistics
+Conditional inconsistent/consistent error rates are respectively
+`0.322833/0.042855` for Raw, `0.535000/0.042135` for Main, and
+`0.688333/0.044371` for Hierarchical when centred as fold means. The low
+prevalence and recall prohibit interpretation as a safe automatic rejector.
 
-All comparisons use the exact 25 matched `(fold, seed)` rows. Run and
-five-fold cluster intervals use 10,000 percentile resamples and seed 3407.
-Holm adjustment is applied once across these seven tests.
+### Frozen disagreement totals
 
-| Comparison | Mean delta | Run CI95 | Raw P | Holm P | W/T/L | Fold deltas 0–4 | Fold CI95 |
-|---|---:|---|---:|---:|---|---|---|
-| B2_valsel - B1 | 0.004944395 | [0.000131304, 0.009698122] | 0.122846338 | 0.614231688 | 17/1/7 | 0.004773867, 0.006991420, 0.011945648, 0.005734818, -0.004723776 | [-0.000481208, 0.009461316] |
-| B2_valsel - B0 | 0.029575286 | [0.020723093, 0.038717612] | 0.000001967 | 0.000013769 | 22/0/3 | 0.004603535, 0.036234559, 0.021870085, 0.019115934, 0.066052319 | [0.013832220, 0.048161663] |
-| B2 fixed - B2_valsel | -0.001132080 | [-0.004734672, 0.002393660] | 0.629162352 | 0.955072713 | 8/6/11 | 0.007393168, -0.014291350, -0.002393454, 0.003631234, 0 | [-0.008327254, 0.004435901] |
-| B3_valsel - B2_valsel | -0.001915950 | [-0.005377724, 0.001496912] | 0.477536357 | 0.955072713 | 6/8/11 | -0.006279508, 0.002516646, -0.003574300, -0.003447478, 0.001204888 | [-0.004631019, 0.000799118] |
-| B3_valsel - B1 | 0.003028445 | [-0.001625805, 0.007589397] | 0.290397166 | 0.871191498 | 13/1/11 | -0.001505641, 0.009508066, 0.008371347, 0.002287340, -0.003518888 | [-0.001552344, 0.007609233] |
-| B3_valsel - B0 | 0.027659336 | [0.017601613, 0.037928472] | 0.000026643 | 0.000159860 | 20/0/5 | -0.001675973, 0.038751204, 0.018295785, 0.015668456, 0.067257207 | [0.009256150, 0.050153605] |
-| B3 fixed - B3_valsel | 0.003720411 | [-0.001661740, 0.008861914] | 0.127398044 | 0.614231688 | 12/7/6 | 0.012504045, -0.003473160, 0.002385005, 0.007186166, 0 | [-0.000912263, 0.008939660] |
+- Main Prototype: 29 Raw-correct/prototype-wrong, 28 prototype-correct/Raw-wrong,
+  0 both wrong; net repeated harm `+1`.
+- Hierarchical Prototype: 37 harmed, 29 rescued, 0 both wrong; net repeated harm
+  `+8`. It harmed more repeated predictions than it rescued.
 
-B2_valsel exceeds B1 on mean, but its raw Wilcoxon P is nonsignificant and its
-five-fold cluster CI crosses zero. B3_valsel is lower than B2_valsel on mean.
-The fixed lambda-0.5 B3 mean is higher than validation-selected B3, but that
-sensitivity contrast is also nonsignificant. Do not claim a significant
-hierarchical or prototype increment.
+## Primary classification interpretation retained
 
-## Prototype functional findings
+- B1-B0: mean delta `+0.024631`, fold-cluster 95% CI
+  `[0.006578, 0.048280]`, Wilcoxon `P=0.000162303448`; Holm not applicable to
+  this prespecified duration contrast.
+- B2-B1: mean delta `+0.004944`, fold-cluster 95% CI
+  `[-0.000481, 0.009461]`, raw `P=0.122846338`, locked-family Holm
+  `P=0.614231688`; exploratory and nonsignificant.
+- B3-B2: mean delta `-0.001916`, fold-cluster 95% CI
+  `[-0.004631, 0.000799]`, raw `P=0.477536357`, locked-family Holm
+  `P=0.955072713`; no Top-1 improvement.
 
-Run means and five-fold cluster CIs are in the delivered CSVs. Core values:
+## Figure package
 
-| Method | Main Top-1/Top-2 | Subtype Top-1/Top-2 | Hierarchy consistency | Error if consistent / inconsistent | Feeding-stress exact-pair Top-2 |
-|---|---|---|---:|---|---:|
-| Raw Softmax | 0.952381 / 1.000000 | 0.843571 / 0.988333 | 0.983571 | 0.042855 / 0.311111 | 0.987619 |
-| Main prototype | 0.952143 / 1.000000 | 0.858095 / 0.986905 | 0.988571 | 0.042135 / 0.541667 | 0.997143 |
-| Hierarchical prototype | 0.950476 / 1.000000 | 0.858095 / 0.986905 | 0.991667 | 0.044371 / 0.683333 | 0.996667 |
+Four main figures, each in editable-text SVG, PDF, 300-dpi PNG, and 600-dpi
+TIFF:
 
-True prototype geometry:
+- `paper/figures_final/figure1_final_framework.*`
+- `paper/figures_final/figure2_primary_classification_evidence.*`
+- `paper/figures_final/figure3_prototype_functional_value.*`
+- `paper/figures_final/figure4_prototype_candidate_cases.*`
 
-- main mean rank `1.047857`, rank-1 `0.952143`, rank-2 `1.0`, MRR `0.976071`;
-- subtype mean rank `1.155000`, rank-1 `0.858095`, rank-2 `0.986905`, MRR `0.926865`;
-- hierarchical main favorable-margin error AUROC `0.998160`, fold CI
-  `[0.995753, 0.999865]`;
-- prototype subtype AUROC is `1.0`, but this is nearly tautological nearest-
-  prototype geometry and must not be presented as a deployable uncertainty
-  threshold;
-- Raw versus main-prototype repeated-run disagreements: 57, with 29 harmed,
-  28 rescued, and 0 both wrong;
-- Raw versus hierarchical-prototype disagreements: 66, with 37 harmed,
-  29 rescued, and 0 both wrong.
+Seven supplementary figures in the same four formats:
 
-The subtype prototype ordering is shared by the main and hierarchical
-prototype routes; it is not two independent subtype improvements. Case studies
-remain deterministic and illustrative. The representative wording is exactly:
+- `paper/figures_final/figure_s1_complete_clean_ablations.*`
+- `paper/figures_final/figure_s2_fixed_lambda_retrospective_cumulative.*`
+- `paper/figures_final/figure_s3_lambda_selection_by_fold.*`
+- `paper/figures_final/figure_s4_best_epoch_validation_test_gap.*`
+- `paper/figures_final/figure_s5_demand_simulated_noise.*`
+- `paper/figures_final/figure_s6_aurc_augrc.*`
+- `paper/figures_final/figure_s7_label_aware_true_class_margin.*`
 
-> a training sample closest to the predicted class prototype
+Legends, maps, and QA:
 
-## Convergence and stability
+- `paper/figures_final/FIGURE_LEGENDS_EN.md`
+- `paper/figures_final/FIGURE_LEGENDS_CN.md`
+- `paper/figures_final/FIGURE_SOURCE_MAP.csv`
+- `paper/figures_final/FIGURE_TO_CLAIM_MATRIX.csv`
+- `paper/figures_final/FIGURE_QA_REPORT.md`
 
-| Stage | Mean best epoch | SD | Median | Range | Mean validation-test gap | Gap SD |
-|---|---:|---:|---:|---|---:|---:|
-| B0 | 14.24 | 6.17 | 15 | 6–28 | 0.022564 | 0.020471 |
-| B1 | 14.48 | 7.50 | 13 | 3–27 | 0.024395 | 0.023920 |
-| B2 selected | 17.72 | 7.17 | 17 | 6–30 | 0.022809 | 0.019255 |
-| B3 selected | 17.72 | 7.17 | 17 | 6–30 | 0.024725 | 0.022620 |
+## Verification evidence
 
-B3 has no independent training epoch and inherits the selected B2 checkpoint
-epoch and validation metric. A real search of all 75 B0/B1/selected-B2 run
-directories and eight repository log files found complete epoch histories in
-`0/25`, `0/25`, and `0/25` runs, respectively. Median/IQR learning curves were
-not invented or regenerated.
+- Final focused/regression suite: **82/82 passed**.
+- Focused final-functional suite: **27/27 passed**.
+- Generator `--validate-only`: 11 figures, 30 panels, 921 frozen sources,
+  pre-analysis SHA lock passed, zero writes.
+- Final generation: 52 outputs; failure-atomic promotion and unchanged source
+  hashes reported true.
+- 44/44 figure exports non-empty; SVG text editable; PNG 300 dpi; TIFF 600 dpi;
+  fixed 183-mm width and white-background checks passed.
+- All 11 PNGs passed original-resolution visual QA; Figure 4's final shortened
+  hierarchical-route title is unclipped.
+- Source map: 30 unique panel rows and 151 verified path/SHA-256 links. Claim
+  matrix: 30 aligned rows with matching evidence paths/hashes.
+- Full source audit: 921 frozen artifacts unchanged before/after analysis,
+  export, and promotion.
+- Pre-existing result audit: 3,956 baseline CSV/JSON files, 0 missing, 0 changed.
+- `py_compile`, staged `git diff --check`, and SVG trailing-whitespace scan pass.
+- Independent code review: PASS after locked-selection hardening; no remaining
+  P0/P1/P2 defect.
+- Five-role ARS review: ACCEPT. Superseding EIC and methodology cards score
+  D1-D5 all pass; no mandatory block/warn majority or D4 block fired.
 
-## Acceptance interpretation
+## Leakage audit and research integrity
 
-**B. `framework_functional_only`**
+- Exact path, source-ID, and MD5 train/validation/test disjointness remains
+  valid in the frozen selected runs.
+- Prototype construction sources are train-only; validation remains the only
+  calibration/selection role; frozen test labels are used only for evaluation.
+- The deployable margin and hierarchy-inconsistency flag do not use test labels
+  at use time. Correctness, AUROC, precision, recall, and true-class margins are
+  explicitly label-aware evaluation.
+- Pig-, session-, device-, barn-, and farm-level grouping is not established.
+- No result is described as statistically significant when the paired evidence
+  is nonsignificant.
 
-- B2_valsel - B1 mean delta: `+0.004944395`;
-- B3_valsel - B2_valsel mean delta: `-0.001915950`;
-- only `3/5` B3_valsel - B1 fold means are positive;
-- prototype harm exceeds rescue for the hierarchical route;
-- Top-2, hierarchy-conditioned error, rank, and margin analyses nevertheless
-  provide measurable candidate-prediction/interpretive value.
+## Paper usability, limitations, and blockers
 
-The label follows the evidence literally. Outcome A is not supported.
+`paper_usable=true` for the `framework_functional_only` narrative.
 
-## Leakage, provenance, and immutable-source audit
+Required adjacent limitations:
 
-- Lambda selection reads 75 validation summaries only.
-- Every selected/fixed prototype run validates exact train/validation/test
-  path, source-ID, MD5, main label, and subtype membership.
-- Main and subtype prototypes contain exactly the train-manifest identities;
-  calibration rows contain exactly validation-manifest identities; evaluation
-  rows contain exactly frozen-test identities.
-- At least 32 recorded checkpoint/summary/manifest/bundle/calibration/
-  prediction SHA links are freshly recomputed per selected run.
-- Exact Softmax predictions and Macro-F1 reproduce for all selected runs.
-- Canonical Raw probabilities are manifest-truth-bound and then joined
-  one-to-one by path/source-ID/MD5; main truth and prediction mismatches are
-  both zero. Maximum advisory probability drift is `0.001078847`, with zero
-  full rank-order mismatches.
-- The final immutable boundary contains 905 source/artifact files; all pre/post
-  SHA256 values are identical.
-- Missing selected artifacts after reconstruction: none.
-- Test data is evaluation only; no test threshold or margin cutoff was fitted.
+- only five fold clusters underlie fold-cluster intervals;
+- S2 is retrospective run-bootstrap inference with five unadjusted Wilcoxon
+  values and cannot replace the validation-selected chain;
+- S6 lacks stored uncertainty estimates;
+- DEMAND evidence is simulated and supplementary;
+- no welfare diagnosis, safe rejector, universal threshold, operational cost
+  mapping, or real-farm external validity is established;
+- the QA records the full 921-source hash audit result/count, while persisted
+  maps contain directly cited panel evidence rather than a full digest ledger.
 
-The compact B0/B1 prediction CSVs do not persist sample identities, so their
-per-clip identity cannot be independently re-proven from those files alone.
-They are the established fold-specific results on this branch; all aggregate
-comparisons remain strict by `(fold, seed)`. Do not convert that limitation
-into a source-independence or real-farm generalization claim.
+Blockers: none for this approved stage.
 
-## Files changed and generated
+## Questions requiring GPT Pro scientific judgment
 
-Committed audit package:
-
-- `tools/generate_final_validation_audit.py`;
-- `tests/test_generate_final_validation_audit.py`;
-- `docs/superpowers/plans/2026-07-11-final-validation-audit.md`;
-- all 12 required top-level files under `paper/final_validation/`;
-- all five preliminary audit figures in SVG/PDF/300-dpi PNG under
-  `paper/final_validation/figures/`.
-
-Handoff-only commit:
-
-- `handoff/CODEX_TO_GPT.md`;
-- `handoff/CODEX_TO_GPT.json`;
-- `handoff/HISTORY.md`.
-
-The 20 reconstructed prototype directories contain 660 files and 88,465,995
-bytes under these patterns:
-
-- `reports/prototype_cv5_exact_valsel_w10_fold0_seed*/`;
-- `reports/prototype_cv5_exact_valsel_w02_fold{1,2,3}_seed*/`.
-
-They are preserved locally but intentionally excluded from Git by the approved
-plan, together with all pre-existing untracked results. The paper audit package
-and provenance are committed; long-term portability of the 20 detailed run
-directories requires a separate result-artifact archive policy.
-
-## Verification
-
-- New final-validation tests: 23/23 passed.
-- Prototype/cumulative focused regressions: 69/69 passed.
-- Full repository suite: 141/141 passed.
-- New script/test `py_compile`: passed.
-- Seven relevant `--help` commands: passed.
-- New validate-only pass: 905 sources unchanged.
-- Prior cumulative validate-only pass: 240 sources unchanged.
-- Required outputs: 27/27 present and non-empty.
-- CSV row contracts: 5, 25, 6, 7, 35, 67, 186, 62, 100, 100.
-- Five PNGs: visually inspected at original resolution; 300 dpi.
-- Five SVGs: editable text; mechanically normalized trailing whitespace.
-- Five PDFs: non-empty.
-- Output overwrite refusal: passed.
-- `git diff --cached --check`: passed.
-- Independent code/scientific review: Ready, no Critical or Important issues.
-- Independent numerical recomputation: selection, grid, means/SDs, Wilcoxon,
-  and Holm all agree within `1e-15`.
-
-## Paper usability, blockers, and GPT Pro questions
-
-The validation tables, report, and preliminary audit figures are paper-usable
-evidence, but they are not final manuscript figures. The manuscript and prior
-validated figures were not regenerated or edited.
-
-There is no missing-artifact or implementation blocker. Scientific/editorial
-judgment remains necessary for:
-
-1. whether the retrospective validation-selected analysis belongs in the main
-   text or supplementary material;
-2. how prominently to show that fixed lambda-0.5 B3 has a higher mean than
-   B3_valsel while the sensitivity contrast is nonsignificant;
-3. how much to reduce performance language for B3 given its negative mean
-   increment and 37 harmed versus 29 rescued repeated-run disagreements;
-4. how to present prototype margin AUROC strictly as diagnostic geometry, not
-   deployable uncertainty or a fitted rejection threshold;
-5. whether the 20 detailed local reconstruction directories need a separate
-   durable artifact archive before release.
+1. Whether the later manuscript should lead with the compact Figure 1
+   architecture or begin directly with Figure 2's primary evidence.
+2. Whether a future separately approved release should persist a complete
+   921-artifact digest ledger in addition to the panel maps.
+3. Whether the next scientific stage should be manuscript-only integration or
+   a separately designed real-farm external-validation protocol. Neither is
+   authorized by this handoff.
 
 ## Stop point
 
-Review this final validation evidence and choose the manuscript framing. Do not
-regenerate the manuscript, regenerate final paper figures, start another
-experiment, or implement Atlas/few-shot/open-set/noise work without a new
-explicit `APPROVED: true` stage.
+Review the committed package and this handoff, then stop. A recommended next
+step is a separate, explicitly approved manuscript-integration stage that keeps
+B2 Raw Softmax primary and carries every limitation above. Do not execute that
+stage automatically.
