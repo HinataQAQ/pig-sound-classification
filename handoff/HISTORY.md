@@ -861,3 +861,58 @@
 - Stop point: GPT Pro/user must review the branch, implementation file map,
   few-shot claim boundary, unknown ontology, and data rights before approving a
   separate implementation/debug stage.
+
+## 2026-07-11 - Duration-aware hierarchical prototype framework manuscript v2
+
+- Status: completed as an approved manuscript-only revision.
+- Branch: `paper/framework-manuscript-v2`.
+- Manuscript base: `paper/sci-draft-v1` at
+  `b52a0f63539d544f27c57e29760384c0782e7f61`.
+- Imported artifact source: `paper/prior-art-fair-benchmark` at
+  `ccf3171be6c53a75299427bc1cf726377a9c1c29`.
+- Paper-package commit:
+  `afb4d8cb63a219e2b3cde850daa13f31e4bc4baf`.
+- Created bilingual framework-v2 manuscripts, Claims and Evidence Ledger v3,
+  a five-test Holm table, corrected prior-art overlap matrix v2, and a claim
+  audit. Imported only the 14 approved cumulative/case/prior-art artifacts.
+- Working titles are “A Duration-Aware Hierarchical Prototype Inference
+  Framework for Interpretable Pig Vocalisation Recognition” and
+  “面向可解释猪声识别的时长感知层级原型推理框架”.
+- Holm conclusions: B1-B0, B3-B1 cumulative, and B3-B0 pass 0.05; B2-B1 and
+  B3-B2 do not. B3-B0 delta is `0.0313797469`, CI
+  `[0.0228211123, 0.0403014884]`, W/T/L `24/0/1`, with all five fold means
+  positive.
+- Material scientific limitation discovered during independent review: the
+  archive does not document a pre-test or validation-only rule for selecting
+  the `lambda=0.5` B2/B3 cohort. The English and Chinese abstracts, Methods,
+  Results, Limitations, Conclusions, ledger, novelty guard, and audit now label
+  B2/B3 comparisons retrospective/test-informed and exploratory. Holm does not
+  correct this model-selection limitation.
+- AudioProtoPNet is corrected to `prototype_inference=true`,
+  `post_hoc_prototype=false`, with a trainable prototype classifier replacing
+  the ordinary classification layer. This study remains post-hoc with a frozen
+  trained backbone, train-only fold-seed prototypes, and validation-only
+  within-run calibration.
+- Seven fold0/seed42 deterministic cases now have exact selection provenance;
+  the representative is “a training sample closest to the predicted class
+  prototype” from the matching training split. Cases illustrate semantics, not
+  aggregate performance.
+- Verification: 18 unique citekeys per language with zero missing and exact
+  parity; Holm and all cumulative/case values independently recomputed with
+  zero failures; prior-art matrix parses as 13 rows; figure links and SVG XML
+  pass; overclaim grep pass; full staged `git diff --check` pass.
+- Integrity: no training, inference, calibration, evaluation, prediction
+  regeneration, Atlas, few-shot, open-set, or noise command ran; no checkpoint,
+  audio, `reports/`, or `paper_results/` result changed. The protected 1,910
+  CSV/JSON files have ordered aggregate SHA-256
+  `a27801827f770bc9604f6c434aba6b1f2e419a8110d504450a4ec941029ce5d6`
+  and zero protected Git diff.
+- Paper usability: `paper_usable=true_with_material_limitation`;
+  `submission_bundle_complete=false`. Detailed DEMAND evidence remains
+  supplementary and does not establish real-farm robustness.
+- Remaining decisions: retain exploratory B2/B3 wording or conduct a separately
+  approved confirmatory study with pre-specified validation-only selection or
+  an untouched external cohort; validate the subtype taxonomy; provide final
+  author/funding/conflict/AI metadata and a framework-v2 release/package.
+- Stop point: review this handoff. Do not start another research stage until
+  `handoff/GPT_TO_CODEX.md` explicitly contains `APPROVED: true`.

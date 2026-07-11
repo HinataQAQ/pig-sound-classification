@@ -1,31 +1,44 @@
 {
-  "status": "completed_planning_only",
-  "task": "hierarchical_acoustic_prototype_atlas_engineering_audit_and_fold0_debug_plan",
+  "status": "completed_manuscript_only_with_material_selection_limitation",
+  "task": "framework_manuscript_v2_from_frozen_cumulative_and_prior_art_evidence",
   "approval": {
     "approved_true": true,
-    "direct_user_request": true,
-    "implementation_authorized": false,
-    "full_cv_authorized": false,
-    "open_set_evaluation_authorized": false,
-    "manuscript_rewrite_authorized": false
+    "source": "user_attached_request",
+    "manuscript_revision_authorized": true,
+    "model_training_authorized": false,
+    "model_evaluation_authorized": false,
+    "atlas_authorized": false,
+    "fewshot_or_open_set_authorized": false
   },
-  "branch": "paper/sci-draft-v1",
-  "repository_primary_branch_from_agents_md": "current-mctafd-ablation",
-  "base_commit_sha": "a1a7a552e225522e021c9d14ef7a5136a6505e4c",
-  "planning_commit_sha": "83050e8d3e1bebdc7e67bd4ced3df779abb4d5d0",
+  "branch": "paper/framework-manuscript-v2",
+  "manuscript_base_branch": "paper/sci-draft-v1",
+  "manuscript_base_sha": "b52a0f63539d544f27c57e29760384c0782e7f61",
+  "artifact_source_branch": "paper/prior-art-fair-benchmark",
+  "artifact_source_sha": "ccf3171be6c53a75299427bc1cf726377a9c1c29",
+  "paper_package_commit_sha": "afb4d8cb63a219e2b3cde850daa13f31e4bc4baf",
   "handoff_commit_sha": "see_final_codex_response",
-  "skills_used": [
-    "superpowers:using-superpowers",
-    "superpowers:writing-plans",
-    "superpowers:dispatching-parallel-agents",
-    "superpowers:systematic-debugging",
-    "superpowers:verification-before-completion",
-    "academic-research-suite: experiment planning",
-    "firecrawl: unavailable_cli_fallback_to_primary_web",
-    "karpathy-guidelines"
-  ],
   "changed_files": [
-    "docs/superpowers/plans/2026-07-11-hierarchical-acoustic-prototype-atlas.md",
+    "paper/CLAIMS_AND_EVIDENCE_v3.md",
+    "paper/figures_journal/figure_cumulative_framework.pdf",
+    "paper/figures_journal/figure_cumulative_framework.png",
+    "paper/figures_journal/figure_cumulative_framework.svg",
+    "paper/figures_journal/figure_prototype_prediction_cases.pdf",
+    "paper/figures_journal/figure_prototype_prediction_cases.png",
+    "paper/figures_journal/figure_prototype_prediction_cases.svg",
+    "paper/manuscript/paper_cn_framework_v2.md",
+    "paper/manuscript/paper_en_framework_v2.md",
+    "paper/references/NOVELTY_CLAIM_GUARD.md",
+    "paper/references/PRIOR_ART_OVERLAP_MATRIX.csv",
+    "paper/references/PRIOR_ART_OVERLAP_MATRIX_v2.csv",
+    "paper/references/PUBLISHED_SCORE_COMPARABILITY.csv",
+    "paper/references/references.bib",
+    "paper/review/framework_v2_claim_audit.md",
+    "paper/tables/cumulative_framework_fold_stats.csv",
+    "paper/tables/cumulative_framework_paired_stats.csv",
+    "paper/tables/cumulative_framework_paired_stats_holm.csv",
+    "paper/tables/cumulative_framework_runs.csv",
+    "paper/tables/cumulative_framework_summary.csv",
+    "paper/tables/prototype_prediction_case_studies.csv",
     "handoff/CODEX_TO_GPT.md",
     "handoff/CODEX_TO_GPT.json",
     "handoff/HISTORY.md"
@@ -33,170 +46,132 @@
   "data_boundaries": {
     "training_run": false,
     "inference_run": false,
+    "evaluation_run": false,
     "feature_extraction_run": false,
-    "prototype_or_atlas_built": false,
     "calibration_run": false,
-    "clean_test_evaluation_run": false,
-    "open_set_evaluation_run": false,
-    "demand_noise_run": false,
-    "full_cv_run": false,
-    "test_set_tuning": false,
-    "training_script_modified": false,
-    "clean_or_noise_result_modified": false,
-    "checkpoint_or_audio_modified": false,
-    "manuscript_modified": false
+    "predictions_regenerated": false,
+    "checkpoint_loaded_or_modified": false,
+    "audio_modified": false,
+    "reports_or_paper_results_modified": false,
+    "new_test_set_access_for_selection": false,
+    "archived_lambda_selection_pretest_or_validation_only_rule_documented": false,
+    "archived_lambda_selection_treated_as_test_informed": true,
+    "b2_b3_comparisons_treated_as_exploratory": true
   },
-  "current_pipeline_capability": {
-    "status": "partial_semi_atlas",
-    "available": [
-      "train-only main and subtype centroids",
-      "q95 mean and std cosine dispersion",
-      "normalized Log-Mel mean and std",
-      "representative samples",
-      "validation-only calibration",
-      "top-2 labels distances margins hierarchy consistency and uncertainty",
-      "geometry and acoustic-map plots"
-    ],
-    "missing": [
-      "unified schema-versioned ten-node graph",
-      "stable node IDs and parent links",
-      "explicit medoids and unified cross-level nearest nodes",
-      "SHA-bound per-exemplar embeddings",
-      "exact consolidated query schema",
-      "unknown_candidate and ordered rejection_reason",
-      "five-baseline comparison",
-      "few-shot node insertion",
-      "rights-gated open-set evaluation"
-    ]
-  },
-  "canonical_debug_cohort": {
-    "fold": 0,
-    "seed": 3407,
-    "aux_weight": 0.5,
-    "qualification": "training_exact",
-    "query_split": "clean_test_only",
-    "checkpoint": "checkpoints/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407.pt",
-    "checkpoint_sha256": "d6ec8dcdd6b16a6b3212a732e1d235428ba4c7c1f5702b5b1330ca9a3c449347",
-    "summary": "reports/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed3407/summary.json",
-    "summary_sha256": "b0e92e1a86081559e46eabea4719322f259b83ca58834106256f247fcacde4ec",
-    "canonical_prior_prototype_root": "reports/prototype_cv5_exact_w05_fold0_seed3407",
-    "prototype_bundle_sha256": "e2ad7e29735dcd88ca1e197c6a8ebdb0b4b75106594feeea96ee36617b2d18ee",
-    "prototype_calibration_sha256": "d27e0ea53487e8162cb6e7f7c1e5e8489ca13f53dab79d150cdaa54e0ccd279e",
-    "prototype_test_pred_sha256": "e672c334dec2c187f318ab357d7c948e0d8a2df06550a207d61127ee05a0508c",
-    "manifest_counts": {
-      "train": 1174,
-      "validation": 120,
-      "test": 168
-    },
-    "manifest_sha256": {
-      "train": "33337bf683c9a07b8bdf9dc5a0020e53e6883716924c6deafc06af85720b005b",
-      "validation": "ed86bb19512f4b36d3ed4630251e5e15b9fe38d8d2d42119eb90058e6689dd79",
-      "test": "4c2eedb0766725c84da2a41b9ec0793b874f9a3d10a80a0a79f4ada7342c5e68"
+  "framework": {
+    "title_en": "A Duration-Aware Hierarchical Prototype Inference Framework for Interpretable Pig Vocalisation Recognition",
+    "title_cn": "面向可解释猪声识别的时长感知层级原型推理框架",
+    "organising_statement": "See the complete event, learn the fine-grained structure, and predict with interpretable acoustic candidates.",
+    "stages": {
+      "B0": "1-s Log-Mel CRNN",
+      "B1": "2-s duration-aware Log-Mel CRNN",
+      "B2": "B1 plus shared four-main/six-subtype auxiliary supervision at archived lambda=0.5; Raw Softmax evaluation",
+      "B3": "B2 plus fold-seed-specific post-hoc hierarchical prototype candidate inference"
     }
   },
-  "existing_metrics_read_only": {
-    "new_metrics_created": false,
-    "raw_softmax_macro_f1": 0.9463601533,
-    "hierarchical_prototype_main_macro_f1": 0.9522727273,
-    "auxiliary_subtype_prototype_macro_f1": 0.8355042017
-  },
-  "fewshot_protocol": {
-    "eligible_subtypes": [
-      "dry_cough",
-      "abdominal_cough",
-      "frightened_stress",
-      "anxious_stress"
-    ],
-    "ineligible_single_child_subtypes": [
-      "calm_grunt",
-      "feeding"
-    ],
-    "k": [1, 3, 5, 10],
-    "complete_repeat_count": 20,
-    "debug_subtype": "dry_cough",
-    "debug_repeat": 0,
-    "support_source": "train_only",
-    "query_source": "frozen_full_clean_test",
-    "test_selects_k_or_threshold": false,
-    "claim_boundary": "frozen-representation node insertion; not genuinely unseen-backbone learning"
-  },
-  "open_set_audit": {
-    "evaluation_started": false,
-    "rights_confirmation_required_first": true,
-    "candidate_sources": [
-      {
-        "source": "SoundWel Zenodo 8252482",
-        "license": "CC BY 4.0",
-        "role": "external-known/domain-shift pig audio"
-      },
-      {
-        "source": "aSwine",
-        "license": "CC BY-NC 4.0",
-        "role": "conditional farm-background candidate"
-      },
-      {
-        "source": "SmartEars poultry farm",
-        "license": "CC BY 4.0",
-        "role": "far-OOD farm-background candidate"
-      },
-      {
-        "source": "Poultry Vocalization Dataset",
-        "license": "CC BY 4.0",
-        "role": "far-OOD noise candidate"
-      },
-      {
-        "source": "FSD50K/Freesound",
-        "license": "per-file; accept CC0 or CC BY only",
-        "role": "curated far-OOD pool"
-      },
-      {
-        "source": "ESC-50 pig",
-        "license": "CC BY-NC",
-        "role": "external-known pig audio; not unknown"
-      },
-      {
-        "source": "local Kaggle-like scream/cough archive",
-        "license": "unresolved",
-        "role": "blocked"
-      }
-    ],
-    "local_exact_md5_overlap_fold0": {
-      "soundwel_raw_6887_files": 0,
-      "aswine_raw_154_files": 0,
-      "kaggle_scream_cough_400_files": 0,
-      "soundwel_reviewed_300_files": 0
+  "metrics_read_only": {
+    "stage_mean_sd_macro_f1": {
+      "B0": [0.9226064673362835, 0.0145406384],
+      "B1": [0.9472373583266809, 0.0167635408],
+      "B2": [0.9510496732091448, 0.0123933139],
+      "B3": [0.9539862142299651, 0.0120037735]
     },
-    "md5_limit": "Exact-file overlap only; segment, source-study and acoustic-fingerprint overlap remain unaudited."
+    "b3_minus_b0": {
+      "mean_delta": 0.031379746893681656,
+      "bootstrap_ci95": [0.02282111227854716, 0.04030148837924802],
+      "wilcoxon_p_raw": 2.980232238769531e-7,
+      "wilcoxon_p_holm": 1.4901161193847656e-6,
+      "wins_ties_losses": [24, 0, 1],
+      "all_five_fold_means_positive": true,
+      "fold_cluster_ci95": [0.01717446912102002, 0.049575547432752186]
+    },
+    "holm_family": [
+      {"comparison": "B1-B0", "raw_p": 0.00016230344772338867, "holm_p": 0.0006492137908935547, "significant_005": true},
+      {"comparison": "B2-B1", "raw_p": 0.17024139590961385, "holm_p": 0.17024139590961385, "significant_005": false},
+      {"comparison": "B3-B2", "raw_p": 0.05825295212511276, "holm_p": 0.11650590425022552, "significant_005": false},
+      {"comparison": "B3-B1", "raw_p": 0.013808561544817114, "holm_p": 0.04142568463445134, "significant_005": true, "interpretation": "cumulative two-stage contrast only"},
+      {"comparison": "B3-B0", "raw_p": 2.980232238769531e-7, "holm_p": 1.4901161193847656e-6, "significant_005": true, "interpretation": "complete-framework contrast within retrospective lambda cohort"}
+    ]
+  },
+  "claim_boundaries": {
+    "strongest_independently_supported_increment": "B1-B0 duration",
+    "b2_role": "fine-grained semantic structure; adjacent performance increment nonsignificant and exploratory",
+    "b3_role": "candidate prediction and interpretability; adjacent performance increment nonsignificant and exploratory",
+    "interaction_or_synergy_supported": false,
+    "state_of_the_art_supported": false,
+    "real_farm_robustness_supported": false,
+    "open_set_or_fewshot_supported": false,
+    "lambda_selection_limitation": "No archived pre-test or validation-only lambda=0.5 selection rule; B2/B3 comparisons are retrospective/test-informed. Holm does not correct selection bias."
+  },
+  "prototype_case_contract": {
+    "n_cases": 7,
+    "source_fold": 0,
+    "source_seed": 42,
+    "source_rule": "pre-specified first numeric canonical expected key after artifact validation",
+    "correct_case_rule": "lower median Raw Softmax confidence in each jointly correct class pool",
+    "boundary_case_rule": "lower median Raw Top-2 margin in eligible feeding/stress error pool",
+    "uncertain_case_rule": "minimum remaining hierarchical Top-2 margin",
+    "representative_definition": "a training sample closest to the predicted class prototype",
+    "representative_split": "matching fold-seed train split only",
+    "aggregate_evidence": false
+  },
+  "prior_art": {
+    "audioprotopnet_prototype_inference": true,
+    "audioprotopnet_post_hoc_prototype": false,
+    "audioprotopnet_explanation": "trainable prototype classifier replacing the ordinary classification layer",
+    "this_study_post_hoc_prototype": true,
+    "this_study_backbone": "frozen trained backbone",
+    "this_study_prototype_source": "train-only and fold-seed-specific",
+    "this_study_calibration": "validation-only within-run prototype calibration; not lambda selection"
+  },
+  "leakage_and_integrity": {
+    "protected_csv_json_count": 1910,
+    "protected_ordered_aggregate_sha256": "a27801827f770bc9604f6c434aba6b1f2e419a8110d504450a4ec941029ce5d6",
+    "protected_git_diff_count": 0,
+    "exact_path_overlap_within_fold": 0,
+    "source_id_overlap_within_fold": 0,
+    "md5_overlap_within_fold": 0,
+    "animal_session_farm_parent_lineage_complete": false,
+    "latent_correlated_source_leakage_excluded": false
   },
   "verification": {
-    "plan_diff_check_passed": true,
-    "placeholder_scan_passed": true,
-    "required_node_fields_present": 18,
-    "required_query_fields_present": 15,
-    "implementation_tests_run": false,
-    "reason_no_tests": "No implementation code was created or changed in this planning-only round."
+    "independent_scientific_review_ready": true,
+    "citation_unique_keys_en": 18,
+    "citation_unique_keys_cn": 18,
+    "citation_missing_en": 0,
+    "citation_missing_cn": 0,
+    "citation_key_parity": true,
+    "abstract_en_whitespace_tokens": 220,
+    "abstract_en_regex_words": 244,
+    "abstract_cn_nonwhitespace_codepoints": 552,
+    "abstract_cn_han_characters": 281,
+    "all_noisy_0623_in_abstract": false,
+    "holm_recompute_passed": true,
+    "cumulative_numeric_failures": 0,
+    "case_numeric_failures": 0,
+    "prior_art_schema_rows": 13,
+    "prior_art_fields_passed": true,
+    "main_image_links_resolve": true,
+    "svg_xml_parse_passed": true,
+    "visual_png_review_passed": true,
+    "overclaim_grep_passed": true,
+    "staged_git_diff_check_passed": true,
+    "one_fold_debug_run": false,
+    "reason_no_debug_run": "User prohibited model evaluation and no executable model code changed."
   },
   "paper_usability": {
-    "planning_artifact_usable": true,
-    "new_atlas_evidence_created": false,
-    "paper_main_result_usable": false,
-    "noise_results_role": "supplementary_or_deployment_boundary_only"
+    "paper_usable": true,
+    "material_limitations_disclosed": true,
+    "confirmatory_b2_b3_claims_usable": false,
+    "noise_results_role": "supplementary deployment-boundary evidence only",
+    "submission_bundle_complete": false
   },
-  "blockers": [
-    "implementation branch requires confirmation",
-    "additional core and validation-only calibrator files require approval",
-    "unknown ontology and exact rights-approved source pool require approval",
-    "few-shot experiment is pseudo-new node insertion because the backbone saw all six subtypes",
-    "SoundWel official 6888 versus local 6887 file discrepancy",
-    "Kaggle-like archive license unresolved and blocked",
-    "non-local candidate overlap audits not yet run"
+  "blockers_or_scientific_questions": [
+    "Confirmatory B2/B3 inference requires a separately approved pre-specified validation-only lambda rule or untouched external cohort; retain exploratory wording otherwise.",
+    "The six-subtype hierarchy requires independent biological annotation/validation.",
+    "Sow Call animal/session/farm/parent-recording lineage is incomplete.",
+    "Before submission, provide author/funding/conflict/AI-disclosure metadata and a versioned framework-v2 reproducibility release.",
+    "Create final v2 TIFF/source-map/Word packaging and clarify upstream data terms."
   ],
-  "questions_for_gpt_pro": [
-    "Approve the ten-file implementation map including the pure core and validation-only calibrator?",
-    "Implement on paper/sci-draft-v1 or move to current-mctafd-ablation?",
-    "Approve the proposed far-OOD versus external-known ontology and source pool?",
-    "Accept few-shot claims only as frozen-representation node insertion?",
-    "Keep manuscript reframing deferred until Atlas evidence exists?"
-  ],
-  "recommended_next_step": "Stop. GPT Pro/user reviews this audit and plan; do not implement or run the fold0 debug until a new explicit approved stage."
+  "recommended_next_step": "Stop. GPT Pro/user reviews the manuscript and material lambda-selection limitation. Do not start another stage unless handoff/GPT_TO_CODEX.md explicitly says APPROVED: true."
 }
