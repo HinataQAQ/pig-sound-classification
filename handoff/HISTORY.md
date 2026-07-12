@@ -1091,3 +1091,54 @@
 - Stop point: GPT Pro/user should review this handoff. Do not merge, regenerate
   results, revise the manuscript, retrain, or begin another stage without a new
   explicit `APPROVED: true` instruction.
+
+## 2026-07-12 - Canonical nomenclature PR #2 review fixes
+
+- Status: completed the approved two Important metadata-contract fixes and
+  three requested minor fixes on `refactor/canonical-nomenclature-v1`; PR #2
+  remains draft and unmerged.
+- Review-fix implementation commit:
+  `d98d05c4bf2131231df3c2cbd4fb5e936df92474`.
+- Added `validate_expected_artifact_role`, which binds B0/B1/fixed-B2/B3
+  readers to exact model family, training stage, context, selection protocol,
+  and inference route. Conflicting `selection_method`, `inference_route`,
+  `legacy_method_id`, method IDs, or display fields fail instead of being
+  silently relabeled. Route-independent prototype bundles reject every
+  populated route-only field.
+- Prototype aggregation now obtains a complete schema-v1 model block from
+  `build_model_metadata`, validates every run and provenance block before
+  writing, and validates every canonical method item. Raw Softmax and the
+  main-class candidate retain B2; the hierarchical Top-1 ablation retains B3.
+- Added a tracked 2,624-entry protected-artifact manifest bound to base commit
+  `3b336996dba15c6227d652b276c9882503714659` and source tree
+  `417344e8a3c5fcdad715cfcd30e73525e340c311`. SHA-256 values use canonical
+  Git blob bytes, the exact path-set digest is
+  `6016600eccf5c6a13b00c1d64ecb4efe0e388f9fa4e80057ef0d3432156ddcf5`,
+  and base/source/current protected blob IDs are identical.
+- Corrected only the stale active cumulative filename to
+  `cumulative_framework_runs_nomenclature_v1.csv`; no old result file was
+  renamed. `CODEX_TO_GPT.json.changed_files` now equals the actual 21-path PR
+  diff and includes all three handoff files.
+- TDD evidence included RED failures for the missing role helper, unbound B2/
+  B3 roles, route-field conflicts, incomplete aggregate metadata, missing
+  protected manifest, stray bundle route fields, and the non-portable Windows
+  working-tree hash domain before each corresponding fix.
+- Verification: nomenclature 52/52, prototype 47/47, final-validation 24/24,
+  figure/table 68/68, and all repository tests 230/230 passed. Eleven CLI help
+  checks, strict checkpoint load, `git diff --check`, and 177-file simulated-
+  merge `py_compile` passed.
+- Isolated no-commit merge against the required base had zero conflicts. The
+  merged index tree exactly matched the branch tree at
+  `4d3e0f45271c887cbeef41bd05a3c1b83d9b4842`; protected/checkpoint/training
+  model/paper metric path diffs were empty.
+- Three independent read-only task re-reviews reported zero Critical, zero
+  Important, and zero remaining Minor findings.
+- No training, checkpoint inference, feature extraction, result regeneration,
+  test tuning, audio/data-manifest/checkpoint modification, or historical
+  artifact rewrite occurred. Published metrics and statistical interpretation
+  are unchanged.
+- Paper usability remains limited to nomenclature/metadata/display consistency;
+  this task adds no scientific evidence.
+- Stop point: mark PR #2 ready for human review only after the terminal handoff
+  commit is pushed. Do not merge or begin another stage without a new explicit
+  `APPROVED: true` instruction.

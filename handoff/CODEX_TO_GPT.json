@@ -1,7 +1,7 @@
 {
-  "status": "completed_canonical_nomenclature_v1",
+  "status": "completed_canonical_nomenclature_v1_review_fixes",
   "date": "2026-07-12",
-  "task": "non_destructive_canonical_nomenclature_refactor",
+  "task": "non_destructive_canonical_nomenclature_review_fixes",
   "approval": {
     "approved_true": true,
     "training_authorized": false,
@@ -12,7 +12,8 @@
   "git": {
     "base_commit_sha": "3b336996dba15c6227d652b276c9882503714659",
     "branch": "refactor/canonical-nomenclature-v1",
-    "implementation_commit_sha": "1cd4afe1a716a05481a9ee14094825ed7700d70a",
+    "initial_implementation_commit_sha": "1cd4afe1a716a05481a9ee14094825ed7700d70a",
+    "review_fix_commit_sha": "d98d05c4bf2131231df3c2cbd4fb5e936df92474",
     "handoff_commit_sha": "reported_in_final_codex_response",
     "merged": false
   },
@@ -57,6 +58,8 @@
     "audio_modified": false,
     "checkpoint_modified": false,
     "manifest_modified": false,
+    "research_data_manifest_modified": false,
+    "protected_artifact_manifest_added": true,
     "historical_result_modified": false,
     "checkpoint_filenames_modified": false,
     "state_dict_keys_modified": false,
@@ -65,12 +68,12 @@
   },
   "verification": {
     "py_compile_passed": true,
-    "python_files_compiled": 13,
-    "tests_run": 184,
-    "tests_passed": 184,
+    "python_files_compiled": 177,
+    "tests_run": 230,
+    "tests_passed": 230,
     "tests_failed": 0,
-    "cli_help_passed": 9,
-    "cli_help_total": 9,
+    "cli_help_passed": 11,
+    "cli_help_total": 11,
     "git_diff_check_passed": true,
     "independent_review_ready_to_commit": true,
     "independent_review_findings": {
@@ -79,8 +82,20 @@
       "minor": 0
     },
     "historical_sha_entries_checked": 2624,
+    "historical_sha_hash_domain": "git_blob_bytes",
+    "historical_path_set_sha256": "6016600eccf5c6a13b00c1d64ecb4efe0e388f9fa4e80057ef0d3432156ddcf5",
     "historical_sha_missing": 0,
     "historical_sha_changed": 0,
+    "merge_simulation": {
+      "base_commit_sha": "3b336996dba15c6227d652b276c9882503714659",
+      "merge_head_sha": "d98d05c4bf2131231df3c2cbd4fb5e936df92474",
+      "merge_tree_sha": "4d3e0f45271c887cbeef41bd05a3c1b83d9b4842",
+      "branch_tree_sha": "4d3e0f45271c887cbeef41bd05a3c1b83d9b4842",
+      "conflicts": 0,
+      "py_compile_files": 177,
+      "diff_check_passed": true,
+      "protected_path_changes": 0
+    },
     "checkpoint_path": "checkpoints/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed42.pt",
     "checkpoint_sha256": "8728fb7afc98f7c4ea113ede3ebc2e83aa2a39a583f1928e5354b45f6f87da6c",
     "checkpoint_state_dict_key_count": 40,
@@ -110,29 +125,35 @@
     "b3_role": "hierarchical_prototype_top1_ablation"
   },
   "changed_files": [
-    "tools/nomenclature.py",
+    "docs/CUMULATIVE_FRAMEWORK_ANALYSIS.md",
+    "docs/FINAL_FUNCTIONAL_FIGURE_PACKAGE.md",
     "docs/NOMENCLATURE.md",
-    "tests/test_nomenclature.py",
     "docs/superpowers/plans/2026-07-12-canonical-nomenclature-v1.md",
+    "handoff/CODEX_TO_GPT.json",
+    "handoff/CODEX_TO_GPT.md",
+    "handoff/HISTORY.md",
+    "tests/data/protected_artifacts_nomenclature_v1.sha256.json",
+    "tests/test_generate_cumulative_framework_analysis.py",
+    "tests/test_generate_final_functional_figure_package.py",
+    "tests/test_generate_final_validation_audit.py",
+    "tests/test_nomenclature.py",
     "tools/build_hier_acoustic_prototypes.py",
     "tools/calibrate_prototype_predictor.py",
-    "tools/predict_hier_acoustic_prototype.py",
     "tools/eval_hier_acoustic_prototype.py",
-    "tools/summarize_cv5_exact_prototype.py",
-    "tools/generate_final_validation_audit.py",
-    "tools/generate_final_functional_figure_package.py",
     "tools/generate_cumulative_framework_analysis.py",
-    "tests/test_generate_final_validation_audit.py",
-    "tests/test_generate_final_functional_figure_package.py",
-    "tests/test_generate_cumulative_framework_analysis.py",
-    "docs/FINAL_FUNCTIONAL_FIGURE_PACKAGE.md",
-    "docs/CUMULATIVE_FRAMEWORK_ANALYSIS.md"
+    "tools/generate_final_functional_figure_package.py",
+    "tools/generate_final_validation_audit.py",
+    "tools/nomenclature.py",
+    "tools/predict_hier_acoustic_prototype.py",
+    "tools/summarize_cv5_exact_prototype.py"
   ],
   "commands": {
     "environment": "$env:PYTHONUTF8='1'; conda activate pigsound-gpu; $env:PYTHONNOUSERSITE='1'",
-    "tests": "python -m unittest -q tests.test_nomenclature tests.test_prototype_pipeline_core tests.test_generate_final_validation_audit tests.test_generate_final_functional_figure_package tests.test_generate_cumulative_framework_analysis tests.test_generate_journal_figure_package",
+    "tests": "python -m unittest discover -s tests -p 'test_*.py'",
+    "targeted_tests": "python -m unittest tests.test_nomenclature; python -m unittest tests.test_prototype_pipeline_core; python -m unittest tests.test_generate_final_validation_audit; python -m unittest tests.test_generate_final_functional_figure_package tests.test_generate_cumulative_framework_analysis tests.test_generate_journal_figure_package",
     "integrity_tests": "python -m unittest -v tests.test_nomenclature.ImmutableArtifactCompatibilityTests",
-    "diff_check": "git diff --check"
+    "diff_check": "git diff --check",
+    "merge_simulation": "git worktree add --detach <temp> 3b336996dba15c6227d652b276c9882503714659; git -C <temp> merge --no-ff --no-commit refactor/canonical-nomenclature-v1; git -C <temp> write-tree"
   },
   "leakage_audit": {
     "train_validation_test_roles_changed": false,
@@ -144,5 +165,5 @@
   },
   "blockers": [],
   "questions_for_gpt_pro": [],
-  "recommended_next_step": "Review the nomenclature contract and handoff only; do not execute another stage without a new APPROVED: true instruction."
+  "recommended_next_step": "PR #2 is ready to mark for review after the final handoff commit; do not merge or execute another stage without a new APPROVED: true instruction."
 }

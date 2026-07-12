@@ -2,17 +2,18 @@
 
 ## Status
 
-`COMPLETED_CANONICAL_NOMENCLATURE_V1`
+`COMPLETED_CANONICAL_NOMENCLATURE_V1_REVIEW_FIXES`
 
-The approved non-destructive nomenclature refactor is complete. Review this
-handoff and stop; do not begin another stage without a new explicit
-`APPROVED: true` instruction.
+The approved PR #2 metadata-contract fixes are complete. The PR remains draft
+and unmerged. Review this handoff and stop; do not begin another stage without
+a new explicit `APPROVED: true` instruction.
 
 ## Repository state
 
 - Base commit: `3b336996dba15c6227d652b276c9882503714659`
 - Branch: `refactor/canonical-nomenclature-v1`
-- Implementation commit: `1cd4afe1a716a05481a9ee14094825ed7700d70a`
+- Initial implementation commit: `1cd4afe1a716a05481a9ee14094825ed7700d70a`
+- Review-fix commit: `d98d05c4bf2131231df3c2cbd4fb5e936df92474`
 - Handoff commit: reported in the final Codex response
 - Paper usable: `true` for nomenclature, metadata, and regenerated-output
   labeling only; this task adds no scientific evidence.
@@ -21,7 +22,10 @@ handoff and stop; do not begin another stage without a new explicit
 
 - Model training: **not run**
 - Checkpoint inference or feature extraction: **not run**
-- Audio/manifests/checkpoints/historical results modified: **none**
+- Audio/research-data manifests/checkpoints/historical results modified:
+  **none**
+- Added integrity metadata only:
+  `tests/data/protected_artifacts_nomenclature_v1.sha256.json`
 - Test-set parameter selection or tuning: **none**
 - Historical schemas, machine columns, checkpoint names, `state_dict` keys,
   `main_head`, and `aux_head`: **unchanged**
@@ -51,6 +55,12 @@ handoff and stop; do not begin another stage without a new explicit
 - Cross-artifact model family, stage, context, route, and protocol are
   reconciled. The only legal B2-to-B3 transition is the hierarchical-prototype
   Top-1 decision route.
+- `validate_expected_artifact_role` now binds B0/B1/fixed-B2/B3 consumers to
+  their exact model, stage, context, selection protocol, and route, and rejects
+  conflicts among legacy and canonical route fields.
+- Prototype aggregate run/provenance blocks now contain complete model
+  metadata, and all canonical method records are strictly validated before
+  output writing. Raw/Main remain B2 and Hierarchical remains B3.
 
 ## Files changed
 
@@ -60,6 +70,7 @@ New:
 - `docs/NOMENCLATURE.md`
 - `tests/test_nomenclature.py`
 - `docs/superpowers/plans/2026-07-12-canonical-nomenclature-v1.md`
+- `tests/data/protected_artifacts_nomenclature_v1.sha256.json`
 
 Updated active code/tests/docs:
 
@@ -77,6 +88,12 @@ Updated active code/tests/docs:
 - `docs/FINAL_FUNCTIONAL_FIGURE_PACKAGE.md`
 - `docs/CUMULATIVE_FRAMEWORK_ANALYSIS.md`
 
+Required handoff files, included in the actual PR file inventory:
+
+- `handoff/CODEX_TO_GPT.json`
+- `handoff/CODEX_TO_GPT.md`
+- `handoff/HISTORY.md`
+
 ## Commands actually executed
 
 Environment:
@@ -91,10 +108,12 @@ $env:PYTHONNOUSERSITE='1'
 Compilation and full regression suite:
 
 ```powershell
-python -m py_compile tools/nomenclature.py tools/build_hier_acoustic_prototypes.py tools/calibrate_prototype_predictor.py tools/eval_hier_acoustic_prototype.py tools/predict_hier_acoustic_prototype.py tools/summarize_cv5_exact_prototype.py tools/generate_final_validation_audit.py tools/generate_final_functional_figure_package.py tools/generate_cumulative_framework_analysis.py tests/test_nomenclature.py tests/test_generate_final_validation_audit.py tests/test_generate_final_functional_figure_package.py tests/test_generate_cumulative_framework_analysis.py
-$env:PIGSOUND_NOMENCLATURE_HISTORICAL_SHA256_BASELINE=(Resolve-Path .git\codex_nomenclature_historical_sha256.tsv)
 $env:PIGSOUND_NOMENCLATURE_CHECKPOINT_BASELINE=(Resolve-Path .git\codex_nomenclature_checkpoint_baseline.json)
-python -m unittest -q tests.test_nomenclature tests.test_prototype_pipeline_core tests.test_generate_final_validation_audit tests.test_generate_final_functional_figure_package tests.test_generate_cumulative_framework_analysis tests.test_generate_journal_figure_package
+python -m unittest tests.test_nomenclature
+python -m unittest tests.test_prototype_pipeline_core
+python -m unittest tests.test_generate_final_validation_audit
+python -m unittest tests.test_generate_final_functional_figure_package tests.test_generate_cumulative_framework_analysis tests.test_generate_journal_figure_package
+python -m unittest discover -s tests -p 'test_*.py'
 ```
 
 Compatibility and static checks:
@@ -110,6 +129,8 @@ python tools/summarize_cv5_exact_prototype.py --help
 python tools/generate_final_validation_audit.py --help
 python tools/generate_final_functional_figure_package.py --help
 python tools/generate_cumulative_framework_analysis.py --help
+python tools/generate_journal_figure_package.py --help
+python paper_results/scripts/generate_cumulative_framework_analysis.py --help
 git diff --check
 git diff --name-only -- reports checkpoints data paper paper_results
 ```
@@ -118,14 +139,21 @@ No generator, training command, or checkpoint forward pass was executed.
 
 ## Verification results
 
-- Full suite: **184/184 passed** with both integrity tests enabled.
-- `py_compile`: passed for all 13 changed/new Python files.
-- CLI help: **9/9 passed**.
-- Independent review: no Critical, Important, or Minor findings; ready to
-  commit.
+- Full suite: **230/230 passed** with checkpoint and protected-path integrity
+  tests enabled.
+- Focused suites: nomenclature **52/52**, prototype **47/47**,
+  final-validation **24/24**, and figure/table **68/68**.
+- Isolated simulated-merge `py_compile`: **177/177 tracked Python files**.
+- CLI help: **11/11 passed**.
+- Three independent read-only task re-reviews: zero Critical, zero Important,
+  and zero remaining Minor findings.
 - Rendering regression: canonical figure text stays inside the 183-mm canvas;
   no constrained/tight-layout collapse warning.
-- Historical tracked artifact SHA audit: **2,624/2,624 unchanged**.
+- Versioned protected-artifact audit: **2,624/2,624 unchanged**, exact sorted
+  path set SHA-256
+  `6016600eccf5c6a13b00c1d64ecb4efe0e388f9fa4e80057ef0d3432156ddcf5`.
+  Hashes use portable canonical Git blob bytes; base, source, and current
+  protected blob IDs are identical.
 - Checkpoint compatibility sample:
   `checkpoints/cv5_expanded_cap3x_fold0_logmel_dur2_hier_w05_seed42.pt`
   remains SHA-256
@@ -134,6 +162,8 @@ No generator, training command, or checkpoint forward pass was executed.
   passes without inference.
 - `git diff --check`: passed.
 - Protected tracked-path diff: empty.
+- Isolated no-commit merge: zero conflicts; merged index tree and branch tree
+  both `4d3e0f45271c887cbeef41bd05a3c1b83d9b4842`.
 
 ## Metrics and paper interpretation
 
