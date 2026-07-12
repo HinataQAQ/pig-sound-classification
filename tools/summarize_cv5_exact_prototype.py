@@ -12,7 +12,6 @@ from scipy.stats import wilcoxon
 from nomenclature import (
     METHOD_METADATA_FIELDS,
     MODEL_METADATA_FIELDS,
-    NOMENCLATURE_SCHEMA_VERSION,
     build_method_metadata,
     build_model_metadata,
     canonicalize_inference_route,
@@ -686,11 +685,44 @@ def resolve_aggregate_nomenclature(
             f"{sorted(protocols)}"
         )
     selection_protocol = next(iter(protocols))
-    return {
-        "model_family": model_family,
-        "context_seconds": context_seconds,
-        "selection_protocol": selection_protocol,
-    }
+    return build_model_metadata(
+        model_family=model_family,
+        training_stage="b2_validation_selected_hierarchical_crnn",
+        context_seconds=context_seconds,
+        selection_protocol=selection_protocol,
+    )
+
+
+def aggregate_metadata_for_method(
+    method: str,
+    aggregate_model_metadata: Mapping[str, Any],
+) -> dict[str, object]:
+    """Return strictly validated metadata for one aggregate method row."""
+
+    model_metadata = validate_model_metadata(aggregate_model_metadata)
+    storage_id, route = resolve_inference_method(method)
+    training_stage = (
+        "b3_hierarchical_prototype_top1_ablation"
+        if route == "hierarchical_prototype_candidate"
+        else "b2_validation_selected_hierarchical_crnn"
+    )
+    if route is None:
+        return build_model_metadata(
+            model_family=str(model_metadata["model_family"]),
+            training_stage=training_stage,
+            context_seconds=float(model_metadata["context_seconds"]),
+            selection_protocol=str(model_metadata["selection_protocol"]),
+        )
+    return validate_method_metadata(
+        build_method_metadata(
+            model_family=str(model_metadata["model_family"]),
+            training_stage=training_stage,
+            context_seconds=float(model_metadata["context_seconds"]),
+            selection_protocol=str(model_metadata["selection_protocol"]),
+            inference_route=route,
+            legacy_method_id=storage_id,
+        )
+    )
 
 
 def parse_args() -> argparse.Namespace:
@@ -769,12 +801,8 @@ def main() -> None:
 
     runs = [flatten_run_record(record) for record in records]
     for row in runs:
-        row.update(
-            {
-                "nomenclature_schema_version": NOMENCLATURE_SCHEMA_VERSION,
-                **nomenclature,
-            }
-        )
+        row.update(nomenclature)
+        validate_model_metadata(row)
     summary = aggregate_method_metrics(records)
     paired = paired_macro_f1_statistics(
         records,
@@ -783,43 +811,24 @@ def main() -> None:
     )
     confusion = aggregate_confusion_matrices(records)
 
-    def metadata_for_method(method: str) -> dict[str, object]:
-        storage_id, route = resolve_inference_method(method)
-        training_stage = (
-            "b3_hierarchical_prototype_top1_ablation"
-            if route == "hierarchical_prototype_candidate"
-            else "b2_validation_selected_hierarchical_crnn"
-        )
-        common = build_model_metadata(
-            model_family=str(nomenclature["model_family"]),
-            training_stage=training_stage,
-            context_seconds=float(nomenclature["context_seconds"]),
-            selection_protocol=str(nomenclature["selection_protocol"]),
-        )
-        if route is None:
-            return common
-        return build_method_metadata(
-            model_family=str(nomenclature["model_family"]),
-            training_stage=training_stage,
-            context_seconds=float(nomenclature["context_seconds"]),
-            selection_protocol=str(nomenclature["selection_protocol"]),
-            inference_route=route,
-            legacy_method_id=storage_id,
-        )
-
     for row in summary:
-        row.update(metadata_for_method(str(row["method"])))
+        row.update(
+            aggregate_metadata_for_method(str(row["method"]), nomenclature)
+        )
     for row in confusion:
-        row.update(metadata_for_method(str(row["method"])))
+        row.update(
+            aggregate_metadata_for_method(str(row["method"]), nomenclature)
+        )
     canonical_methods = [
-        metadata_for_method(method)
+        validate_method_metadata(
+            aggregate_metadata_for_method(method, nomenclature)
+        )
         for method in SUMMARY_METHODS
         if resolve_inference_method(method)[1] is not None
     ]
     provenance = {
         "artifact_type": "cv5_exact_prototype_aggregate_provenance",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
-        "nomenclature_schema_version": NOMENCLATURE_SCHEMA_VERSION,
         **nomenclature,
         "canonical_methods": canonical_methods,
         **aggregate,
@@ -830,6 +839,7 @@ def main() -> None:
         "outputs": {key: str(path) for key, path in outputs.items()},
         "records": runs,
     }
+    validate_model_metadata(provenance)
 
     for path in outputs.values():
         path.parent.mkdir(parents=True, exist_ok=True)

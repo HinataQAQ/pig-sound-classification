@@ -816,6 +816,75 @@ def validate_recorded_artifact_identity(
     return validated
 
 
+def validate_expected_artifact_role(
+    record: Mapping[str, Any],
+    *,
+    expected_model_family: str,
+    expected_training_stage: str,
+    expected_context_seconds: float | int,
+    expected_selection_protocol: str | None = None,
+    expected_inference_route: str | None = None,
+    route_fields: Sequence[str] = (
+        "selection_method",
+        "inference_route",
+        "legacy_method_id",
+    ),
+    context: str,
+) -> dict[str, object] | None:
+    """Bind recorded canonical or legacy fields to one artifact role."""
+
+    validated = validate_recorded_artifact_identity(
+        record,
+        expected_model_family=expected_model_family,
+        expected_training_stage=expected_training_stage,
+        expected_context_seconds=expected_context_seconds,
+        context=context,
+    )
+
+    if expected_selection_protocol is not None:
+        expected_protocol = canonicalize_selection_protocol(
+            expected_selection_protocol
+        )
+        recorded_protocol = (
+            validated.get("selection_protocol")
+            if validated is not None
+            else None
+        )
+        if (
+            recorded_protocol is not None
+            and recorded_protocol != expected_protocol
+        ):
+            raise ValueError(
+                f"{context} selection_protocol conflicts with its artifact "
+                f"role: recorded={recorded_protocol!r}, "
+                f"expected={expected_protocol!r}."
+            )
+
+    populated_route_fields = tuple(
+        field
+        for field in route_fields
+        if record.get(field) is not None
+        and bool(str(record[field]).strip())
+    )
+    if populated_route_fields:
+        _, recorded_route = resolve_inference_method_fields(
+            record,
+            fields=populated_route_fields,
+        )
+        if expected_inference_route is not None:
+            expected_route = canonicalize_inference_route(
+                expected_inference_route
+            )
+            if recorded_route != expected_route:
+                raise ValueError(
+                    f"{context} inference route conflicts with its artifact "
+                    f"role: recorded={recorded_route!r}, "
+                    f"expected={expected_route!r}."
+                )
+
+    return validated
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     """Print the registry for inspection; no project artifact is modified."""
 
@@ -877,6 +946,7 @@ __all__ = [
     "validate_id",
     "validate_method_metadata",
     "validate_model_metadata",
+    "validate_expected_artifact_role",
     "validate_recorded_nomenclature_metadata",
     "validate_recorded_artifact_identity",
 ]

@@ -30,6 +30,7 @@ from scipy.stats import wilcoxon
 try:  # Package import under unittest.
     from tools.nomenclature import (
         METHOD_METADATA_FIELDS,
+        MODEL_METADATA_FIELDS,
         build_method_metadata,
         canonicalize_inference_route,
         canonicalize_model_family,
@@ -38,11 +39,13 @@ try:  # Package import under unittest.
         display_label,
         reconcile_selection_protocol,
         resolve_inference_method,
+        validate_expected_artifact_role,
         validate_recorded_nomenclature_metadata,
     )
 except ModuleNotFoundError:  # Direct ``python tools/<script>.py`` execution.
     from nomenclature import (  # type: ignore[no-redef]
         METHOD_METADATA_FIELDS,
+        MODEL_METADATA_FIELDS,
         build_method_metadata,
         canonicalize_inference_route,
         canonicalize_model_family,
@@ -51,6 +54,7 @@ except ModuleNotFoundError:  # Direct ``python tools/<script>.py`` execution.
         display_label,
         reconcile_selection_protocol,
         resolve_inference_method,
+        validate_expected_artifact_role,
         validate_recorded_nomenclature_metadata,
     )
 
@@ -379,8 +383,39 @@ def _validate_prototype_metadata(
 ) -> None:
     """Bind a prototype bundle to the exact matched B2 fold-seed artifact."""
 
+    route_fields = (
+        "selection_method",
+        "method",
+        *(
+            field
+            for field in METHOD_METADATA_FIELDS
+            if field not in MODEL_METADATA_FIELDS
+        ),
+    )
+    populated_route_fields = [
+        field
+        for field in route_fields
+        if payload.get(field) is not None
+        and bool(str(payload[field]).strip())
+    ]
+    if populated_route_fields:
+        raise ValueError(
+            f"Prototype bundle {path} is route-independent; unexpected "
+            f"top-level route fields: {populated_route_fields}."
+        )
     try:
-        validate_recorded_nomenclature_metadata(payload)
+        validate_expected_artifact_role(
+            payload,
+            expected_model_family="hierarchical_supervision_crnn",
+            expected_training_stage=(
+                "b2_validation_selected_hierarchical_crnn"
+            ),
+            expected_context_seconds=2.0,
+            expected_selection_protocol=(
+                "fixed_lambda_0_5_retrospective"
+            ),
+            context=f"prototype bundle {path}",
+        )
     except ValueError as exc:
         raise ValueError(
             f"Invalid prototype nomenclature metadata for {path}: {exc}"
@@ -526,11 +561,22 @@ def _validate_stage_summary(
     stage: str,
     seed: int,
 ) -> float:
+    spec = _STAGE_SPECS[stage]
     try:
-        validate_recorded_nomenclature_metadata(payload)
+        validate_expected_artifact_role(
+            payload,
+            expected_model_family=str(spec["model_family"]),
+            expected_training_stage=str(spec["training_stage"]),
+            expected_context_seconds=float(spec["context_seconds"]),
+            expected_selection_protocol=str(spec["selection_protocol"]),
+            expected_inference_route=str(spec["inference_route"]),
+            context=f"{stage} summary {path}",
+        )
     except ValueError as exc:
         raise ValueError(
-            f"Invalid stage-summary nomenclature metadata for {path}: {exc}"
+            f"Invalid stage-summary nomenclature metadata for {path}; "
+            f"expected context_seconds={float(spec['context_seconds'])}: "
+            f"{exc}"
         ) from exc
     expected_duration = 1.0 if stage == "B0" else 2.0
     recorded_context = payload.get("context_seconds")
@@ -628,7 +674,18 @@ def _validate_prototype_metrics(
     fold: int,
     seed: int,
 ) -> tuple[float, float]:
-    selected_route = canonicalize_inference_route(str(payload.get("selection_method", "")))
+    selected_route = canonicalize_inference_route(
+        str(payload.get("selection_method", ""))
+    )
+    validate_expected_artifact_role(
+        payload,
+        expected_model_family="hierarchical_supervision_crnn",
+        expected_training_stage="b3_hierarchical_prototype_top1_ablation",
+        expected_context_seconds=2.0,
+        expected_selection_protocol="fixed_lambda_0_5_retrospective",
+        expected_inference_route="hierarchical_prototype_candidate",
+        context=f"hierarchical evaluation {path}",
+    )
     best = _method_payload_for_route(
         payload.get("method_best_params", {}),
         route="hierarchical_prototype_candidate",

@@ -12,6 +12,7 @@ import pandas as pd
 from matplotlib.patches import FancyBboxPatch
 
 from tools import generate_cumulative_framework_analysis as cumulative
+from tools.nomenclature import build_method_metadata
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -65,6 +66,29 @@ class CumulativeFrameworkPureTests(unittest.TestCase):
             cumulative._validate_stage_summary(
                 conflicting,
                 path=Path("conflicting-summary.json"),
+                stage="B2",
+                seed=42,
+            )
+
+        validation_selected = {
+            **payload,
+            **build_method_metadata(
+                model_family="hierarchical_supervision_crnn",
+                training_stage=(
+                    "b2_validation_selected_hierarchical_crnn"
+                ),
+                context_seconds=2.0,
+                selection_protocol=(
+                    "foldwise_validation_selected_lambda"
+                ),
+                inference_route="primary_softmax",
+                legacy_method_id="raw_softmax",
+            ),
+        }
+        with self.assertRaisesRegex(ValueError, "selection_protocol"):
+            cumulative._validate_stage_summary(
+                validation_selected,
+                path=Path("validation-selected-summary.json"),
                 stage="B2",
                 seed=42,
             )
@@ -316,6 +340,53 @@ class CumulativeFrameworkPureTests(unittest.TestCase):
                 seed=42,
                 summary_path=summary,
             )
+            route_specific = {
+                **payload,
+                **build_method_metadata(
+                    model_family="hierarchical_supervision_crnn",
+                    training_stage=(
+                        "b2_validation_selected_hierarchical_crnn"
+                    ),
+                    context_seconds=2.0,
+                    selection_protocol=(
+                        "fixed_lambda_0_5_retrospective"
+                    ),
+                    inference_route="primary_softmax",
+                    legacy_method_id="raw_softmax",
+                ),
+            }
+            with self.assertRaisesRegex(ValueError, "route-independent"):
+                cumulative._validate_prototype_metadata(
+                    route_specific,
+                    path=root / "prototype_metadata.json",
+                    root=root,
+                    fold=0,
+                    seed=42,
+                    summary_path=summary,
+                )
+            stray_route_fields = {
+                "canonical_method_id": (
+                    "b3_hierarchical_prototype_top1_ablation::"
+                    "fixed_lambda_0_5_retrospective::"
+                    "hierarchical_prototype_candidate"
+                ),
+                "display_name_en": "Hierarchical prototype candidate route",
+                "display_name_zh": "hierarchical route",
+                "method": "hierarchical",
+            }
+            for field, value in stray_route_fields.items():
+                with self.subTest(field=field):
+                    with self.assertRaisesRegex(
+                        ValueError, "route-independent"
+                    ):
+                        cumulative._validate_prototype_metadata(
+                            {**payload, field: value},
+                            path=root / "prototype_metadata.json",
+                            root=root,
+                            fold=0,
+                            seed=42,
+                            summary_path=summary,
+                        )
             invalid = json.loads(json.dumps(payload))
             invalid["hier_aux_weight"] = 1.0
             with self.assertRaisesRegex(ValueError, "hier_aux_weight=0.5"):
@@ -385,6 +456,29 @@ class CumulativeFrameworkPureTests(unittest.TestCase):
         cumulative._validate_prototype_metrics(
             payload, path=Path("metrics.json"), fold=0, seed=42
         )
+        b2_metadata = {
+            **payload,
+            **build_method_metadata(
+                model_family="hierarchical_supervision_crnn",
+                training_stage=(
+                    "b2_validation_selected_hierarchical_crnn"
+                ),
+                context_seconds=2.0,
+                selection_protocol="fixed_lambda_0_5_retrospective",
+                inference_route="primary_softmax",
+                legacy_method_id="raw_softmax",
+            ),
+        }
+        with self.assertRaisesRegex(
+            ValueError,
+            "artifact role|Conflicting inference method fields",
+        ):
+            cumulative._validate_prototype_metrics(
+                b2_metadata,
+                path=Path("b2-metadata-on-b3-metrics.json"),
+                fold=0,
+                seed=42,
+            )
         payload["labels"] = list(reversed(cumulative.MAIN_LABELS))
         with self.assertRaisesRegex(ValueError, "main labels match"):
             cumulative._validate_prototype_metrics(

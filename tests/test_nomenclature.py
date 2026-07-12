@@ -39,6 +39,7 @@ from tools.nomenclature import (
     validate_id,
     validate_method_metadata,
     validate_model_metadata,
+    validate_expected_artifact_role,
     validate_recorded_nomenclature_metadata,
     validate_recorded_artifact_identity,
 )
@@ -203,6 +204,136 @@ class CanonicalIdTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertIn("usage:", completed.stdout.lower())
         self.assertIn(NOMENCLATURE_SCHEMA_VERSION, completed.stdout)
+
+
+class CanonicalArtifactRoleTests(unittest.TestCase):
+    def test_expected_artifact_role_rejects_b2_metadata_for_b3(self) -> None:
+        b2 = build_method_metadata(
+            model_family="hierarchical_supervision_crnn",
+            training_stage="b2_validation_selected_hierarchical_crnn",
+            context_seconds=2.0,
+            selection_protocol="fixed_lambda_0_5_retrospective",
+            inference_route="primary_softmax",
+            legacy_method_id="raw_softmax",
+        )
+        with self.assertRaisesRegex(ValueError, "artifact role"):
+            validate_expected_artifact_role(
+                b2,
+                expected_model_family="hierarchical_supervision_crnn",
+                expected_training_stage=(
+                    "b3_hierarchical_prototype_top1_ablation"
+                ),
+                expected_context_seconds=2.0,
+                expected_selection_protocol=(
+                    "fixed_lambda_0_5_retrospective"
+                ),
+                expected_inference_route=(
+                    "hierarchical_prototype_candidate"
+                ),
+                context="B3 evaluation",
+            )
+
+    def test_expected_artifact_role_rejects_route_field_conflicts(self) -> None:
+        role = {
+            "expected_model_family": "hierarchical_supervision_crnn",
+            "expected_training_stage": (
+                "b3_hierarchical_prototype_top1_ablation"
+            ),
+            "expected_context_seconds": 2.0,
+            "expected_selection_protocol": (
+                "fixed_lambda_0_5_retrospective"
+            ),
+            "expected_inference_route": (
+                "hierarchical_prototype_candidate"
+            ),
+            "context": "B3 evaluation",
+        }
+        with self.assertRaisesRegex(
+            ValueError, "Conflicting inference method fields"
+        ):
+            validate_expected_artifact_role(
+                {
+                    "selection_method": "hierarchical",
+                    "inference_route": "primary_softmax",
+                },
+                **role,
+            )
+        with self.assertRaisesRegex(
+            ValueError, "Conflicting inference method fields"
+        ):
+            validate_expected_artifact_role(
+                {
+                    "legacy_method_id": "prototype",
+                    "inference_route": "hierarchical_prototype_candidate",
+                },
+                **role,
+            )
+
+    def test_expected_artifact_role_rejects_consistent_wrong_route(
+        self,
+    ) -> None:
+        with self.assertRaisesRegex(ValueError, "inference route"):
+            validate_expected_artifact_role(
+                {
+                    "dur_s": 2.0,
+                    "selection_method": "raw_softmax",
+                },
+                expected_model_family="hierarchical_supervision_crnn",
+                expected_training_stage=(
+                    "b3_hierarchical_prototype_top1_ablation"
+                ),
+                expected_context_seconds=2.0,
+                expected_selection_protocol=(
+                    "fixed_lambda_0_5_retrospective"
+                ),
+                expected_inference_route=(
+                    "hierarchical_prototype_candidate"
+                ),
+                context="B3 evaluation",
+            )
+
+    def test_expected_artifact_role_rejects_selection_protocol_conflict(
+        self,
+    ) -> None:
+        validation_selected = build_method_metadata(
+            model_family="hierarchical_supervision_crnn",
+            training_stage="b2_validation_selected_hierarchical_crnn",
+            context_seconds=2.0,
+            selection_protocol="foldwise_validation_selected_lambda",
+            inference_route="primary_softmax",
+            legacy_method_id="raw_softmax",
+        )
+        with self.assertRaisesRegex(ValueError, "selection_protocol"):
+            validate_expected_artifact_role(
+                validation_selected,
+                expected_model_family="hierarchical_supervision_crnn",
+                expected_training_stage=(
+                    "b2_validation_selected_hierarchical_crnn"
+                ),
+                expected_context_seconds=2.0,
+                expected_selection_protocol=(
+                    "fixed_lambda_0_5_retrospective"
+                ),
+                expected_inference_route="primary_softmax",
+                context="fixed-lambda B2 summary",
+            )
+
+    def test_expected_artifact_role_accepts_consistent_legacy_only_record(
+        self,
+    ) -> None:
+        validated = validate_expected_artifact_role(
+            {
+                "dur_s": 2.0,
+                "selection_method": "hierarchical",
+            },
+            expected_model_family="hierarchical_supervision_crnn",
+            expected_training_stage="b3_hierarchical_prototype_top1_ablation",
+            expected_context_seconds=2.0,
+            expected_selection_protocol="fixed_lambda_0_5_retrospective",
+            expected_inference_route="hierarchical_prototype_candidate",
+            context="legacy B3 evaluation",
+        )
+        self.assertEqual(validated, {"context_seconds": 2.0})
 
 
 class CompatibilityMetadataTests(unittest.TestCase):
@@ -565,29 +696,151 @@ class ImmutableArtifactCompatibilityTests(unittest.TestCase):
         model.load_state_dict(state_dict, strict=True)
 
     def test_tracked_historical_artifact_sha_manifest_is_unchanged(self) -> None:
-        manifest_name = os.environ.get(
-            "PIGSOUND_NOMENCLATURE_HISTORICAL_SHA256_BASELINE", ""
+        manifest = ROOT / "tests" / "data" / (
+            "protected_artifacts_nomenclature_v1.sha256.json"
         )
-        if not manifest_name:
-            self.skipTest("historical SHA-256 baseline not provided")
-        manifest = Path(manifest_name)
+        payload = json.loads(manifest.read_text(encoding="utf-8-sig"))
+        self.assertEqual(
+            payload["schema_version"],
+            "pig_sound_protected_artifacts.sha256.v1",
+        )
+        self.assertEqual(
+            payload["base_commit_sha"],
+            "3b336996dba15c6227d652b276c9882503714659",
+        )
+        self.assertEqual(
+            payload["source_tree_sha"],
+            "417344e8a3c5fcdad715cfcd30e73525e340c311",
+        )
+        self.assertEqual(payload["hash_algorithm"], "sha256")
+        self.assertEqual(payload["hash_domain"], "git_blob_bytes")
+        self.assertEqual(
+            payload["verification_requires"],
+            "full_git_objects_for_base_commit_and_source_tree",
+        )
+        self.assertEqual(payload["entry_count"], 2624)
+
+        entries = payload["entries"]
+        self.assertEqual(len(entries), 2624)
+        self.assertTrue(
+            all(set(entry) == {"path", "sha256"} for entry in entries)
+        )
+        protected_paths = [str(entry["path"]) for entry in entries]
+        self.assertEqual(protected_paths, sorted(protected_paths))
+        self.assertEqual(len(set(protected_paths)), 2624)
+        for relative in protected_paths:
+            with self.subTest(relative=relative):
+                self.assertNotIn("\\", relative)
+                self.assertFalse(Path(relative).is_absolute())
+                self.assertNotIn("..", Path(relative).parts)
+        path_set_sha256 = hashlib.sha256(
+            ("\n".join(protected_paths) + "\n").encode("utf-8")
+        ).hexdigest()
+        self.assertEqual(
+            path_set_sha256,
+            "6016600eccf5c6a13b00c1d64ecb4efe0e388f9fa4e80057ef0d3432156ddcf5",
+        )
+        self.assertEqual(payload["path_set_sha256"], path_set_sha256)
+
+        def git_tree_entries(treeish: str) -> dict[str, str]:
+            completed = subprocess.run(
+                ["git", "ls-tree", "-r", treeish],
+                cwd=ROOT,
+                check=True,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+            )
+            result: dict[str, str] = {}
+            for line in completed.stdout.splitlines():
+                metadata, relative = line.split("\t", 1)
+                result[relative] = metadata.split()[2]
+            return result
+
+        base_tree = git_tree_entries(payload["base_commit_sha"])
+        source_tree = git_tree_entries(payload["source_tree_sha"])
+
+        def is_protected(relative: str) -> bool:
+            return (
+                (
+                    relative.startswith("data/")
+                    and not relative.startswith("data/embeddings_")
+                )
+                or relative.startswith("det")
+                or relative.startswith("eval")
+                or relative.startswith("paper/")
+                or relative.startswith("paper_results/")
+                or relative.startswith("reports/")
+            )
+
+        expected_paths = sorted(
+            relative for relative in base_tree if is_protected(relative)
+        )
+        self.assertEqual(protected_paths, expected_paths)
+        self.assertEqual(
+            {relative: base_tree[relative] for relative in protected_paths},
+            {relative: source_tree[relative] for relative in protected_paths},
+        )
+        current_tree = git_tree_entries("HEAD")
+        self.assertEqual(
+            {relative: base_tree[relative] for relative in protected_paths},
+            {relative: current_tree[relative] for relative in protected_paths},
+        )
+
+        for diff_args in (
+            ("diff", "--name-only", "--"),
+            ("diff", "--cached", "--name-only", "--"),
+        ):
+            completed = subprocess.run(
+                ["git", *diff_args],
+                cwd=ROOT,
+                check=True,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+            )
+            changed_protected = sorted(
+                relative
+                for relative in completed.stdout.splitlines()
+                if is_protected(relative)
+            )
+            self.assertEqual(changed_protected, [])
+
+        process = subprocess.Popen(
+            ["git", "cat-file", "--batch"],
+            cwd=ROOT,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
+        self.assertIsNotNone(process.stdin)
+        self.assertIsNotNone(process.stdout)
         failures: list[str] = []
-        checked = 0
-        for line in manifest.read_text(encoding="utf-8-sig").splitlines():
-            if not line.strip():
-                continue
-            expected, relative = line.split("\t", 1)
-            path = ROOT / relative
-            if not path.is_file():
+        assert process.stdin is not None
+        assert process.stdout is not None
+        for entry in entries:
+            relative = str(entry["path"])
+            if not (ROOT / relative).is_file():
                 failures.append(f"missing: {relative}")
                 continue
-            actual = _sha256(path)
+            object_id = base_tree[relative]
+            process.stdin.write(f"{object_id}\n".encode("ascii"))
+            process.stdin.flush()
+            header = process.stdout.readline().decode("ascii").strip()
+            returned_id, object_type, size_text = header.split()
+            self.assertEqual(returned_id, object_id)
+            self.assertEqual(object_type, "blob")
+            content = process.stdout.read(int(size_text))
+            self.assertEqual(process.stdout.read(1), b"\n")
+            actual = hashlib.sha256(content).hexdigest()
+            expected = str(entry["sha256"])
             if actual != expected:
                 failures.append(
                     f"changed: {relative} expected={expected} actual={actual}"
                 )
-            checked += 1
-        self.assertGreater(checked, 0)
+        process.stdin.close()
+        return_code = process.wait(timeout=30)
+        process.stdout.close()
+        self.assertEqual(return_code, 0)
         self.assertEqual(failures, [])
 
 
@@ -811,22 +1064,25 @@ class ActivePrototypeScriptCompatibilityTests(unittest.TestCase):
         records = [
             {
                 "model_family": "hierarchical_supervision_crnn",
-                "context_seconds": 1.5,
+                "context_seconds": 2.0,
                 "selection_protocol": "fixed_lambda_0.5",
             },
             {
                 "model_family": "hierarchical_supervision_crnn",
-                "context_seconds": 1.5,
+                "context_seconds": 2.0,
                 "selection_protocol": "fixed_lambda_0_5_retrospective",
             },
         ]
         self.assertEqual(
             resolve_aggregate_nomenclature(records),
-            {
-                "model_family": "hierarchical_supervision_crnn",
-                "context_seconds": 1.5,
-                "selection_protocol": "fixed_lambda_0_5_retrospective",
-            },
+            build_model_metadata(
+                model_family="hierarchical_supervision_crnn",
+                training_stage=(
+                    "b2_validation_selected_hierarchical_crnn"
+                ),
+                context_seconds=2.0,
+                selection_protocol="fixed_lambda_0_5_retrospective",
+            ),
         )
         with self.assertRaisesRegex(ValueError, "Conflicting selection_protocol"):
             resolve_aggregate_nomenclature(
@@ -837,7 +1093,7 @@ class ActivePrototypeScriptCompatibilityTests(unittest.TestCase):
             )
         with self.assertRaisesRegex(ValueError, "context_seconds"):
             resolve_aggregate_nomenclature(
-                [records[0], {**records[1], "context_seconds": 2.0}]
+                [records[0], {**records[1], "context_seconds": 1.5}]
             )
         with self.assertRaisesRegex(ValueError, "selection_protocol"):
             resolve_aggregate_nomenclature(
@@ -845,7 +1101,7 @@ class ActivePrototypeScriptCompatibilityTests(unittest.TestCase):
                     records[0],
                     {
                         "model_family": "hierarchical_supervision_crnn",
-                        "context_seconds": 1.5,
+                        "context_seconds": 2.0,
                     },
                 ]
             )
@@ -854,7 +1110,7 @@ class ActivePrototypeScriptCompatibilityTests(unittest.TestCase):
                 records[0],
                 {
                     "model_family": "hierarchical_supervision_crnn",
-                    "context_seconds": 1.5,
+                    "context_seconds": 2.0,
                 },
             ],
             requested_selection_protocol="fixed_lambda_0_5_retrospective",
@@ -866,7 +1122,7 @@ class ActivePrototypeScriptCompatibilityTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "context_seconds"):
             resolve_aggregate_nomenclature(
                 [
-                    records[0],
+                    {**records[0], "context_seconds": 1.5},
                     {
                         "model_family": "hierarchical_supervision_crnn",
                         "selection_protocol": "fixed_lambda_0_5_retrospective",
@@ -882,16 +1138,19 @@ class ActivePrototypeScriptCompatibilityTests(unittest.TestCase):
                 [
                     {
                         "model_family": "hierarchical_crnn",
-                        "dur_s": 1.5,
+                        "dur_s": 2.0,
                         "selection_protocol": "fixed_lambda_0.5",
                     }
                 ]
             ),
-            {
-                "model_family": "hierarchical_supervision_crnn",
-                "context_seconds": 1.5,
-                "selection_protocol": "fixed_lambda_0_5_retrospective",
-            },
+            build_model_metadata(
+                model_family="hierarchical_supervision_crnn",
+                training_stage=(
+                    "b2_validation_selected_hierarchical_crnn"
+                ),
+                context_seconds=2.0,
+                selection_protocol="fixed_lambda_0_5_retrospective",
+            ),
         )
         with self.assertRaisesRegex(
             ValueError, "Conflicting dur_s/context_seconds"
@@ -899,6 +1158,204 @@ class ActivePrototypeScriptCompatibilityTests(unittest.TestCase):
             resolve_aggregate_nomenclature(
                 [{"dur_s": 1.0, "context_seconds": 2.0}]
             )
+
+    def test_summary_aggregate_schema_v1_blocks_are_complete_and_stable(
+        self,
+    ) -> None:
+        from summarize_cv5_exact_prototype import (
+            SUMMARY_METHODS,
+            aggregate_metadata_for_method,
+            resolve_aggregate_nomenclature,
+        )
+
+        incomplete = {
+            "nomenclature_schema_version": NOMENCLATURE_SCHEMA_VERSION,
+            "model_family": "hierarchical_supervision_crnn",
+            "context_seconds": 2.0,
+            "selection_protocol": "fixed_lambda_0_5_retrospective",
+        }
+        for artifact in ("run row", "aggregate provenance"):
+            with self.subTest(artifact=artifact):
+                with self.assertRaisesRegex(
+                    ValueError, "training_stage"
+                ):
+                    validate_model_metadata(incomplete)
+
+        model_metadata = resolve_aggregate_nomenclature(
+            [
+                {
+                    "model_family": "hierarchical_supervision_crnn",
+                    "context_seconds": 2.0,
+                    "selection_protocol": "fixed_lambda_0.5",
+                }
+            ]
+        )
+        run_row = {"fold": 0, "seed": 42, **model_metadata}
+        provenance = {
+            "artifact_type": "cv5_exact_prototype_aggregate_provenance",
+            **model_metadata,
+        }
+        self.assertEqual(
+            validate_model_metadata(run_row), model_metadata
+        )
+        self.assertEqual(
+            validate_model_metadata(provenance), model_metadata
+        )
+
+        canonical_methods = [
+            aggregate_metadata_for_method(method, model_metadata)
+            for method in SUMMARY_METHODS
+            if resolve_inference_method(method)[1] is not None
+        ]
+        for method in canonical_methods:
+            self.assertEqual(validate_method_metadata(method), method)
+        stages = {
+            method["inference_route"]: method["training_stage"]
+            for method in canonical_methods
+        }
+        self.assertEqual(
+            stages["primary_softmax"],
+            "b2_validation_selected_hierarchical_crnn",
+        )
+        self.assertEqual(
+            stages["main_class_prototype_candidate"],
+            "b2_validation_selected_hierarchical_crnn",
+        )
+        self.assertEqual(
+            stages["hierarchical_prototype_candidate"],
+            "b3_hierarchical_prototype_top1_ablation",
+        )
+
+        restored = json.loads(
+            json.dumps(
+                {
+                    "run": run_row,
+                    "provenance": provenance,
+                    "canonical_methods": canonical_methods,
+                }
+            )
+        )
+        validate_model_metadata(restored["run"])
+        validate_model_metadata(restored["provenance"])
+        for method in restored["canonical_methods"]:
+            validate_method_metadata(method)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "run.csv"
+            with path.open("w", encoding="utf-8", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=run_row)
+                writer.writeheader()
+                writer.writerow(run_row)
+            with path.open("r", encoding="utf-8", newline="") as handle:
+                csv_row = next(csv.DictReader(handle))
+        csv_row["context_seconds"] = float(csv_row["context_seconds"])
+        self.assertEqual(
+            validate_model_metadata(csv_row), model_metadata
+        )
+
+    def test_summary_main_writes_strict_aggregate_metadata(self) -> None:
+        import summarize_cv5_exact_prototype as summary_module
+
+        source_record = {
+            "model_family": "hierarchical_supervision_crnn",
+            "context_seconds": 2.0,
+            "selection_protocol": "fixed_lambda_0.5",
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            prefix = Path(tmp) / "aggregate"
+            args = summary_module.argparse.Namespace(
+                metrics_json=[Path("metrics.json")],
+                out_prefix=prefix,
+                expected_folds="0",
+                expected_seeds="42",
+                expected_lambda=0.5,
+                bootstrap_samples=10,
+                bootstrap_seed=3407,
+                selection_protocol="fixed_lambda_0_5_retrospective",
+                allow_overwrite=False,
+            )
+            method_rows = [
+                {"method": method}
+                for method in summary_module.SUMMARY_METHODS
+            ]
+            confusion_rows = [
+                {"method": method}
+                for method in summary_module.CONFUSION_METHODS
+            ]
+            with (
+                patch.object(summary_module, "parse_args", return_value=args),
+                patch.object(
+                    summary_module,
+                    "record_from_metrics",
+                    return_value=source_record,
+                ),
+                patch.object(
+                    summary_module,
+                    "validate_aggregate_records",
+                    return_value={"screening_result": False},
+                ),
+                patch.object(
+                    summary_module,
+                    "flatten_run_record",
+                    return_value={"fold": 0, "seed": 42},
+                ),
+                patch.object(
+                    summary_module,
+                    "aggregate_method_metrics",
+                    return_value=method_rows,
+                ),
+                patch.object(
+                    summary_module,
+                    "paired_macro_f1_statistics",
+                    return_value=[],
+                ),
+                patch.object(
+                    summary_module,
+                    "aggregate_confusion_matrices",
+                    return_value=confusion_rows,
+                ),
+            ):
+                summary_module.main()
+
+            runs_path = Path(f"{prefix}_final_runs.csv")
+            with runs_path.open(
+                "r", encoding="utf-8-sig", newline=""
+            ) as handle:
+                run_row = next(csv.DictReader(handle))
+            run_row["context_seconds"] = float(
+                run_row["context_seconds"]
+            )
+            validate_model_metadata(run_row)
+
+            provenance = json.loads(
+                Path(f"{prefix}_final_provenance.json").read_text(
+                    encoding="utf-8-sig"
+                )
+            )
+            validate_model_metadata(provenance)
+            for method in provenance["canonical_methods"]:
+                validate_method_metadata(method)
+
+            with Path(f"{prefix}_final_summary.csv").open(
+                "r", encoding="utf-8-sig", newline=""
+            ) as handle:
+                summary_rows = list(csv.DictReader(handle))
+        stages = {
+            row["method"]: row["training_stage"]
+            for row in summary_rows
+        }
+        self.assertEqual(
+            stages["raw_softmax"],
+            "b2_validation_selected_hierarchical_crnn",
+        )
+        self.assertEqual(
+            stages["prototype"],
+            "b2_validation_selected_hierarchical_crnn",
+        )
+        self.assertEqual(
+            stages["hierarchical"],
+            "b3_hierarchical_prototype_top1_ablation",
+        )
 
     def test_summary_record_reader_preserves_existing_canonical_metadata(self) -> None:
         from summarize_cv5_exact_prototype import record_from_metrics

@@ -204,4 +204,5 @@ One locked cohort member, fold 0 seed 3407, retains
 `single_fold_debug=true` in both its prototype metadata and evaluation metrics,
 while both also mark it `eligible_for_cv_aggregation=true`. The complete
 predefined 25-run grid is retained and this marker is exposed in
-`cumulative_framework_runs.csv`; it is not silently treated as an exclusion.
+`cumulative_framework_runs_nomenclature_v1.csv`; it is not silently treated
+as an exclusion.
