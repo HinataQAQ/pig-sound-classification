@@ -1055,3 +1055,90 @@
 - Stop point: review this committed package. Do not begin manuscript revision,
   external validation, or another experiment without a new explicit
   `APPROVED: true` stage.
+
+## 2026-07-12 - Canonical nomenclature v1
+
+- Status: completed the approved non-destructive nomenclature refactor.
+- Branch: `refactor/canonical-nomenclature-v1`, based on
+  `3b336996dba15c6227d652b276c9882503714659`.
+- Implementation commit:
+  `1cd4afe1a716a05481a9ee14094825ed7700d70a`.
+- Added the centralized `pig_sound_nomenclature.v1` registry, bilingual labels,
+  legacy aliases, strict canonical builders/validators, and architecture versus
+  inference-route documentation.
+- Updated only active prototype, final-validation, final-functional figure, and
+  cumulative paper-table readers/writers. Old CLI names and storage keys remain
+  accepted; fixed lambda=0.5 and fold-wise validation selection remain distinct.
+- Explicit schema blocks and cross-artifact family/stage/context/protocol/route
+  relationships are validated. Unversioned provenance is preserved, nested
+  method maps reject unknown/duplicate/conflicting aliases, and output writers
+  protect every planned file from overwrite.
+- New generated packages use versioned paths/suffixes; historical artifacts,
+  checkpoint filenames/bytes/keys, result schemas, paper values, manifests,
+  branches, tags, and commits were not rewritten.
+- No training, checkpoint inference, feature extraction, audio modification,
+  parameter selection, test tuning, or result generation was run.
+- Verification: 184/184 tests, 13-file `py_compile`, 9/9 CLI help checks,
+  renderer-bound checks, and `git diff --check` passed. Independent review found
+  no Critical, Important, or Minor issue and marked the change ready to commit.
+- Integrity: 2,624/2,624 tracked historical artifacts retained identical SHA-256;
+  the sampled hierarchical checkpoint retained its SHA-256, 40 `state_dict`
+  keys/signatures, `main_head`/`aux_head` names, and strict load compatibility.
+- Metrics were not recomputed or changed. The hierarchical increment over the
+  2-s baseline remains non-significant; no new statistical claim was made.
+- Paper usability: `paper_usable=true` for naming/metadata/display consistency
+  only, not as new scientific evidence.
+- Stop point: GPT Pro/user should review this handoff. Do not merge, regenerate
+  results, revise the manuscript, retrain, or begin another stage without a new
+  explicit `APPROVED: true` instruction.
+
+## 2026-07-12 - Canonical nomenclature PR #2 review fixes
+
+- Status: completed the approved two Important metadata-contract fixes and
+  three requested minor fixes on `refactor/canonical-nomenclature-v1`; PR #2
+  remains draft and unmerged.
+- Review-fix implementation commit:
+  `d98d05c4bf2131231df3c2cbd4fb5e936df92474`.
+- Added `validate_expected_artifact_role`, which binds B0/B1/fixed-B2/B3
+  readers to exact model family, training stage, context, selection protocol,
+  and inference route. Conflicting `selection_method`, `inference_route`,
+  `legacy_method_id`, method IDs, or display fields fail instead of being
+  silently relabeled. Route-independent prototype bundles reject every
+  populated route-only field.
+- Prototype aggregation now obtains a complete schema-v1 model block from
+  `build_model_metadata`, validates every run and provenance block before
+  writing, and validates every canonical method item. Raw Softmax and the
+  main-class candidate retain B2; the hierarchical Top-1 ablation retains B3.
+- Added a tracked 2,624-entry protected-artifact manifest bound to base commit
+  `3b336996dba15c6227d652b276c9882503714659` and source tree
+  `417344e8a3c5fcdad715cfcd30e73525e340c311`. SHA-256 values use canonical
+  Git blob bytes, the exact path-set digest is
+  `6016600eccf5c6a13b00c1d64ecb4efe0e388f9fa4e80057ef0d3432156ddcf5`,
+  and base/source/current protected blob IDs are identical.
+- Corrected only the stale active cumulative filename to
+  `cumulative_framework_runs_nomenclature_v1.csv`; no old result file was
+  renamed. `CODEX_TO_GPT.json.changed_files` now equals the actual 21-path PR
+  diff and includes all three handoff files.
+- TDD evidence included RED failures for the missing role helper, unbound B2/
+  B3 roles, route-field conflicts, incomplete aggregate metadata, missing
+  protected manifest, stray bundle route fields, and the non-portable Windows
+  working-tree hash domain before each corresponding fix.
+- Verification: nomenclature 52/52, prototype 47/47, final-validation 24/24,
+  figure/table 68/68, and all repository tests 230/230 passed. Eleven CLI help
+  checks, strict checkpoint load, `git diff --check`, and 177-file simulated-
+  merge `py_compile` passed.
+- Isolated no-commit merge against the required base had zero conflicts. The
+  merged index tree exactly matched the branch tree at
+  `4d3e0f45271c887cbeef41bd05a3c1b83d9b4842`; protected/checkpoint/training
+  model/paper metric path diffs were empty.
+- Three independent read-only task re-reviews reported zero Critical, zero
+  Important, and zero remaining Minor findings.
+- No training, checkpoint inference, feature extraction, result regeneration,
+  test tuning, audio/data-manifest/checkpoint modification, or historical
+  artifact rewrite occurred. Published metrics and statistical interpretation
+  are unchanged.
+- Paper usability remains limited to nomenclature/metadata/display consistency;
+  this task adds no scientific evidence.
+- Stop point: mark PR #2 ready for human review only after the terminal handoff
+  commit is pushed. Do not merge or begin another stage without a new explicit
+  `APPROVED: true` instruction.

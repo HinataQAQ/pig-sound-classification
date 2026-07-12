@@ -1,11 +1,13 @@
 # Final Functional Figure Package
 
 This package implements the accepted `framework_functional_only` interpretation.
-B2 validation-selected Raw Softmax remains the primary four-class classifier;
-prototype outputs are a parallel candidate-prediction and diagnostic layer, and
-B3 is retained as an ablation. The generator reads existing frozen tables and
-prediction files only. It does not load checkpoints, run inference, train a
-model, select a hyperparameter, or modify established result CSV/JSON files.
+B2 validation-selected Primary Softmax route (Raw Softmax) remains the primary
+four-class classifier. The Main-class prototype candidate route and
+Hierarchical prototype candidate route form a parallel candidate-prediction and
+diagnostic layer. B3 — Hierarchical-prototype Top-1 decision ablation is retained
+only as an ablation. The generator reads existing frozen tables and prediction
+files only. It does not load checkpoints, run inference, train a model, select a
+hyperparameter, or modify established result CSV/JSON files.
 
 ## Commands
 
@@ -27,20 +29,22 @@ that they reproduce the locked choices, with a mismatch treated as an error.
 
 ## Derived tables
 
-- `paper/final_validation/deployable_predicted_margin_summary.csv` contains
-  `run`, `fold_mean`, and `overall_run_mean` records for Main Prototype and
-  Hierarchical Prototype. The score is the shared four-main-prototype distance
-  gap `second_nearest - nearest`; `margin_uses_true_label=false`. Correct/error
-  partitions and error AUROC are outcome evaluations, so
+- `paper/final_validation_nomenclature_v1/deployable_predicted_margin_summary.csv` contains
+  `run`, `fold_mean`, and `overall_run_mean` records for the Main-class prototype
+  candidate route and Hierarchical prototype candidate route. The score is the
+  shared four-main-prototype distance gap `second_nearest - nearest`;
+  `margin_uses_true_label=false`. Correct/error partitions and error AUROC are
+  outcome evaluations, so
   `evaluation_uses_true_label=true`. Metric-specific availability, run SD,
   fold SD, and five-fold cluster-bootstrap limits are explicit columns.
-- `paper/final_validation/hierarchy_inconsistency_utility.csv` contains the
-  same three aggregation levels for Raw Softmax, Main Prototype, and
-  Hierarchical Prototype. It reports prevalence, conditional error rates,
-  enrichment, error precision, error recall, and availability counts. The flag
-  compares the main prediction with the mapped subtype prediction and does not
-  use the true label; its performance evaluation does.
-- `paper/final_validation/prototype_functional_final_summary.csv` is a compact
+- `paper/final_validation_nomenclature_v1/hierarchy_inconsistency_utility.csv` contains the
+  same three aggregation levels for the Primary Softmax route (Raw Softmax),
+  Main-class prototype candidate route, and Hierarchical prototype candidate
+  route. It reports prevalence, conditional error rates, enrichment, error
+  precision, error recall, and availability counts. The flag compares the main
+  prediction with the mapped subtype prediction and does not use the true label;
+  its performance evaluation does.
+- `paper/final_validation_nomenclature_v1/prototype_functional_final_summary.csv` is a compact
   long-form summary of candidate coverage, prototype geometry, deployable
   margin evaluation, hierarchy-inconsistency utility, and disagreement totals.
   `deployability` and `interpretation` define the permitted use of every row.
@@ -51,12 +55,17 @@ deterministic resamples (seed 3407).
 
 ## Figure outputs and provenance
 
-`paper/figures_final/` contains Figures 1-4 and Supplementary Figures S1-S7 in
+`paper/figures_final_nomenclature_v1/` contains Figures 1-4 and Supplementary Figures S1-S7 in
 editable-text SVG, PDF, 300-dpi PNG, and 600-dpi TIFF. The English and Chinese
 legend files define sample size, centre/spread, interval, test, Holm status,
 deployability, and limitations for every figure. `FIGURE_SOURCE_MAP.csv` and
 `FIGURE_TO_CLAIM_MATRIX.csv` provide one row per panel with relative evidence
 paths and SHA-256 digests. `FIGURE_QA_REPORT.md` records machine and visual QA.
+
+The pre-existing `paper/final_validation/` derived tables and
+`paper/figures_final/` package are historical artifacts and remain read-only.
+The generator writes only to the versioned directories above and refuses to
+replace an existing nomenclature-v1 target.
 
 ## Interpretation boundary
 

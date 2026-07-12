@@ -13,8 +13,9 @@ import hashlib
 import json
 import math
 import shutil
+import textwrap
 from pathlib import Path
-from typing import Any, Iterable, Sequence
+from typing import Any, Iterable, Mapping, Sequence
 
 import matplotlib as mpl
 
@@ -25,6 +26,37 @@ import numpy as np
 import pandas as pd
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch, Rectangle
 from scipy.stats import wilcoxon
+
+try:  # Package import under unittest.
+    from tools.nomenclature import (
+        METHOD_METADATA_FIELDS,
+        MODEL_METADATA_FIELDS,
+        build_method_metadata,
+        canonicalize_inference_route,
+        canonicalize_model_family,
+        canonicalize_selection_protocol,
+        canonicalize_training_stage,
+        display_label,
+        reconcile_selection_protocol,
+        resolve_inference_method,
+        validate_expected_artifact_role,
+        validate_recorded_nomenclature_metadata,
+    )
+except ModuleNotFoundError:  # Direct ``python tools/<script>.py`` execution.
+    from nomenclature import (  # type: ignore[no-redef]
+        METHOD_METADATA_FIELDS,
+        MODEL_METADATA_FIELDS,
+        build_method_metadata,
+        canonicalize_inference_route,
+        canonicalize_model_family,
+        canonicalize_selection_protocol,
+        canonicalize_training_stage,
+        display_label,
+        reconcile_selection_protocol,
+        resolve_inference_method,
+        validate_expected_artifact_role,
+        validate_recorded_nomenclature_metadata,
+    )
 
 
 plt.rcParams["font.family"] = "sans-serif"
@@ -46,17 +78,122 @@ BOOTSTRAP_RESAMPLES = 10_000
 BOOTSTRAP_SEED = 3407
 
 STAGE_ORDER = ("B0", "B1", "B2", "B3")
-STAGE_LABELS = {
-    "B0": "1 s Log-Mel\nCRNN",
-    "B1": "2 s context",
-    "B2": "2 s + hierarchy\nRaw Softmax",
-    "B3": "Hierarchical\nprototype",
+
+_STAGE_SPECS = {
+    "B0": {
+        "model_family": "logmel_crnn",
+        "training_stage": "b0_1s_logmel_baseline",
+        "context_seconds": 1.0,
+        "selection_protocol": "none",
+        "inference_route": "primary_softmax",
+        "legacy_method_id": "raw_softmax",
+    },
+    "B1": {
+        "model_family": "logmel_crnn",
+        "training_stage": "b1_2s_logmel_mainline",
+        "context_seconds": 2.0,
+        "selection_protocol": "none",
+        "inference_route": "primary_softmax",
+        "legacy_method_id": "raw_softmax",
+    },
+    "B2": {
+        "model_family": "hierarchical_supervision_crnn",
+        "training_stage": "b2_validation_selected_hierarchical_crnn",
+        "context_seconds": 2.0,
+        "selection_protocol": "fixed_lambda_0_5_retrospective",
+        "inference_route": "primary_softmax",
+        "legacy_method_id": "raw_softmax",
+    },
+    "B3": {
+        "model_family": "hierarchical_supervision_crnn",
+        "training_stage": "b3_hierarchical_prototype_top1_ablation",
+        "context_seconds": 2.0,
+        "selection_protocol": "fixed_lambda_0_5_retrospective",
+        "inference_route": "hierarchical_prototype_candidate",
+        "legacy_method_id": "hierarchical",
+    },
 }
+_STAGE_BY_TRAINING_ID = {
+    str(spec["training_stage"]): stage for stage, spec in _STAGE_SPECS.items()
+}
+
+
+def canonical_metadata_for_stage(stage: str) -> dict[str, object]:
+    """Return fixed-cohort metadata while retaining the B0-B3 machine key."""
+
+    try:
+        training_stage = canonicalize_training_stage(stage)
+        stage_key = _STAGE_BY_TRAINING_ID[training_stage]
+    except (KeyError, ValueError) as exc:
+        allowed = ", ".join((*STAGE_ORDER, *_STAGE_BY_TRAINING_ID))
+        raise ValueError(
+            f"Unknown cumulative framework stage {stage!r}; expected one of: {allowed}."
+        ) from exc
+    return build_method_metadata(**_STAGE_SPECS[stage_key])
+
+
+def _validate_fixed_selection_protocol(
+    records: Sequence[tuple[str, Mapping[str, Any]]],
+) -> str:
+    """Reject concrete source provenance outside the locked fixed cohort."""
+
+    concrete: dict[str, str] = {}
+    for name, record in records:
+        try:
+            validate_recorded_nomenclature_metadata(record)
+        except ValueError as exc:
+            raise ValueError(f"{name}: {exc}") from exc
+        value = record.get("selection_protocol")
+        if value is None or not str(value).strip():
+            continue
+        protocol = canonicalize_selection_protocol(str(value))
+        if protocol != "none":
+            concrete[name] = protocol
+    if len(set(concrete.values())) > 1:
+        detail = ", ".join(
+            f"{name}={protocol!r}" for name, protocol in concrete.items()
+        )
+        raise ValueError(
+            f"Conflicting selection_protocol provenance: {detail}"
+        )
+    recorded = next(iter(concrete.values()), "none")
+    return reconcile_selection_protocol(
+        recorded,
+        requested="fixed_lambda_0_5_retrospective",
+    )
+
+
+_PRIMARY_SOFTMAX_LABEL = display_label(
+    "inference_route", "primary_softmax", language="en"
+)
+_MAIN_PROTOTYPE_LABEL = display_label(
+    "inference_route", "main_class_prototype_candidate", language="en"
+)
+_HIERARCHICAL_PROTOTYPE_LABEL = display_label(
+    "inference_route", "hierarchical_prototype_candidate", language="en"
+)
+_FIXED_PROTOCOL_LABEL = display_label(
+    "selection_protocol", "fixed_lambda_0_5_retrospective", language="en"
+)
+
 STAGE_DESCRIPTIONS = {
-    "B0": "1 s Log-Mel CRNN",
-    "B1": "2 s Log-Mel CRNN",
-    "B2": "2 s Log-Mel CRNN + hierarchical auxiliary supervision (lambda=0.5), Raw Softmax",
-    "B3": "B2 backbone + hierarchical acoustic prototype inference",
+    stage: display_label(
+        "training_stage", str(spec["training_stage"]), language="en"
+    )
+    for stage, spec in _STAGE_SPECS.items()
+}
+STAGE_DESCRIPTIONS["B2"] = "B2 — 2-s hierarchical-supervision CRNN"
+STAGE_LABELS = {
+    stage: "\n".join(
+        textwrap.wrap(
+            description,
+            width=28,
+            break_long_words=False,
+            break_on_hyphens=False,
+        )
+    )
+    + (f"\n{_FIXED_PROTOCOL_LABEL}" if stage in {"B2", "B3"} else "")
+    for stage, description in STAGE_DESCRIPTIONS.items()
 }
 COMPARISONS = (
     ("B1", "B0"),
@@ -97,21 +234,24 @@ FOLD_COLOR = "#8A9099"
 WHITE = "#FFFFFF"
 
 TABLE_RELATIVE_PATHS = (
-    "paper/tables/cumulative_framework_runs.csv",
-    "paper/tables/cumulative_framework_summary.csv",
-    "paper/tables/cumulative_framework_paired_stats.csv",
-    "paper/tables/cumulative_framework_fold_stats.csv",
-    "paper/tables/prototype_prediction_case_studies.csv",
+    "paper/tables/cumulative_framework_runs_nomenclature_v1.csv",
+    "paper/tables/cumulative_framework_summary_nomenclature_v1.csv",
+    "paper/tables/cumulative_framework_paired_stats_nomenclature_v1.csv",
+    "paper/tables/cumulative_framework_fold_stats_nomenclature_v1.csv",
+    "paper/tables/prototype_prediction_case_studies_nomenclature_v1.csv",
 )
 FIGURE_STEMS = (
-    "paper/figures_journal/figure_cumulative_framework",
-    "paper/figures_journal/figure_prototype_prediction_cases",
+    "paper/figures_journal/figure_cumulative_framework_nomenclature_v1",
+    "paper/figures_journal/figure_prototype_prediction_cases_nomenclature_v1",
 )
 ARCHIVE_TABLE_RELATIVE_PATHS = tuple(
     relative.replace("paper/tables/", "paper_results/tables/")
     for relative in TABLE_RELATIVE_PATHS
 )
-ARCHIVE_SCRIPT_RELATIVE_PATH = "paper_results/scripts/generate_cumulative_framework_analysis.py"
+ARCHIVE_SCRIPT_RELATIVE_PATH = (
+    "paper_results/scripts/"
+    "generate_cumulative_framework_analysis_nomenclature_v1.py"
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -242,6 +382,44 @@ def _validate_prototype_metadata(
     summary_path: Path,
 ) -> None:
     """Bind a prototype bundle to the exact matched B2 fold-seed artifact."""
+
+    route_fields = (
+        "selection_method",
+        "method",
+        *(
+            field
+            for field in METHOD_METADATA_FIELDS
+            if field not in MODEL_METADATA_FIELDS
+        ),
+    )
+    populated_route_fields = [
+        field
+        for field in route_fields
+        if payload.get(field) is not None
+        and bool(str(payload[field]).strip())
+    ]
+    if populated_route_fields:
+        raise ValueError(
+            f"Prototype bundle {path} is route-independent; unexpected "
+            f"top-level route fields: {populated_route_fields}."
+        )
+    try:
+        validate_expected_artifact_role(
+            payload,
+            expected_model_family="hierarchical_supervision_crnn",
+            expected_training_stage=(
+                "b2_validation_selected_hierarchical_crnn"
+            ),
+            expected_context_seconds=2.0,
+            expected_selection_protocol=(
+                "fixed_lambda_0_5_retrospective"
+            ),
+            context=f"prototype bundle {path}",
+        )
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid prototype nomenclature metadata for {path}: {exc}"
+        ) from exc
 
     model = payload.get("model_config", {})
     inferred = payload.get("inferred_fold_seed", {})
@@ -383,20 +561,59 @@ def _validate_stage_summary(
     stage: str,
     seed: int,
 ) -> float:
+    spec = _STAGE_SPECS[stage]
+    try:
+        validate_expected_artifact_role(
+            payload,
+            expected_model_family=str(spec["model_family"]),
+            expected_training_stage=str(spec["training_stage"]),
+            expected_context_seconds=float(spec["context_seconds"]),
+            expected_selection_protocol=str(spec["selection_protocol"]),
+            expected_inference_route=str(spec["inference_route"]),
+            context=f"{stage} summary {path}",
+        )
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid stage-summary nomenclature metadata for {path}; "
+            f"expected context_seconds={float(spec['context_seconds'])}: "
+            f"{exc}"
+        ) from exc
     expected_duration = 1.0 if stage == "B0" else 2.0
+    recorded_context = payload.get("context_seconds")
+    context_matches = (
+        recorded_context is None
+        or not str(recorded_context).strip()
+        or math.isclose(
+            float(recorded_context), expected_duration, abs_tol=1e-12
+        )
+    )
+    recorded_family = payload.get("model_family")
+    expected_family = (
+        "hierarchical_supervision_crnn" if stage == "B2" else "logmel_crnn"
+    )
+    if recorded_family is None or not str(recorded_family).strip():
+        family_matches = stage != "B2"
+    else:
+        try:
+            family_matches = (
+                canonicalize_model_family(str(recorded_family))
+                == expected_family
+            )
+        except ValueError:
+            family_matches = False
     checks = {
+        f"model_family={expected_family}": family_matches,
         "feature_mode=logmel": payload.get("feature_mode") == "logmel",
         "use_se=true": payload.get("use_se") is True,
         f"seed={seed}": int(payload.get("seed", -1)) == seed,
         f"dur_s={expected_duration}": math.isclose(
             float(payload.get("dur_s", -1.0)), expected_duration, abs_tol=1e-12
         ),
+        f"context_seconds={expected_duration} when present": context_matches,
     }
     if stage == "B2":
         checks.update(
             {
-                "model_family=hier_longcontext_crnn": payload.get("model_family")
-                == "hier_longcontext_crnn",
                 "hier_aux=true": payload.get("hier_aux") is True,
                 "hier_aux_weight=0.5": math.isclose(
                     float(payload.get("hier_aux_weight", -1.0)), EXPECTED_LAMBDA, abs_tol=1e-12
@@ -414,6 +631,42 @@ def _validate_stage_summary(
     return float(metric)
 
 
+def _method_payload_for_route(
+    methods: Any,
+    *,
+    route: str,
+    field: str,
+    path: Path,
+) -> dict[str, Any]:
+    """Resolve legacy or canonical method keys without rewriting source data."""
+
+    canonical_route = canonicalize_inference_route(route)
+    if not isinstance(methods, dict):
+        raise ValueError(f"BLOCKER: {field} must be an object in {path}")
+    matches: list[tuple[str, dict[str, Any]]] = []
+    for method_name, method_payload in methods.items():
+        _, resolved_route = resolve_inference_method(str(method_name))
+        if resolved_route != canonical_route:
+            continue
+        if not isinstance(method_payload, dict):
+            raise ValueError(
+                f"BLOCKER: {field}[{method_name!r}] must be an object in {path}"
+            )
+        matches.append((str(method_name), method_payload))
+    if not matches:
+        raise ValueError(
+            f"BLOCKER: {field} has no method for canonical route "
+            f"{canonical_route!r} in {path}"
+        )
+    if len(matches) > 1:
+        aliases = [name for name, _ in matches]
+        raise ValueError(
+            f"BLOCKER: {field} contains duplicate aliases for canonical route "
+            f"{canonical_route!r} in {path}: {aliases}"
+        )
+    return matches[0][1]
+
+
 def _validate_prototype_metrics(
     payload: dict[str, Any],
     *,
@@ -421,13 +674,32 @@ def _validate_prototype_metrics(
     fold: int,
     seed: int,
 ) -> tuple[float, float]:
-    best = payload.get("method_best_params", {}).get("hierarchical", {})
+    selected_route = canonicalize_inference_route(
+        str(payload.get("selection_method", ""))
+    )
+    validate_expected_artifact_role(
+        payload,
+        expected_model_family="hierarchical_supervision_crnn",
+        expected_training_stage="b3_hierarchical_prototype_top1_ablation",
+        expected_context_seconds=2.0,
+        expected_selection_protocol="fixed_lambda_0_5_retrospective",
+        expected_inference_route="hierarchical_prototype_candidate",
+        context=f"hierarchical evaluation {path}",
+    )
+    best = _method_payload_for_route(
+        payload.get("method_best_params", {}),
+        route="hierarchical_prototype_candidate",
+        field="method_best_params",
+        path=path,
+    )
     checks = {
         "artifact_type": payload.get("artifact_type") == "hier_acoustic_prototype_test_evaluation",
         f"fold={fold}": int(payload.get("fold", -1)) == fold,
         f"seed={seed}": int(payload.get("seed", -1)) == seed,
         "input_role=frozen_test": payload.get("input_role") == "frozen_test",
-        "selection_method=hierarchical": payload.get("selection_method") == "hierarchical",
+        "selection_method=hierarchical_prototype_candidate": (
+            selected_route == "hierarchical_prototype_candidate"
+        ),
         "feature_backend=training_exact": payload.get("feature_backend") == "training_exact",
         "feature_pipeline_equivalent=true": payload.get("feature_pipeline_equivalent") is True,
         "run_scope=fold_seed": payload.get("run_scope") == "fold_seed",
@@ -445,9 +717,21 @@ def _validate_prototype_metrics(
     if failed:
         raise ValueError(f"BLOCKER: prototype provenance failed for {path}: {failed}")
     methods = payload.get("methods", {})
+    raw_payload = _method_payload_for_route(
+        methods,
+        route="primary_softmax",
+        field="methods",
+        path=path,
+    )
+    hierarchical_payload = _method_payload_for_route(
+        methods,
+        route="hierarchical_prototype_candidate",
+        field="methods",
+        path=path,
+    )
     try:
-        raw = float(methods["raw_softmax"]["macro_f1"])
-        hierarchical = float(methods["hierarchical"]["macro_f1"])
+        raw = float(raw_payload["macro_f1"])
+        hierarchical = float(hierarchical_payload["macro_f1"])
     except (KeyError, TypeError, ValueError) as exc:
         raise ValueError(f"BLOCKER: missing B2/B3 Macro-F1 in {path}") from exc
     if not (np.isfinite(raw) and np.isfinite(hierarchical)):
@@ -489,6 +773,12 @@ def load_cumulative_runs(root: Path) -> pd.DataFrame:
         audit_path = prototype_dir / "evaluation" / "leakage_audit.json"
         metadata_payload = _read_json(metadata_path)
         metrics_payload = _read_json(metrics_path)
+        _validate_fixed_selection_protocol(
+            (
+                (f"prototype metadata {metadata_path}", metadata_payload),
+                (f"evaluation metrics {metrics_path}", metrics_payload),
+            )
+        )
         _validate_prototype_metadata(
             metadata_payload,
             path=metadata_path,
@@ -558,9 +848,43 @@ def compute_stage_summary(runs: pd.DataFrame) -> pd.DataFrame:
                 "std_macro_f1": float(values.std(ddof=1)),
                 "min_macro_f1": float(values.min()),
                 "max_macro_f1": float(values.max()),
+                **canonical_metadata_for_stage(stage),
             }
         )
     return pd.DataFrame(rows)
+
+
+def _add_comparison_metadata(frame: pd.DataFrame) -> pd.DataFrame:
+    """Describe the final route and retain explicit baseline identity."""
+
+    enriched = frame.copy()
+    if enriched.empty:
+        for field in METHOD_METADATA_FIELDS:
+            enriched[field] = pd.Series(dtype=object)
+        return enriched
+    final_metadata = [
+        canonical_metadata_for_stage(stage)
+        for stage in enriched["final_stage"].astype(str)
+    ]
+    baseline_metadata = [
+        canonical_metadata_for_stage(stage)
+        for stage in enriched["baseline_stage"].astype(str)
+    ]
+    for field in METHOD_METADATA_FIELDS:
+        enriched[field] = [metadata[field] for metadata in final_metadata]
+    for field in (
+        "training_stage",
+        "selection_protocol",
+        "inference_route",
+        "canonical_method_id",
+        "display_name_en",
+        "display_name_zh",
+        "legacy_method_id",
+    ):
+        enriched[f"baseline_{field}"] = [
+            metadata[field] for metadata in baseline_metadata
+        ]
+    return enriched
 
 
 def _bootstrap_ci(
@@ -665,7 +989,10 @@ def compute_paired_statistics(
         }
         row.update({f"fold_{fold}_mean_delta": fold_means[fold] for fold in EXPECTED_FOLDS})
         paired_rows.append(row)
-    return pd.DataFrame(paired_rows), pd.DataFrame(fold_rows)
+    return (
+        _add_comparison_metadata(pd.DataFrame(paired_rows)),
+        _add_comparison_metadata(pd.DataFrame(fold_rows)),
+    )
 
 
 def _top2(
@@ -854,8 +1181,15 @@ def select_case_studies(root: Path) -> pd.DataFrame:
     predictions = _require_csv(predictions_path, prediction_columns)
     if set(predictions["input_role"].astype(str)) != {"frozen_test"}:
         raise ValueError("BLOCKER: canonical case predictions are not exclusively frozen_test")
-    if set(predictions["selected_method"].astype(str)) != {"hierarchical"}:
-        raise ValueError("BLOCKER: canonical case predictions do not use hierarchical selection")
+    selected_routes = {
+        canonicalize_inference_route(method)
+        for method in predictions["selected_method"].astype(str)
+    }
+    if selected_routes != {"hierarchical_prototype_candidate"}:
+        raise ValueError(
+            "BLOCKER: canonical case predictions do not use the "
+            "hierarchical_prototype_candidate route"
+        )
     if predictions[["source_id", "md5"]].duplicated().any():
         raise ValueError("BLOCKER: duplicate source_id/md5 rows in canonical test predictions")
 
@@ -1073,6 +1407,8 @@ def select_case_studies(root: Path) -> pd.DataFrame:
     cases = pd.DataFrame(output_rows)
     if cases["source_id"].nunique() != len(cases):
         raise ValueError("BLOCKER: deterministic case roles are not unique")
+    for field, value in canonical_metadata_for_stage("B3").items():
+        cases[field] = value
     return cases
 
 
@@ -1250,7 +1586,13 @@ def build_cumulative_figure(
     _panel_label(ax_c, "c")
 
     ax_d.set_axis_off()
-    ax_d.set_title("Final architecture", loc="left", fontsize=8, fontweight="bold", pad=8)
+    ax_d.set_title(
+        "Backbone and inference-route distinction",
+        loc="left",
+        fontsize=8,
+        fontweight="bold",
+        pad=8,
+    )
     _panel_label(ax_d, "d")
 
     def box(x0: float, y0: float, width_box: float, height_box: float, color: str, title: str, body: str) -> None:
@@ -1286,16 +1628,46 @@ def build_cumulative_figure(
             fontsize=5.4,
             color=MUTED,
             linespacing=1.25,
+            wrap=True,
         )
 
-    box(0.02, 0.38, 0.23, 0.36, PALE_BLUE, "2 s context", "waveform -> Log-Mel\n64 bins; CRNN")
-    box(0.36, 0.30, 0.28, 0.52, PALE_GREEN, "Hierarchical\nembedding", "shared representation\n4 main classes\n6 supervised subtypes")
-    box(0.75, 0.30, 0.23, 0.52, PALE_GOLD, "Prototype\nprediction", "train-only main +\nsubtype prototypes\nvalidation-only calibration\nfrozen-test prediction")
-    for start, end in ((0.25, 0.36), (0.64, 0.75)):
+    box(0.02, 0.38, 0.19, 0.36, PALE_BLUE, "2-s Log-Mel", "64 bins\n2-s context")
+    box(
+        0.29,
+        0.30,
+        0.28,
+        0.52,
+        PALE_GREEN,
+        "Hierarchical-supervision\nCRNN",
+        "shared representation\n4 main classes\n6 supervised subtypes",
+    )
+    box(
+        0.68,
+        0.56,
+        0.30,
+        0.28,
+        PALE_BLUE,
+        "Primary classifier",
+        _PRIMARY_SOFTMAX_LABEL,
+    )
+    box(
+        0.68,
+        0.12,
+        0.30,
+        0.31,
+        PALE_GOLD,
+        "Parallel candidate\nroutes",
+        f"{_MAIN_PROTOTYPE_LABEL}\n{_HIERARCHICAL_PROTOTYPE_LABEL}",
+    )
+    for start, end, start_y, end_y in (
+        (0.21, 0.29, 0.56, 0.56),
+        (0.57, 0.68, 0.62, 0.70),
+        (0.57, 0.68, 0.50, 0.28),
+    ):
         ax_d.add_patch(
             FancyArrowPatch(
-                (start, 0.56),
-                (end, 0.56),
+                (start, start_y),
+                (end, end_y),
                 transform=ax_d.transAxes,
                 arrowstyle="-|>",
                 mutation_scale=10,
@@ -1305,12 +1677,13 @@ def build_cumulative_figure(
         )
     ax_d.text(
         0.5,
-        0.08,
-        "Duration-Aware Hierarchical Prototype Inference Framework",
+        0.02,
+        "B3 fixed λ=0.5 retrospective:\n"
+        "hierarchical-prototype Top-1 decision ablation",
         transform=ax_d.transAxes,
         ha="center",
         va="center",
-        fontsize=6.4,
+        fontsize=6.1,
         fontweight="bold",
         color=TEXT,
     )
@@ -1394,9 +1767,9 @@ def build_case_figure(cases: pd.DataFrame) -> plt.Figure:
     ax_d = fig.add_subplot(grid[1, 1])
 
     route_specs = (
-        ("Raw", "raw_softmax"),
-        ("Main", "main_prototype"),
-        ("Hier", "hierarchical_prototype"),
+        ("P", "raw_softmax"),
+        ("M", "main_prototype"),
+        ("H", "hierarchical_prototype"),
     )
     probability_rows = []
     route_labels = []
@@ -1491,10 +1864,19 @@ def build_case_figure(cases: pd.DataFrame) -> plt.Figure:
     fig.text(
         0.505,
         0.015,
-        "   ".join(legend_lines),
+        "\n".join(
+            (
+                "   ".join(legend_lines),
+                (
+                    f"P = {_PRIMARY_SOFTMAX_LABEL}; "
+                    f"M = {_MAIN_PROTOTYPE_LABEL}; "
+                    f"H = {_HIERARCHICAL_PROTOTYPE_LABEL}"
+                ),
+            )
+        ),
         ha="center",
         va="bottom",
-        fontsize=4.5,
+        fontsize=4.2,
         color=MUTED,
     )
     return fig
@@ -1514,6 +1896,17 @@ def archive_output_paths(root: Path) -> tuple[Path, ...]:
         [root / ARCHIVE_SCRIPT_RELATIVE_PATH]
         + [root / relative for relative in ARCHIVE_TABLE_RELATIVE_PATHS]
     )
+
+
+def refuse_existing(paths: Iterable[Path]) -> None:
+    """Protect versioned outputs from accidental replacement on reruns."""
+
+    existing = [path for path in paths if path.exists()]
+    if existing:
+        raise FileExistsError(
+            "Refusing to overwrite existing nomenclature-v1 outputs: "
+            + "; ".join(str(path) for path in existing)
+        )
 
 
 def _source_paths(root: Path) -> tuple[Path, ...]:
@@ -1567,6 +1960,10 @@ def generate(
     validate_only: bool = False,
 ) -> dict[str, Any]:
     root = root.resolve()
+    if not validate_only:
+        refuse_existing(
+            (*required_output_paths(root), *archive_output_paths(root))
+        )
     source_paths = _source_paths(root)
     hashes_before = _hash_sources(source_paths)
     runs = load_cumulative_runs(root)

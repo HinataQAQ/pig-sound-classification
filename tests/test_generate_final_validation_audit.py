@@ -200,6 +200,41 @@ class StatisticalCoreTests(unittest.TestCase):
 
 
 class ProvenanceTests(unittest.TestCase):
+    def test_hierarchical_reader_reconciles_canonical_family_and_context(self) -> None:
+        payload = {
+            "model_family": "hierarchical_supervision_crnn",
+            "feature_mode": "logmel",
+            "use_se": True,
+            "seed": 42,
+            "dur_s": 2.0,
+            "context_seconds": 2.0,
+            "hier_aux": True,
+            "hier_aux_weight": 0.5,
+            "rnn_type": "gru",
+            "pooling_type": "mean",
+            "main_labels": list(MAIN_LABELS),
+            "aux_labels": list(AUX_LABELS),
+            "best_val_macro_f1": 0.95,
+            "best_epoch": 4,
+            "test_macro_f1": 0.94,
+        }
+
+        final_audit._validate_hierarchical_summary(
+            payload,
+            path=Path("canonical-summary.json"),
+            seed=42,
+            candidate=0.5,
+        )
+
+        conflicting = {**payload, "context_seconds": 1.0}
+        with self.assertRaisesRegex(ValueError, "context_seconds=2.0"):
+            final_audit._validate_hierarchical_summary(
+                conflicting,
+                path=Path("conflicting-summary.json"),
+                seed=42,
+                candidate=0.5,
+            )
+
     def test_sha256_file_is_stable(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "source.json"
@@ -462,24 +497,24 @@ class OutputAndConvergenceTests(unittest.TestCase):
             source.rfind("\ndef "),
         )
 
-    def test_required_output_paths_match_locked_contract(self) -> None:
-        output = Path("paper/final_validation")
+    def test_required_output_paths_use_versioned_nonhistorical_contract(self) -> None:
+        output = Path("paper/final_validation_audit_nomenclature_v1")
 
         paths = {path.as_posix() for path in required_output_paths(output)}
 
         required = {
-            "paper/final_validation/lambda_selection_by_fold.csv",
-            "paper/final_validation/lambda_selection_provenance.json",
-            "paper/final_validation/validation_selected_framework_runs.csv",
-            "paper/final_validation/validation_selected_framework_summary.csv",
-            "paper/final_validation/validation_selected_framework_paired_stats.csv",
-            "paper/final_validation/validation_selected_framework_fold_stats.csv",
-            "paper/final_validation/prototype_functional_value_summary.csv",
-            "paper/final_validation/prototype_margin_error_detection.csv",
-            "paper/final_validation/prototype_disagreement_analysis.csv",
-            "paper/final_validation/convergence_best_epoch_summary.csv",
-            "paper/final_validation/validation_test_gap_summary.csv",
-            "paper/final_validation/FINAL_VALIDATION_REPORT.md",
+            "paper/final_validation_audit_nomenclature_v1/lambda_selection_by_fold.csv",
+            "paper/final_validation_audit_nomenclature_v1/lambda_selection_provenance.json",
+            "paper/final_validation_audit_nomenclature_v1/validation_selected_framework_runs.csv",
+            "paper/final_validation_audit_nomenclature_v1/validation_selected_framework_summary.csv",
+            "paper/final_validation_audit_nomenclature_v1/validation_selected_framework_paired_stats.csv",
+            "paper/final_validation_audit_nomenclature_v1/validation_selected_framework_fold_stats.csv",
+            "paper/final_validation_audit_nomenclature_v1/prototype_functional_value_summary.csv",
+            "paper/final_validation_audit_nomenclature_v1/prototype_margin_error_detection.csv",
+            "paper/final_validation_audit_nomenclature_v1/prototype_disagreement_analysis.csv",
+            "paper/final_validation_audit_nomenclature_v1/convergence_best_epoch_summary.csv",
+            "paper/final_validation_audit_nomenclature_v1/validation_test_gap_summary.csv",
+            "paper/final_validation_audit_nomenclature_v1/FINAL_VALIDATION_REPORT.md",
         }
         figure_stems = {
             "lambda_selection_by_fold",
@@ -489,7 +524,7 @@ class OutputAndConvergenceTests(unittest.TestCase):
             "best_epoch_and_val_test_gap",
         }
         required.update(
-            f"paper/final_validation/figures/{stem}.{extension}"
+            f"paper/final_validation_audit_nomenclature_v1/figures/{stem}.{extension}"
             for stem in figure_stems
             for extension in ("svg", "pdf", "png")
         )
@@ -545,6 +580,36 @@ class OutputAndConvergenceTests(unittest.TestCase):
             warnings.simplefilter("always")
             margin_figure = build_margin_figure(margin_frame)
             convergence_figure = build_convergence_figure(epochs, gaps)
+            convergence_figure.canvas.draw()
+            renderer = convergence_figure.canvas.get_renderer()
+            canvas = convergence_figure.bbox
+            convergence_artists = [
+                *convergence_figure.texts,
+                *(
+                    text
+                    for axis in convergence_figure.axes
+                    for text in (
+                        *axis.texts,
+                        *axis.get_xticklabels(),
+                        *axis.get_yticklabels(),
+                        axis.xaxis.label,
+                        axis.yaxis.label,
+                        axis.title,
+                    )
+                    if text.get_visible() and text.get_text()
+                ),
+                *(
+                    legend
+                    for axis in convergence_figure.axes
+                    if (legend := axis.get_legend()) is not None
+                ),
+            ]
+            for artist in convergence_artists:
+                bounds = artist.get_window_extent(renderer)
+                self.assertGreaterEqual(bounds.x0, canvas.x0 - 1.0)
+                self.assertGreaterEqual(bounds.y0, canvas.y0 - 1.0)
+                self.assertLessEqual(bounds.x1, canvas.x1 + 1.0)
+                self.assertLessEqual(bounds.y1, canvas.y1 + 1.0)
             plt.close(margin_figure)
             plt.close(convergence_figure)
         matplotlib_deprecations = [
@@ -553,6 +618,16 @@ class OutputAndConvergenceTests(unittest.TestCase):
             if issubclass(warning.category, mpl.MatplotlibDeprecationWarning)
         ]
         self.assertEqual(matplotlib_deprecations, [])
+        layout_warnings = [
+            warning
+            for warning in caught
+            if "layout" in str(warning.message).lower()
+            and (
+                "not applied" in str(warning.message).lower()
+                or "collapsed" in str(warning.message).lower()
+            )
+        ]
+        self.assertEqual(layout_warnings, [])
 
     def test_epoch_log_coverage_is_searched_not_hard_coded(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -614,7 +689,7 @@ class OutputAndConvergenceTests(unittest.TestCase):
 
         result = final_audit.generate(
             root,
-            Path("paper/final_validation"),
+            Path("paper/final_validation_audit_nomenclature_v1"),
             n_boot=100,
             seed=3407,
             validate_only=True,
@@ -627,6 +702,10 @@ class OutputAndConvergenceTests(unittest.TestCase):
         self.assertEqual(len(result["runs"]), 25)
         self.assertEqual(len(result["paired"]), 7)
         self.assertEqual(result["provenance"]["selection_source_count"], 75)
+        self.assertIn(
+            "paper/final_validation_audit_nomenclature_v1/",
+            result["report"],
+        )
         self.assertTrue(
             result["provenance"]["artifact_hash_link_verification"][
                 "all_selected_runs_verified"
@@ -670,6 +749,15 @@ class OutputAndConvergenceTests(unittest.TestCase):
             "a training sample closest to the predicted class prototype",
             result["report"],
         )
+        self.assertIn(
+            "Primary Softmax route (Raw Softmax)", result["report"]
+        )
+        self.assertIn(
+            "B3 — Hierarchical-prototype Top-1 decision ablation",
+            result["report"],
+        )
+        self.assertNotIn("| raw_softmax |", result["report"])
+        self.assertNotIn("| B3_valsel |", result["report"])
         forbidden_wording = "the query's nearest training " + "neighbour"
         self.assertNotIn(forbidden_wording, result["report"])
 

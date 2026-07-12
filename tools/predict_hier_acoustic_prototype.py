@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import math
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -8,6 +9,13 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from nomenclature import (
+    build_method_metadata,
+    build_model_metadata,
+    reconcile_selection_protocol,
+    resolve_inference_method_fields,
+    validate_recorded_artifact_identity,
+)
 from prototype_model_adapter import (
     apply_hierarchy_confidence_penalty,
     assert_no_leakage,
@@ -50,11 +58,85 @@ def same_resolved_path(left: str | Path, right: str | Path) -> bool:
     return str(Path(left).resolve()).lower() == str(Path(right).resolve()).lower()
 
 
+def validate_prediction_input_nomenclature(
+    bundle_metadata: dict[str, Any], calibration: dict[str, Any]
+) -> None:
+    """Validate explicit v1 provenance while accepting unversioned artifacts."""
+
+    try:
+        config = config_from_summary(bundle_metadata["model_config"])
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ValueError(
+            "Prototype bundle is missing a valid model_config."
+        ) from exc
+    _, route = resolve_inference_method_fields(calibration)
+    expected_stage = (
+        "b3_hierarchical_prototype_top1_ablation"
+        if route == "hierarchical_prototype_candidate"
+        else "b2_validation_selected_hierarchical_crnn"
+    )
+    try:
+        validated_bundle = validate_recorded_artifact_identity(
+            bundle_metadata,
+            expected_model_family="hierarchical_supervision_crnn",
+            expected_training_stage=(
+                "b2_validation_selected_hierarchical_crnn"
+            ),
+            expected_context_seconds=float(config.dur_s),
+            context="prototype bundle",
+        )
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid prototype bundle nomenclature metadata: {exc}"
+        ) from exc
+    try:
+        validated_calibration = validate_recorded_artifact_identity(
+            calibration,
+            expected_model_family="hierarchical_supervision_crnn",
+            expected_training_stage=expected_stage,
+            expected_context_seconds=float(config.dur_s),
+            context="calibration",
+        )
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid calibration nomenclature metadata: {exc}"
+        ) from exc
+    if (
+        validated_bundle is not None
+        and validated_calibration is not None
+        and "selection_protocol" in validated_bundle
+        and "selection_protocol" in validated_calibration
+    ):
+        reconcile_selection_protocol(
+            str(validated_bundle["selection_protocol"]),
+            requested=str(validated_calibration["selection_protocol"]),
+        )
+    calibration_config = calibration.get("model_config")
+    if isinstance(calibration_config, dict) and "dur_s" in calibration_config:
+        calibration_duration = float(calibration_config["dur_s"])
+        if not math.isclose(
+            calibration_duration,
+            float(config.dur_s),
+            abs_tol=1e-12,
+            rel_tol=0.0,
+        ):
+            raise ValueError(
+                "Invalid calibration nomenclature metadata: model_config.dur_s "
+                f"{calibration_duration} conflicts with prototype bundle "
+                f"duration {float(config.dur_s)}."
+            )
+
+
 def prepare_evaluation_dir(root: Path, allow_overwrite: bool) -> Path:
     root.mkdir(parents=True, exist_ok=True)
     out_dir = root / "evaluation"
     out_dir.mkdir(parents=True, exist_ok=True)
-    planned = [out_dir / "test_predictions.csv", out_dir / "test_predictions.json", out_dir / "prediction_metadata.json"]
+    planned = [
+        out_dir / "test_predictions.csv",
+        out_dir / "test_predictions.json",
+        out_dir / "prediction_metadata.json",
+        out_dir / "leakage_audit.json",
+    ]
     for path in planned:
         if path.exists() and not allow_overwrite:
             raise FileExistsError(f"Refusing to overwrite existing output: {path}")
@@ -213,11 +295,11 @@ def main() -> None:
     input_role = input_spec["input_role"]
     input_path = input_spec["input_path"]
 
-    out_dir = prepare_evaluation_dir(Path(args.out_dir), args.allow_overwrite)
-
     bundle = load_prototype_bundle(bundle_path)
     bundle_meta = bundle["metadata"]
     calibration = read_json(calibration_path)
+    validate_prediction_input_nomenclature(bundle_meta, calibration)
+    out_dir = prepare_evaluation_dir(Path(args.out_dir), args.allow_overwrite)
 
     expected_ckpt = calibration.get("checkpoint_path")
     ckpt_sha = file_sha256(ckpt)
@@ -279,6 +361,36 @@ def main() -> None:
     )
 
     config = config_from_summary(bundle_meta["model_config"])
+    selection_method, canonical_route = resolve_inference_method_fields(
+        calibration, warn_on_legacy=True
+    )
+    selection_protocol = reconcile_selection_protocol(
+        bundle_meta.get("selection_protocol"),
+        requested=calibration.get("selection_protocol"),
+    )
+    training_stage = (
+        "b3_hierarchical_prototype_top1_ablation"
+        if canonical_route == "hierarchical_prototype_candidate"
+        else "b2_validation_selected_hierarchical_crnn"
+    )
+    common_metadata = build_model_metadata(
+        model_family="hierarchical_supervision_crnn",
+        training_stage=training_stage,
+        context_seconds=float(config.dur_s),
+        selection_protocol=selection_protocol,
+    )
+    selected_route_metadata = (
+        build_method_metadata(
+            model_family="hierarchical_supervision_crnn",
+            training_stage=training_stage,
+            context_seconds=float(config.dur_s),
+            selection_protocol=selection_protocol,
+            inference_route=canonical_route,
+            legacy_method_id=selection_method,
+        )
+        if canonical_route is not None
+        else common_metadata
+    )
     feature_backend = str(calibration.get("feature_backend", bundle_meta.get("feature_backend", "librosa"))) if args.feature_backend == "auto" else args.feature_backend
     qualification = result_qualification_fields(
         feature_backend,
@@ -395,7 +507,7 @@ def main() -> None:
         distance_stats = read_json(bundle_meta["distance_statistics_path"])
     pred = add_normalized_distance_columns(pred, distance_stats)
 
-    selected_method = str(calibration["selection_method"])
+    selected_method = selection_method
     global_threshold = float(calibration["global_rejection_threshold"])
     per_class_thresholds = {str(k): float(v) for k, v in calibration["per_class_rejection_thresholds"].items()}
     selected_probs = probs_by_method[selected_method]
@@ -431,6 +543,8 @@ def main() -> None:
     pred["input_role"] = input_role
     for key, value in qualification.items():
         pred[key] = value
+    for key, value in selected_route_metadata.items():
+        pred[key] = value
 
     pred_out = out_dir / "test_predictions.csv"
     pred_json = out_dir / "test_predictions.json"
@@ -442,6 +556,7 @@ def main() -> None:
     metadata = {
         "artifact_type": "hier_acoustic_prototype_frozen_predictions",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        **selected_route_metadata,
         "input_kind": input_role,
         "input_role": input_role,
         "prototype_bundle": str(bundle_path.resolve()),
@@ -500,6 +615,10 @@ def main() -> None:
     }
     write_json(out_dir / "prediction_metadata.json", metadata)
 
+    print(
+        "[INFO] selected inference method -> "
+        f"{selected_route_metadata.get('display_name_en', selected_method)}"
+    )
     print(f"[OK] wrote frozen predictions -> {pred_out}")
     print(f"[OK] wrote prediction metadata -> {out_dir / 'prediction_metadata.json'}")
 

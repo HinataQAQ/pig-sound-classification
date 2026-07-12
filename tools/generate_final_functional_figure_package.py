@@ -14,6 +14,7 @@ import math
 import re
 import shutil
 import tempfile
+import textwrap
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -38,8 +39,12 @@ try:  # Package import under unittest.
         EXPECTED_FOLDS,
         EXPECTED_KEYS,
         EXPECTED_SEEDS,
+        FRAMEWORK_STAGE_DESCRIPTIONS,
         MAIN_LABELS,
+        METHOD_DISPLAY_LABELS,
+        NOMENCLATURE_SCHEMA_VERSION,
         add_disagreement_aggregates,
+        add_canonical_method_metadata,
         add_margin_aggregates,
         aggregate_functional_metrics,
         compute_framework_summary,
@@ -66,8 +71,12 @@ except ModuleNotFoundError:  # Direct ``python tools/<script>.py`` execution.
         EXPECTED_FOLDS,
         EXPECTED_KEYS,
         EXPECTED_SEEDS,
+        FRAMEWORK_STAGE_DESCRIPTIONS,
         MAIN_LABELS,
+        METHOD_DISPLAY_LABELS,
+        NOMENCLATURE_SCHEMA_VERSION,
         add_disagreement_aggregates,
+        add_canonical_method_metadata,
         add_margin_aggregates,
         aggregate_functional_metrics,
         compute_framework_summary,
@@ -84,6 +93,11 @@ except ModuleNotFoundError:  # Direct ``python tools/<script>.py`` execution.
         sha256_file,
         summary_path,
     )
+
+try:  # Package import under unittest.
+    from tools.nomenclature import display_label
+except ModuleNotFoundError:  # Direct ``python tools/<script>.py`` execution.
+    from nomenclature import display_label  # type: ignore[no-redef]
 
 
 DERIVED_TABLE_FILENAMES = (
@@ -113,6 +127,10 @@ FIGURE_WIDTH_MM = 183.0
 MAIN_FIGURE_DIR = Path("paper/figures_final")
 SUPPLEMENTARY_FIGURE_DIR = MAIN_FIGURE_DIR
 FINAL_VALIDATION_DIR = Path("paper/final_validation")
+OUTPUT_MAIN_FIGURE_DIR = Path("paper/figures_final_nomenclature_v1")
+OUTPUT_FINAL_VALIDATION_DIR = Path(
+    "paper/final_validation_nomenclature_v1"
+)
 LOCKED_LAMBDA_SELECTION_CSV = (
     FINAL_VALIDATION_DIR / "lambda_selection_by_fold.csv"
 )
@@ -132,6 +150,40 @@ PALE_BLUE = "#DDEAF0"
 PALE_GREEN = "#E3EAD9"
 PALE_GOLD = "#EEE6D1"
 PALE_RED = "#F1DEDA"
+
+_PRIMARY_ROUTE_LABEL = METHOD_DISPLAY_LABELS["raw_softmax"]
+_MAIN_PROTOTYPE_ROUTE_LABEL = METHOD_DISPLAY_LABELS["main_prototype"]
+_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL = METHOD_DISPLAY_LABELS[
+    "hierarchical_prototype"
+]
+_B3_STAGE_LABEL = FRAMEWORK_STAGE_DESCRIPTIONS["B3_valsel"]
+_FIXED_SELECTION_PROTOCOL_LABEL = display_label(
+    "selection_protocol", "fixed_lambda_0_5_retrospective", language="en"
+)
+_FIXED_RETROSPECTIVE_STAGE_LABELS = {
+    "B0": FRAMEWORK_STAGE_DESCRIPTIONS["B0"],
+    "B1": FRAMEWORK_STAGE_DESCRIPTIONS["B1"],
+    "B2": (
+        f"{FRAMEWORK_STAGE_DESCRIPTIONS['B2_fixed_w05']}; "
+        f"{_FIXED_SELECTION_PROTOCOL_LABEL}"
+    ),
+    "B3": (
+        f"{FRAMEWORK_STAGE_DESCRIPTIONS['B3_fixed_w05']}; "
+        f"{_FIXED_SELECTION_PROTOCOL_LABEL}"
+    ),
+}
+_PRIMARY_ROUTE_LABEL_ZH = display_label(
+    "inference_route", "primary_softmax", language="zh"
+)
+_MAIN_PROTOTYPE_ROUTE_LABEL_ZH = display_label(
+    "inference_route", "main_class_prototype_candidate", language="zh"
+)
+_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL_ZH = display_label(
+    "inference_route", "hierarchical_prototype_candidate", language="zh"
+)
+_B3_STAGE_LABEL_ZH = display_label(
+    "training_stage", "b3_hierarchical_prototype_top1_ablation", language="zh"
+)
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _DEPLOYABLE_MARGIN_METRICS = (
@@ -155,6 +207,31 @@ _HIERARCHY_UTILITY_METRICS = (
     "inconsistency_error_recall",
     "inconsistency_error_lift_vs_overall",
 )
+
+
+def _wrap_rendered_label(label: str, *, width: int = 24) -> str:
+    """Wrap a canonical display label without changing its source value."""
+
+    return "\n".join(
+        textwrap.wrap(
+            label,
+            width=width,
+            break_long_words=False,
+            break_on_hyphens=False,
+        )
+    )
+
+
+def _stage_comparison_display(
+    comparison: str, stage_labels: Mapping[str, str]
+) -> str:
+    """Expand a stored stage comparison into human-facing display labels."""
+
+    parts = comparison.split(" - ")
+    if len(parts) != 2:
+        raise ValueError(f"Invalid stage comparison display value: {comparison}")
+    left_stage, right_stage = parts
+    return f"{stage_labels[left_stage]} - {stage_labels[right_stage]}"
 
 
 def predicted_distance_margin(distances: np.ndarray) -> np.ndarray:
@@ -200,10 +277,10 @@ def compute_run_deployable_margin(
 ) -> pd.DataFrame:
     """Summarise a deployable shared main-prototype distance gap for one run.
 
-    The geometric score is identical for Main Prototype and Hierarchical
-    Prototype.  Only each method's correctness partition differs.  There is no
-    stored hierarchical cosine-distance vector, so no mapped-subtype distance is
-    constructed or implied here.
+    The geometric score is identical for the main-class and hierarchical
+    prototype candidate routes. Only each route's correctness partition differs.
+    There is no stored hierarchical cosine-distance vector, so no mapped-subtype
+    distance is constructed or implied here.
     """
 
     if predictions.empty:
@@ -789,7 +866,7 @@ def select_final_case_studies(
             (
                 f"correct_{label}",
                 chosen,
-                "lower median raw Softmax confidence",
+                f"lower median {_PRIMARY_ROUTE_LABEL} confidence",
                 rank,
                 len(pool),
             )
@@ -833,7 +910,7 @@ def select_final_case_studies(
             (
                 f"feeding_stress_boundary_{suffix}",
                 chosen,
-                "lower median raw Top-2 margin among boundary errors",
+                f"lower median {_PRIMARY_ROUTE_LABEL} Top-2 margin among boundary errors",
                 rank,
                 len(pool),
             )
@@ -1068,13 +1145,15 @@ def _build_functional_final_summary(analysis: Mapping[str, Any]) -> pd.DataFrame
         both_wrong_total = int(record["repeated_run_total_both_wrong"])
         if method == "hierarchical_prototype":
             interpretation = (
-                "Hierarchical Prototype harmed more repeated predictions than it "
+                f"{_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL} harmed more repeated "
+                "predictions than it "
                 f"rescued in the frozen cohort ({harmed_total} harmed, "
                 f"{rescued_total} rescued, {both_wrong_total} both wrong)."
             )
         else:
             interpretation = (
-                "Main Prototype disagreement balance in the frozen cohort: "
+                f"{_MAIN_PROTOTYPE_ROUTE_LABEL} disagreement balance in the "
+                "frozen cohort: "
                 f"{harmed_total} harmed, {rescued_total} rescued, "
                 f"{both_wrong_total} both wrong."
             )
@@ -1139,7 +1218,10 @@ def _build_functional_final_summary(analysis: Mapping[str, Any]) -> pd.DataFrame
                 "interpretation": interpretation,
             }
         )
-    return pd.DataFrame(rows)
+    return add_canonical_method_metadata(
+        pd.DataFrame(rows),
+        selection_protocol="foldwise_validation_selected_lambda",
+    )
 
 
 def load_analysis(
@@ -1232,8 +1314,16 @@ def load_analysis(
     deployable_margins = aggregate_deployable_margin(
         deployable_run_table, n_boot=n_boot, seed=seed
     )
+    deployable_margins = add_canonical_method_metadata(
+        deployable_margins,
+        selection_protocol="foldwise_validation_selected_lambda",
+    )
     hierarchy_utility = aggregate_hierarchy_utility(
         hierarchy_run_table, n_boot=n_boot, seed=seed
+    )
+    hierarchy_utility = add_canonical_method_metadata(
+        hierarchy_utility,
+        selection_protocol="foldwise_validation_selected_lambda",
     )
 
     locked_tables = {
@@ -1298,6 +1388,11 @@ def load_analysis(
             ),
         ),
     }
+    for key in ("noise", "selective"):
+        locked_tables[key] = add_canonical_method_metadata(
+            locked_tables[key],
+            selection_protocol="fixed_lambda_0_5_retrospective",
+        )
     cases = select_final_case_studies(root, selected_lambdas, predictions)
     selected_prediction_paths = tuple(
         prototype_run_dir(root, fold, run_seed, selected_lambdas[fold])
@@ -1517,7 +1612,7 @@ def build_figure1(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
         0.68,
         0.20,
         0.18,
-        "Primary Raw Softmax\n4-class prediction",
+        _wrap_rendered_label(_PRIMARY_ROUTE_LABEL, width=19),
         facecolor=PALE_GREEN,
         fontsize=5.0,
     )
@@ -1575,16 +1670,34 @@ def build_figure1(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
     _panel_label(ax_c, "c")
 
     route_specs = (
-        ("Primary", "Raw Softmax (B2)", PALE_BLUE),
-        ("Candidate", "Main Prototype parallel candidates", PALE_GREEN),
-        ("Ablation", "Hierarchical Prototype (B3 Top-1)", PALE_GOLD),
+        ("Primary", _PRIMARY_ROUTE_LABEL, PALE_BLUE),
+        ("Candidate", _MAIN_PROTOTYPE_ROUTE_LABEL, PALE_GREEN),
+        (
+            "Candidate",
+            _HIERARCHICAL_PROTOTYPE_ROUTE_LABEL,
+            PALE_GOLD,
+        ),
+        (
+            "Ablation",
+            _B3_STAGE_LABEL,
+            PALE_RED,
+        ),
     )
     for index, (role, name, color) in enumerate(route_specs):
-        y = 0.72 - index * 0.25
-        _draw_box(ax_d, 0.05, y, 0.20, 0.15, role, facecolor=color)
-        _draw_box(ax_d, 0.38, y, 0.50, 0.15, name, facecolor=color)
-        _draw_arrow(ax_d, (0.25, y + 0.075), (0.38, y + 0.075))
-    ax_d.text(0.5, 0.12, "Parallel evaluation; no automatic routing claim", transform=ax_d.transAxes, ha="center", color=MUTED)
+        y = 0.78 - index * 0.19
+        _draw_box(ax_d, 0.05, y, 0.20, 0.13, role, facecolor=color)
+        _draw_box(
+            ax_d,
+            0.38,
+            y,
+            0.50,
+            0.13,
+            _wrap_rendered_label(name, width=31),
+            facecolor=color,
+            fontsize=4.4,
+        )
+        _draw_arrow(ax_d, (0.25, y + 0.065), (0.38, y + 0.065))
+    ax_d.text(0.5, 0.08, "Parallel evaluation; no automatic routing claim", transform=ax_d.transAxes, ha="center", color=MUTED)
     ax_d.set_title("Evidence-bounded deployment interpretation", loc="left", fontweight="bold")
     _panel_label(ax_d, "d")
     return fig
@@ -1598,7 +1711,10 @@ def build_figure2(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
     ax_a, ax_b, ax_c = axes.ravel()
     summary = analysis["framework_summary"].set_index("stage")
     stages = ("B0", "B1", "B2_valsel", "B3_valsel")
-    labels = ("1 s", "2 s", "B2 Raw", "B3 Hier.")
+    labels = tuple(
+        _wrap_rendered_label(FRAMEWORK_STAGE_DESCRIPTIONS[stage], width=25)
+        for stage in stages
+    )
     means = summary.loc[list(stages), "mean_macro_f1"].to_numpy(float)
     sds = summary.loc[list(stages), "sd_macro_f1"].to_numpy(float)
     colors = (MUTED, BLUE, GREEN, GOLD)
@@ -1629,7 +1745,11 @@ def build_figure2(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
         "B2_valsel - B1",
         "B3_valsel - B2_valsel",
     )
-    delta_labels = ("B1-B0", "B2-B1", "B3-B2")
+    delta_labels = (
+        "B1-B0",
+        "B2-B1",
+        _wrap_rendered_label(f"{_B3_STAGE_LABEL} - B2", width=28),
+    )
     rows = paired.loc[list(wanted)]
     deltas = rows["mean_delta"].to_numpy(float)
     lows = rows["fold_cluster_bootstrap_ci95_low"].to_numpy(float)
@@ -1701,7 +1821,8 @@ def build_figure2(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
         0.38,
         "B1: main supported gain\n"
         "B2: exploratory/non-significant\n"
-        "B3 does not improve Top-1",
+        f"{_wrap_rendered_label(_B3_STAGE_LABEL, width=28)}\n"
+        "does not improve Top-1",
         transform=ax_c.transAxes,
         fontsize=4.8,
         color=MUTED,
@@ -1723,7 +1844,10 @@ def build_figure3(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
     fig, axes = _new_figure(2, 2, height_mm=120.0)
     ax_a, ax_b, ax_c, ax_d = axes.ravel()
     methods = ("raw_softmax", "main_prototype", "hierarchical_prototype")
-    method_labels = ("Raw", "Main", "Hier.")
+    method_labels = tuple(
+        _wrap_rendered_label(METHOD_DISPLAY_LABELS[method], width=22)
+        for method in methods
+    )
     method_colors = (BLUE, GREEN, GOLD)
     functional = analysis["functional"].set_index(["method", "metric"])
 
@@ -2041,7 +2165,18 @@ def build_figure4(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
         )
     table = ax_a.table(
         cellText=table_rows,
-        colLabels=("Case", "True class", "Softmax Top-2", "Main prototype Top-2", "Subtype prototype Top-2"),
+        colLabels=(
+            "Case",
+            "True class",
+            _wrap_rendered_label(f"{_PRIMARY_ROUTE_LABEL} Top-2", width=25),
+            _wrap_rendered_label(
+                f"{_MAIN_PROTOTYPE_ROUTE_LABEL} Top-2", width=25
+            ),
+            _wrap_rendered_label(
+                f"{_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL} subtype Top-2",
+                width=27,
+            ),
+        ),
         colWidths=(0.07, 0.11, 0.23, 0.23, 0.30),
         loc="center",
         cellLoc="left",
@@ -2109,7 +2244,9 @@ def build_figure4(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
     ax_d.set_xlabel("Train representative distance")
     _clean_axis(ax_d, grid=True)
     ax_d.set_title(
-        "Hierarchical-route representative",
+        _wrap_rendered_label(
+            f"{_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL} representative", width=32
+        ),
         loc="left",
         fontweight="bold",
         fontsize=6.0,
@@ -2176,7 +2313,14 @@ def build_figure_s2(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
         label="25-run mean",
         zorder=3,
     )
-    ax_a.set_xticks(x, summary["stage"].astype(str), rotation=15)
+    ax_a.set_xticks(
+        x,
+        [
+            _wrap_rendered_label(_FIXED_RETROSPECTIVE_STAGE_LABELS[stage], width=26)
+            for stage in stages
+        ],
+        rotation=15,
+    )
     _probability_axis(ax_a)
     ax_a.legend(loc="lower right")
     ax_a.set_title("All 25 fixed-lambda trajectories", loc="left", fontweight="bold")
@@ -2189,7 +2333,17 @@ def build_figure_s2(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
     high = paired["bootstrap_ci95_high"].to_numpy(float)
     ax_b.axvline(0.0, color=MUTED, linewidth=0.8)
     ax_b.errorbar(delta, y, xerr=np.vstack((delta - low, high - delta)), fmt="o", color=BLUE, capsize=2)
-    ax_b.set_yticks(y, paired["comparison"].astype(str))
+    comparison_labels: list[str] = []
+    for comparison in paired["comparison"].astype(str):
+        comparison_labels.append(
+            _wrap_rendered_label(
+                _stage_comparison_display(
+                    comparison, _FIXED_RETROSPECTIVE_STAGE_LABELS
+                ),
+                width=32,
+            )
+        )
+    ax_b.set_yticks(y, comparison_labels)
     for ypos, upper, p_value in zip(y, high, paired["wilcoxon_p"], strict=True):
         ax_b.annotate(
             _format_p(float(p_value)),
@@ -2306,7 +2460,7 @@ def build_figure_s5(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
                 marker="o",
                 capsize=2,
                 color=method_colors[method],
-                label=method.replace("_", " "),
+                label=_wrap_rendered_label(METHOD_DISPLAY_LABELS[method], width=24),
             )
         ax.set_xlabel("SNR (dB)")
         _probability_axis(ax)
@@ -2323,7 +2477,15 @@ def build_figure_s5(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
     present = [method for method in methods if method in grouped.index]
     x = np.arange(len(present))
     ax_d.bar(x, grouped.loc[present, "mean_macro_f1"], yerr=grouped.loc[present, "std_macro_f1"], color=[method_colors[m] for m in present], capsize=2)
-    ax_d.set_xticks(x, [m.replace("_", " ") for m in present], rotation=18, ha="right")
+    ax_d.set_xticks(
+        x,
+        [
+            _wrap_rendered_label(METHOD_DISPLAY_LABELS[method], width=24)
+            for method in present
+        ],
+        rotation=18,
+        ha="right",
+    )
     _probability_axis(ax_d)
     ax_d.set_title("ALL_NOISY fixed-lambda=0.5 aggregate", loc="left", fontweight="bold")
     _panel_label(ax_d, "d")
@@ -2356,7 +2518,15 @@ def build_figure_s6(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
     ):
         x = np.arange(len(methods))
         ax.bar(x, data[metric].to_numpy(float), color=colors)
-        ax.set_xticks(x, [method.replace("_", " ") for method in methods], rotation=18, ha="right")
+        ax.set_xticks(
+            x,
+            [
+                _wrap_rendered_label(METHOD_DISPLAY_LABELS[method], width=24)
+                for method in methods
+            ],
+            rotation=18,
+            ha="right",
+        )
         ax.set_ylabel(metric.replace("mean_", "").upper())
         _clean_axis(ax, grid=True)
         ax.set_title(title, loc="left", fontweight="bold")
@@ -2372,7 +2542,10 @@ def build_figure_s7(root: Path, analysis: Mapping[str, Any]) -> plt.Figure:
     ax_a, ax_b = axes.ravel()
     margins = _overall_rows(analysis["label_aware_margins"])
     methods = ("raw_softmax", "main_prototype", "hierarchical_prototype")
-    labels = ("Raw", "Main", "Hier.")
+    labels = tuple(
+        _wrap_rendered_label(METHOD_DISPLAY_LABELS[method], width=24)
+        for method in methods
+    )
     main = margins[(margins["level"] == "main") & margins["method"].isin(methods)].set_index("method")
     x = np.arange(len(methods))
     width = 0.34
@@ -2515,9 +2688,14 @@ _PANEL_SPECS: tuple[
         "d",
         MAIN_FIGURE_STEMS[0],
         ("paper/final_validation/validation_selected_framework_summary.csv",),
-        "Separate B2 Raw Softmax primary evidence from parallel prototype candidates and B3 ablation",
+        f"Separate {_PRIMARY_ROUTE_LABEL} primary evidence from "
+        f"{_MAIN_PROTOTYPE_ROUTE_LABEL} and "
+        f"{_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL}; retain {_B3_STAGE_LABEL}",
         "deployable_primary_and_candidate_routes",
-        "B2 validation-selected Raw Softmax is primary; prototype routes are parallel candidates.",
+        f"B2 validation-selected {_PRIMARY_ROUTE_LABEL} is primary; "
+        f"{_MAIN_PROTOTYPE_ROUTE_LABEL} and "
+        f"{_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL} are parallel candidates, and "
+        f"{_B3_STAGE_LABEL} remains an ablation.",
         "Does not establish an automatic routing policy.",
     ),
     (
@@ -2531,7 +2709,7 @@ _PANEL_SPECS: tuple[
         "Plot run means with sample SD on a complete 0-1 Macro-F1 axis",
         "label_aware_frozen_test_evaluation",
         "Two-second context supplies the major established clean-audio gain.",
-        "Does not imply that the B2 or B3 increment is significant.",
+        f"Does not imply that the B2 or {_B3_STAGE_LABEL} increment is significant.",
     ),
     (
         "Figure 2",
@@ -2543,8 +2721,9 @@ _PANEL_SPECS: tuple[
         ),
         "Plot matched mean deltas with deterministic fold-cluster bootstrap intervals",
         "label_aware_frozen_test_evaluation",
-        "The B2 and B3 increments are bounded by matched fold-seed and fold-cluster evidence.",
-        "Never call the B2 or B3 increment statistically significant.",
+        f"The B2 and {_B3_STAGE_LABEL} increments are bounded by matched "
+        "fold-seed and fold-cluster evidence.",
+        f"Never call the B2 or {_B3_STAGE_LABEL} increment statistically significant.",
     ),
     (
         "Figure 2",
@@ -2561,7 +2740,9 @@ _PANEL_SPECS: tuple[
         "a",
         MAIN_FIGURE_STEMS[2],
         ("__selected_predictions__",),
-        "Compute main/subtype Rank-1 and Rank-2 coverage separately for all three routes",
+        f"Compute main/subtype Rank-1 and Rank-2 coverage separately for "
+        f"{_PRIMARY_ROUTE_LABEL}, {_MAIN_PROTOTYPE_ROUTE_LABEL}, and "
+        f"{_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL}",
         "label_aware_candidate_coverage",
         "Main and subtype ranking coverage quantifies candidate utility.",
         "Coverage uses labels and is not a deployable score.",
@@ -2581,7 +2762,9 @@ _PANEL_SPECS: tuple[
         "c",
         MAIN_FIGURE_STEMS[2],
         ("__selected_predictions__",),
-        "Recompute main-versus-mapped-subtype inconsistency separately for all three methods",
+        f"Recompute main-versus-mapped-subtype inconsistency separately for "
+        f"{_PRIMARY_ROUTE_LABEL}, {_MAIN_PROTOTYPE_ROUTE_LABEL}, and "
+        f"{_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL}",
         "deployable_flag_label_aware_evaluation",
         "Hierarchy inconsistency enriches some method-specific error subsets.",
         "Does not establish a safe automatic rejector.",
@@ -2593,7 +2776,9 @@ _PANEL_SPECS: tuple[
         ("__selected_predictions__",),
         "Show 25-run correct/error shared-margin distributions and error AUROC with fold-cluster CI",
         "deployable_score_label_aware_evaluation",
-        "Both prototype routes share the same main-prototype geometry while correctness partitions differ.",
+        f"{_MAIN_PROTOTYPE_ROUTE_LABEL} and "
+        f"{_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL} share the same main-prototype "
+        "geometry while correctness partitions differ.",
         "Does not invent a hierarchical or mapped-subtype cosine-distance vector.",
     ),
     (
@@ -2601,7 +2786,9 @@ _PANEL_SPECS: tuple[
         "a",
         MAIN_FIGURE_STEMS[3],
         ("__case_sources__",),
-        "Apply the locked fold-0/seed-42 protocol and tabulate true class plus Softmax, main-prototype, and subtype Top-2 evidence",
+        f"Apply the locked fold-0/seed-42 protocol and tabulate true class plus "
+        f"{_PRIMARY_ROUTE_LABEL}, {_MAIN_PROTOTYPE_ROUTE_LABEL}, and "
+        f"{_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL} subtype Top-2 evidence",
         "label_aware_frozen_test_case_evidence",
         "Seven unique frozen cases show complete Top-2 candidate evidence.",
         "Cases are illustrative and do not estimate population prevalence.",
@@ -2631,9 +2818,11 @@ _PANEL_SPECS: tuple[
         "d",
         MAIN_FIGURE_STEMS[3],
         ("__case_sources__",),
-        "Attach the closest same-run train-only representative of the hierarchical-predicted main class",
+        f"Attach the closest same-run train-only representative of the main class "
+        f"predicted by {_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL}",
         "train_only_representative_trace",
-        "Every illustrative case is linked to a deterministic representative for the hierarchical-predicted main class.",
+        f"Every illustrative case is linked to a deterministic representative "
+        f"for the main class predicted by {_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL}.",
         "Does not treat a representative as a biological exemplar.",
     ),
     (
@@ -2883,7 +3072,7 @@ def _relative(root: Path, path: Path) -> str:
 
 
 def _figure_output_path(stem: str) -> str:
-    return (MAIN_FIGURE_DIR / f"{stem}.svg").as_posix()
+    return (OUTPUT_MAIN_FIGURE_DIR / f"{stem}.svg").as_posix()
 
 
 def build_source_map_rows(
@@ -3062,7 +3251,8 @@ def build_legend_texts(analysis: Mapping[str, Any]) -> tuple[str, str]:
     b2 = paired.loc["B2_valsel - B1"]
     b3 = paired.loc["B3_valsel - B2_valsel"]
     retrospective_p = "; ".join(
-        f"{row.comparison} {_format_p(row.wilcoxon_p)}"
+        f"{_stage_comparison_display(str(row.comparison), _FIXED_RETROSPECTIVE_STAGE_LABELS)} "
+        f"{_format_p(row.wilcoxon_p)}"
         for row in analysis["cumulative_paired"].itertuples(index=False)
     )
     utility = _overall_rows(analysis["hierarchy_utility"]).set_index("method")
@@ -3070,7 +3260,14 @@ def build_legend_texts(analysis: Mapping[str, Any]) -> tuple[str, str]:
         f"{label} n={int(utility.loc[method, 'error_enrichment_ratio_n_runs_available'])}"
         for method, label in zip(
             ("raw_softmax", "main_prototype", "hierarchical_prototype"),
-            ("Raw", "Main", "Hierarchical"),
+            tuple(
+                METHOD_DISPLAY_LABELS[method]
+                for method in (
+                    "raw_softmax",
+                    "main_prototype",
+                    "hierarchical_prototype",
+                )
+            ),
             strict=True,
         )
     )
@@ -3089,19 +3286,19 @@ def build_legend_texts(analysis: Mapping[str, Any]) -> tuple[str, str]:
     figure_text_en = (
         (
             "Figure 1 | Final evidence-bounded framework",
-            "Panels a-d separate path/source-ID/MD5-disjoint split roles, the 2-s Log-Mel shared hierarchical convolutional recurrent neural network (CRNN), and the inference roles. B2 Raw Softmax is the primary four-class route. In parallel, the frozen embedding feeds train-only main/subtype prototypes, Top-k candidates, distances, the predicted Top-1/Top-2 distance margin, hierarchy consistency and a prototype representative; calibration is validation-only and B3 remains an ablation. Here n=not applicable; no centre, SD, CI, Wilcoxon or Holm test applies. Pig-, session-, device- and farm-level grouping are not established by this schematic. Protocol elements are deployable in principle, but the schematic does not establish accuracy or external validity.",
+            f"Panels a-d separate path/source-ID/MD5-disjoint split roles, the 2-s Log-Mel shared hierarchical convolutional recurrent neural network (CRNN), and the inference roles. {_PRIMARY_ROUTE_LABEL} is the B2 primary four-class route. In parallel, {_MAIN_PROTOTYPE_ROUTE_LABEL} and {_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL} use the frozen embedding and train-only main/subtype prototype components to provide Top-k candidates, distances, the predicted Top-1/Top-2 distance margin, hierarchy consistency and a prototype representative; calibration is validation-only and {_B3_STAGE_LABEL} remains an ablation. Here n=not applicable; no centre, SD, CI, Wilcoxon or Holm test applies. Pig-, session-, device- and farm-level grouping are not established by this schematic. Protocol elements are deployable in principle, but the schematic does not establish accuracy or external validity.",
         ),
         (
             "Figure 2 | Primary validation-selected classification evidence",
-            f"Panel a shows all 25 run points plus mean ± SD Macro-F1 on a 0-1 axis. Panel b shows fold-cluster bootstrap 95% CI for exactly three matched increments. B1−B0 is {_format_p(b1['wilcoxon_raw_p'])} (Holm not applicable: prespecified duration contrast outside the locked prototype family); B2−B1 is {_format_p(b2['wilcoxon_raw_p'])} (Holm {_format_p(b2['holm_adjusted_p'])}); B3−B2 is {_format_p(b3['wilcoxon_raw_p'])} (Holm {_format_p(b3['holm_adjusted_p'])}). B2/B3 Holm values preserve the locked final-validation family of seven comparisons. B1 is the main supported gain; B2 is exploratory and non-significant; B3 does not improve Top-1. Panel c shows validation-selected lambda by fold. This label-aware test evidence does not establish a deployable performance guarantee.",
+            f"Panel a shows all 25 run points plus mean ± SD Macro-F1 on a 0-1 axis. Panel b shows fold-cluster bootstrap 95% CI for exactly three matched increments. B1−B0 is {_format_p(b1['wilcoxon_raw_p'])} (Holm not applicable: prespecified duration contrast outside the locked prototype family); B2−B1 is {_format_p(b2['wilcoxon_raw_p'])} (Holm {_format_p(b2['holm_adjusted_p'])}); {_B3_STAGE_LABEL}−B2 is {_format_p(b3['wilcoxon_raw_p'])} (Holm {_format_p(b3['holm_adjusted_p'])}). B2/{_B3_STAGE_LABEL} Holm values preserve the locked final-validation family of seven comparisons. B1 is the main supported gain; B2 is exploratory and non-significant; {_B3_STAGE_LABEL} does not improve Top-1. Panel c shows validation-selected lambda by fold. This label-aware test evidence does not establish a deployable performance guarantee.",
         ),
         (
             "Figure 3 | Prototype functional value",
-            f"Panel a reports main/subtype Rank-1 and Rank-2 coverage and panel b reports feeding/stress Top-2 coverage. Panel c recomputes inconsistency prevalence, error precision, error recall and enrichment separately for Raw, Main and Hierarchical routes, displaying fold means and fold-cluster intervals; enrichment is undefined for zero-flag runs ({enrichment_availability}). Panel d uses the same four-main-prototype second-nearest-minus-nearest margin for Main and Hierarchical Prototype, with 25-run correct/error distributions and AUROC fold-cluster CI; no hierarchical distance vector exists. n=25 total runs; metric-specific available-run counts are shown where needed. Centre is the mean of fold means, spread is available-run SD, and fold-cluster bootstrap 95% CI is primary where shown. No new Wilcoxon test is used and Holm status is not applicable. Only the margin and inconsistency flag are deployable; outcomes and coverage are label-aware. Low prevalence and recall limit the inconsistency flag; this does not establish safe automatic rejection.",
+            f"Panel a reports main/subtype Rank-1 and Rank-2 coverage and panel b reports feeding/stress Top-2 coverage. Panel c recomputes inconsistency prevalence, error precision, error recall and enrichment separately for the Primary Softmax route (Raw Softmax), Main-class prototype candidate route and Hierarchical prototype candidate route, displaying fold means and fold-cluster intervals; enrichment is undefined for zero-flag runs ({enrichment_availability}). Panel d uses the same four-main-prototype second-nearest-minus-nearest margin for the two prototype candidate routes, with 25-run correct/error distributions and AUROC fold-cluster CI; no hierarchical distance vector exists. n=25 total runs; metric-specific available-run counts are shown where needed. Centre is the mean of fold means, spread is available-run SD, and fold-cluster bootstrap 95% CI is primary where shown. No new Wilcoxon test is used and Holm status is not applicable. Only the margin and inconsistency flag are deployable; outcomes and coverage are label-aware. Low prevalence and recall limit the inconsistency flag; this does not establish safe automatic rejection.",
         ),
         (
             "Figure 4 | Deterministic prototype candidate cases",
-            "Seven unique frozen-test roles are selected from fold 0/seed 42: C1 cough correct, C2 calm-grunt correct, C3 feeding correct, C4 stress-vocal correct, C5 feeding-boundary, C6 stress-boundary, and C7 low predicted margin. Panel d uses the hierarchical-predicted main class; each prototype representative is a training sample closest to the predicted class prototype. Here n=7 illustrative cases; centre, SD, fold-cluster bootstrap 95% CI, Wilcoxon and Holm are not applicable. The displayed margin is deployable but case correctness is label-aware. Cases do not establish prevalence.",
+            f"Seven unique frozen-test roles are selected from fold 0/seed 42: C1 cough correct, C2 calm-grunt correct, C3 feeding correct, C4 stress-vocal correct, C5 feeding-boundary, C6 stress-boundary, and C7 low predicted margin. Panel d uses the main class predicted by {_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL}; each prototype representative is a training sample closest to the predicted class prototype. Here n=7 illustrative cases; centre, SD, fold-cluster bootstrap 95% CI, Wilcoxon and Holm are not applicable. The displayed margin is deployable but case correctness is label-aware. Cases do not establish prevalence.",
         ),
         (
             "Supplementary Figure S1 | Complete clean ablations",
@@ -3146,10 +3343,10 @@ def build_legend_texts(analysis: Mapping[str, Any]) -> tuple[str, str]:
         "召回率与真类间隔均属于标签感知评估。证据不证明真实猪场外部有效性或自动路由。"
     )
     chinese_sections = (
-        ("图 1｜最终证据边界框架", "a-d 分别给出 path/source-ID/MD5 互斥的数据角色、2 s Log-Mel 共享层级卷积循环神经网络（CRNN）与推理角色。B2 Raw Softmax 是主要四类路由；并行的冻结嵌入进入仅训练集主类/子类原型，输出 Top-k 候选、距离、预测 Top-1/Top-2 距离间隔、层级一致性与原型代表；校准仅使用验证集，B3 仍为消融。n 不适用；均值、SD、CI、Wilcoxon 与 Holm 均不适用。协议要素原则上可部署，但本图未证明猪个体、录音会话、设备或农场层面的分组独立性，也不证明准确率或外部有效性。"),
-        ("图 2｜验证选择的主要分类证据", f"a 在 0-1 纵轴上显示全部 n=25 个运行点及 Macro-F1 均值±SD；b 显示恰好三个匹配增量及 fold-cluster bootstrap 95% CI。B1−B0：{_format_p(b1['wilcoxon_raw_p'])}，Holm 不适用（预先设定的时长对比）；B2−B1：{_format_p(b2['wilcoxon_raw_p'])}，Holm {_format_p(b2['holm_adjusted_p'])}；B3−B2：{_format_p(b3['wilcoxon_raw_p'])}，Holm {_format_p(b3['holm_adjusted_p'])}。B2/B3 保留锁定的七比较 Holm family。B1 是主要支持增益；B2 为探索性且不显著；B3 不改善 Top-1。c 显示逐 fold 的验证选择 λ，未使用测试集。这些标签感知检验不构成可部署性能保证。"),
-        ("图 3｜原型功能价值", f"a 报告主类/子类 Rank-1 与 Rank-2 覆盖，b 报告 feeding/stress Top-2 覆盖。c 分别重算 Raw、Main、Hierarchical 的不一致率、错误精确率、错误召回率与富集比；无标志运行的富集比不可定义（{enrichment_availability}）。d 中 Main 与 Hierarchical 共享同一个四主类原型的第二近减最近距离，只按各自正确/错误划分；不存在层级余弦距离向量。总运行数 n=25，必要时显示指标特定的可用运行数；中心为 fold 均值的平均，离散为可用运行 SD，区间为 fold-cluster bootstrap 95% CI。无新增 Wilcoxon，Holm 不适用。间隔与不一致标志在使用时可部署，正确性、精确率、召回率和 AUROC 为标签感知评估。低流行率与低召回率限制了该标志，不证明安全自动拒识。"),
-        ("图 4｜确定性候选案例", "fold 0/seed 42 的 7 个角色为：C1 cough 正确例、C2 calm-grunt 正确例、C3 feeding 正确例、C4 stress-vocal 正确例、C5 feeding 边界例、C6 stress 边界例及 C7 低预测间隔例。d 使用层级路由预测的主类；原型代表样本定义为 a training sample closest to the predicted class prototype。n=7；均值、SD、CI、Wilcoxon 与 Holm 不适用。预测距离间隔在使用时可部署，案例正确性为标签感知；案例不估计总体流行率。"),
+        ("图 1｜最终证据边界框架", f"a-d 分别给出 path/source-ID/MD5 互斥的数据角色、2 s Log-Mel 共享层级卷积循环神经网络（CRNN）与推理角色。{_PRIMARY_ROUTE_LABEL_ZH} 是 B2 的主要四类路由；并行的 {_MAIN_PROTOTYPE_ROUTE_LABEL_ZH} 与 {_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL_ZH} 使用冻结嵌入和仅训练集主类/子类原型组件，输出 Top-k 候选、距离、预测 Top-1/Top-2 距离间隔、层级一致性与原型代表；校准仅使用验证集，{_B3_STAGE_LABEL_ZH} 仍为消融。n 不适用；均值、SD、CI、Wilcoxon 与 Holm 均不适用。协议要素原则上可部署，但本图未证明猪个体、录音会话、设备或农场层面的分组独立性，也不证明准确率或外部有效性。"),
+        ("图 2｜验证选择的主要分类证据", f"a 在 0-1 纵轴上显示全部 n=25 个运行点及 Macro-F1 均值±SD；b 显示恰好三个匹配增量及 fold-cluster bootstrap 95% CI。B1−B0：{_format_p(b1['wilcoxon_raw_p'])}，Holm 不适用（预先设定的时长对比）；B2−B1：{_format_p(b2['wilcoxon_raw_p'])}，Holm {_format_p(b2['holm_adjusted_p'])}；{_B3_STAGE_LABEL_ZH}−B2：{_format_p(b3['wilcoxon_raw_p'])}，Holm {_format_p(b3['holm_adjusted_p'])}。B2/{_B3_STAGE_LABEL_ZH} 保留锁定的七比较 Holm family。B1 是主要支持增益；B2 为探索性且不显著；{_B3_STAGE_LABEL_ZH} 不改善 Top-1。c 显示逐 fold 的验证选择 λ，未使用测试集。这些标签感知检验不构成可部署性能保证。"),
+        ("图 3｜原型功能价值", f"a 报告主类/子类 Rank-1 与 Rank-2 覆盖，b 报告 feeding/stress Top-2 覆盖。c 分别重算 {_PRIMARY_ROUTE_LABEL_ZH}、{_MAIN_PROTOTYPE_ROUTE_LABEL_ZH} 与 {_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL_ZH} 的不一致率、错误精确率、错误召回率与富集比；无标志运行的富集比不可定义（{enrichment_availability}）。d 中 {_MAIN_PROTOTYPE_ROUTE_LABEL_ZH} 与 {_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL_ZH} 共享同一个四主类原型的第二近减最近距离，只按各自正确/错误划分；不存在层级余弦距离向量。总运行数 n=25，必要时显示指标特定的可用运行数；中心为 fold 均值的平均，离散为可用运行 SD，区间为 fold-cluster bootstrap 95% CI。无新增 Wilcoxon，Holm 不适用。间隔与不一致标志在使用时可部署，正确性、精确率、召回率和 AUROC 为标签感知评估。低流行率与低召回率限制了该标志，不证明安全自动拒识。"),
+        ("图 4｜确定性候选案例", f"fold 0/seed 42 的 7 个角色为：C1 cough 正确例、C2 calm-grunt 正确例、C3 feeding 正确例、C4 stress-vocal 正确例、C5 feeding 边界例、C6 stress 边界例及 C7 低预测间隔例。d 使用 {_HIERARCHICAL_PROTOTYPE_ROUTE_LABEL_ZH} 预测的主类；原型代表样本定义为 a training sample closest to the predicted class prototype。n=7；均值、SD、CI、Wilcoxon 与 Holm 不适用。预测距离间隔在使用时可部署，案例正确性为标签感知；案例不估计总体流行率。"),
         ("补充图 S1｜完整干净消融", "每行 n=15 或 n=25，以均值±样本 SD 表示；不匹配行无 fold-cluster bootstrap 95% CI、Wilcoxon 或 Holm 推断。标签感知结果不证明替代前端具有可部署优势。"),
         ("补充图 S2｜固定 λ 回顾性累积证据", f"a 显示全部 n=25 条 fixed-lambda=0.5 fold-seed 轨迹及其均值；b 为配对均值差与存储的 10,000 次 run-bootstrap CI、五个未进行多重性校正的双侧 Wilcoxon 数值 P 值（{retrospective_p}）。该回顾性族未用 Holm；这是描述性、标签感知的运行层面分析，不替代验证选择的主要分析，也不证明可部署增益。"),
         ("补充图 S3｜逐 fold 的 λ 选择", "每个候选在每个 fold 有 n=5 个种子验证最优值，显示均值±SD。选择不使用测试值，也不使用 fold-cluster CI、Wilcoxon 或 Holm；不证明全局最优 λ。"),
@@ -3170,15 +3367,16 @@ def required_output_paths(root: Path) -> tuple[Path, ...]:
 
     root = root.resolve()
     paths: list[Path] = [
-        root / FINAL_VALIDATION_DIR / filename for filename in DERIVED_TABLE_FILENAMES
+        root / OUTPUT_FINAL_VALIDATION_DIR / filename
+        for filename in DERIVED_TABLE_FILENAMES
     ]
     for stem in MAIN_FIGURE_STEMS + SUPPLEMENTARY_FIGURE_STEMS:
         paths.extend(
-            root / MAIN_FIGURE_DIR / f"{stem}.{extension}"
+            root / OUTPUT_MAIN_FIGURE_DIR / f"{stem}.{extension}"
             for extension in FIGURE_EXTENSIONS
         )
     paths.extend(
-        root / MAIN_FIGURE_DIR / filename
+        root / OUTPUT_MAIN_FIGURE_DIR / filename
         for filename in (
             "FIGURE_LEGENDS_EN.md",
             "FIGURE_LEGENDS_CN.md",
@@ -3214,7 +3412,7 @@ def _promote_staged_outputs(
     """Promote a verified staging package and roll back every partial move."""
 
     root = root.resolve()
-    final_figure_dir = (root / MAIN_FIGURE_DIR).resolve()
+    final_figure_dir = (root / OUTPUT_MAIN_FIGURE_DIR).resolve()
     staged_figure_dir = staged_figure_dir.resolve()
     if not staged_figure_dir.is_dir():
         raise FileNotFoundError(f"Staged figure directory is missing: {staged_figure_dir}")
@@ -3348,6 +3546,8 @@ def _qa_report(
         "",
         "## Machine checks",
         "",
+        f"Nomenclature schema: `{NOMENCLATURE_SCHEMA_VERSION}`.",
+        "",
         "All exports were checked for non-empty content, fixed 183-mm width, white background, editable SVG text, 300-dpi PNG, and 600-dpi TIFF.",
         "",
         "| File | Bytes | Detail | Status |",
@@ -3355,7 +3555,9 @@ def _qa_report(
     ]
     for item in inspections:
         detail = item.get("pixels", f"{item.get('text_nodes', 'vector')} text nodes")
-        display_path = (MAIN_FIGURE_DIR / Path(str(item["path"])).name).as_posix()
+        display_path = (
+            OUTPUT_MAIN_FIGURE_DIR / Path(str(item["path"])).name
+        ).as_posix()
         lines.append(
             f"| {display_path} | {item['bytes']} | {detail} | {item['status']} |"
         )
@@ -3440,6 +3642,7 @@ def generate(
             raise RuntimeError("Frozen figure sources changed during validation")
         return {
             "validated": True,
+            "nomenclature_schema_version": NOMENCLATURE_SCHEMA_VERSION,
             "written": (),
             "figure_count": len(figures),
             "panel_count": len(source_map),
@@ -3470,7 +3673,10 @@ def generate(
                 staged_path = staged_validation / filename
                 frame.to_csv(staged_path, index=False, encoding="utf-8")
                 table_pairs.append(
-                    (staged_path, root / FINAL_VALIDATION_DIR / filename)
+                    (
+                        staged_path,
+                        root / OUTPUT_FINAL_VALIDATION_DIR / filename,
+                    )
                 )
             source_map.to_csv(
                 staged_figures / "FIGURE_SOURCE_MAP.csv",
@@ -3514,7 +3720,8 @@ def generate(
                 *(
                     staged_figures / path.name
                     for path in planned
-                    if path.parent.resolve() == (root / MAIN_FIGURE_DIR).resolve()
+                    if path.parent.resolve()
+                    == (root / OUTPUT_MAIN_FIGURE_DIR).resolve()
                 ),
             ]
             incomplete = [
@@ -3547,6 +3754,7 @@ def generate(
             plt.close(figure)
     return {
         "validated": True,
+        "nomenclature_schema_version": NOMENCLATURE_SCHEMA_VERSION,
         "written": tuple(_relative(root, path) for path in planned),
         "figure_count": len(figures),
         "panel_count": len(source_map),

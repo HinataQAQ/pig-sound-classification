@@ -3,11 +3,21 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 import numpy as np
 import pandas as pd
 
+from nomenclature import (
+    INFERENCE_ROUTE_IDS,
+    LEGACY_ALIASES,
+    build_method_metadata,
+    build_model_metadata,
+    canonicalize_selection_protocol,
+    reconcile_selection_protocol,
+    resolve_inference_method,
+    validate_recorded_artifact_identity,
+)
 from prototype_model_adapter import (
     apply_hierarchy_confidence_penalty,
     assert_no_leakage,
@@ -42,6 +52,31 @@ from prototype_model_adapter import (
     verify_manifest_matches_metadata,
     write_json,
 )
+
+
+SELECTION_METHOD_CHOICES = tuple(
+    dict.fromkeys(
+        (
+            *INFERENCE_ROUTE_IDS,
+            *LEGACY_ALIASES["inference_route"],
+            "calibrated_softmax",
+            "softmax",
+            "fused",
+        )
+    )
+)
+
+
+def selection_protocol_for_bundle(
+    metadata: Mapping[str, Any], *, requested: str | None
+) -> str:
+    """Inherit bundle provenance and reject concrete protocol relabelling."""
+
+    return reconcile_selection_protocol(
+        metadata.get("selection_protocol"),
+        requested=requested or None,
+        warn_on_legacy=bool(requested),
+    )
 
 
 def resolve_device(device: str) -> str:
@@ -101,9 +136,24 @@ def parse_args() -> argparse.Namespace:
     ap.add_argument("--hier_aux_prob_weight", type=float, default=0.5)
     ap.add_argument(
         "--selection_method",
-        choices=["raw_softmax", "calibrated_softmax", "softmax", "prototype", "hierarchical", "fused"],
+        choices=SELECTION_METHOD_CHOICES,
         default="hierarchical",
-        help="Final method selected from independently calibrated method configurations. 'softmax' aliases calibrated_softmax.",
+        help=(
+            "Final method selected from independently calibrated method "
+            "configurations. Canonical route IDs and historical aliases are "
+            "accepted; 'softmax' aliases calibrated_softmax."
+        ),
+    )
+    ap.add_argument(
+        "--selection_protocol",
+        type=lambda value: canonicalize_selection_protocol(
+            value, warn_on_legacy=True
+        ),
+        default=None,
+        help=(
+            "Canonical selection protocol for new metadata. Omitted inherits "
+            "the prototype bundle value, falling back to none."
+        ),
     )
     ap.add_argument("--target_coverage", type=float, default=0.95)
     ap.add_argument("--per_class_min_count", type=int, default=5)
@@ -120,16 +170,33 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    selection_method = "calibrated_softmax" if args.selection_method == "softmax" else args.selection_method
+    selection_method, canonical_route = resolve_inference_method(
+        args.selection_method, warn_on_legacy=True
+    )
 
     bundle_path = require_file(args.prototype_bundle, "prototype bundle")
     val_manifest = require_file(args.val_manifest, "validation manifest")
     ckpt = require_file(args.ckpt, "hierarchical checkpoint")
     out_root = Path(args.out_dir)
-    out_dir = prepare_stage_dir(out_root, "calibration", args.allow_overwrite)
 
     bundle = load_prototype_bundle(bundle_path)
     metadata = bundle["metadata"]
+    config = config_from_summary(metadata["model_config"])
+    try:
+        validate_recorded_artifact_identity(
+            metadata,
+            expected_model_family="hierarchical_supervision_crnn",
+            expected_training_stage=(
+                "b2_validation_selected_hierarchical_crnn"
+            ),
+            expected_context_seconds=float(config.dur_s),
+            context="prototype bundle",
+        )
+    except ValueError as exc:
+        raise ValueError(
+            f"Invalid prototype bundle nomenclature metadata: {exc}"
+        ) from exc
+    out_dir = prepare_stage_dir(out_root, "calibration", args.allow_overwrite)
     train_manifest = resolve_recorded_file(
         metadata,
         absolute_key="train_manifest",
@@ -167,7 +234,32 @@ def main() -> None:
         },
     )
 
-    config = config_from_summary(metadata["model_config"])
+    selection_protocol = selection_protocol_for_bundle(
+        metadata, requested=args.selection_protocol
+    )
+    training_stage = (
+        "b3_hierarchical_prototype_top1_ablation"
+        if canonical_route == "hierarchical_prototype_candidate"
+        else "b2_validation_selected_hierarchical_crnn"
+    )
+    common_metadata = build_model_metadata(
+        model_family="hierarchical_supervision_crnn",
+        training_stage=training_stage,
+        context_seconds=float(config.dur_s),
+        selection_protocol=selection_protocol,
+    )
+    selected_route_metadata = (
+        build_method_metadata(
+            model_family="hierarchical_supervision_crnn",
+            training_stage=training_stage,
+            context_seconds=float(config.dur_s),
+            selection_protocol=selection_protocol,
+            inference_route=canonical_route,
+            legacy_method_id=selection_method,
+        )
+        if canonical_route is not None
+        else common_metadata
+    )
     feature_backend = str(metadata.get("feature_backend", "librosa")) if args.feature_backend == "auto" else args.feature_backend
     qualification = result_qualification_fields(
         feature_backend,
@@ -431,6 +523,8 @@ def main() -> None:
     )
     val_pred["known_state_global"] = np.where(val_pred["accept_global"], "known", "uncertain")
     val_pred["known_state_per_class"] = np.where(val_pred["accept_per_class"], "known", "uncertain")
+    for key, value in selected_route_metadata.items():
+        val_pred[key] = value
     val_pred.to_csv(out_dir / "val_predictions.csv", index=False, encoding="utf-8-sig")
 
     best_metrics = method_metrics_table(
@@ -478,6 +572,7 @@ def main() -> None:
     calibration = {
         "artifact_type": "hier_acoustic_prototype_calibration",
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        **selected_route_metadata,
         "prototype_bundle": str(bundle_path.resolve()),
         "prototype_bundle_sha256": file_sha256(bundle_path),
         "checkpoint_path": str(ckpt.resolve()),
@@ -552,6 +647,10 @@ def main() -> None:
     }
     write_json(out_dir / "calibration.json", calibration)
 
+    print(
+        "[INFO] selected inference method -> "
+        f"{selected_route_metadata.get('display_name_en', selection_method)}"
+    )
     print(f"[OK] wrote calibration -> {out_dir / 'calibration.json'}")
     print(f"[OK] wrote validation predictions -> {out_dir / 'val_predictions.csv'}")
     print(f"[OK] wrote validation coverage-risk -> {out_dir / 'coverage_risk.csv'}")
